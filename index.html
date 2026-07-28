@@ -1620,11 +1620,31 @@ init();
 <html>
 <head>
     <title>หน้าแรก</title>
+    <style>
+        .btn-blue {
+            /* โค้ดสั่งให้ไปอยู่มุมบนขวา */
+            position: absolute;
+            top: 20px;                 /* ห่างจากขอบบน 20 พิกเซล */
+            right: 20px;               /* ห่างจากขอบขวา 20 พิกเซล */
+            
+            display: inline-block;
+            background-color: #1e3a8a; 
+            color: #ffffff;            
+            padding: 8px 16px;         
+            font-size: 14px;           
+            text-decoration: none;     
+            border-radius: 6px;        
+            font-family: sans-serif;
+            font-weight: bold;         
+            transition: 0.2s;          
+        }
+        .btn-blue:hover {
+            background-color: #3b82f6; 
+        }
+    </style>
 </head>
 <body>
     <h1>ยินดีต้อนรับสู่หน้าแรก</h1>
-    <!-- ลิงก์ไปยังหน้าสอง -->
-    <a href="page2.html">คลิกที่นี่เพื่อไปหน้าสอง</a>
-</body>
-</html>
-
+    
+    <!-- ย้ายมาอยู่ตรงนี้ ปุ่มจะลอยไปที่มุมบนขวาอัตโนมัติ -->
+    <a href="page2.html" class="btn-blue">ไปหน้าสอง</a>
