@@ -1005,11 +1005,33 @@ init();
 <html>
 <head>
     <title>หน้าสอง</title>
+    <style>
+        .btn-yellow {
+            /* โค้ดสั่งให้ไปอยู่มุมบนขวา */
+            position: absolute;
+            top: 20px;                 /* ห่างจากขอบบน 20 พิกเซล */
+            right: 20px;               /* ห่างจากขอบขวา 20 พิกเซล */
+            
+            display: inline-block;
+            background-color: #f59e0b; 
+            color: #1e293b;            
+            padding: 8px 16px;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-family: sans-serif;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-yellow:hover {
+            background-color: #fbbf24;
+        }
+    </style>
 </head>
 <body>
     <h1>นี่คือหน้าสองของคุณ</h1>
-    <!-- ลิงก์ย้อนกลับมาหน้าแรก -->
-    <a href="index.html">กลับไปหน้าแรก</a>
+    
+    <!-- ย้ายมาอยู่ตรงนี้ ปุ่มจะลอยไปที่มุมบนขวาอัตโนมัติ -->
+    <a href="index.html" class="btn-yellow">กลับหน้าแรก</a>
 </body>
 </html>
-
