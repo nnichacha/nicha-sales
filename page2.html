@@ -91,7 +91,11 @@
   table.company-table td{ padding:8px 10px; border-top:1px solid var(--line); color:var(--text); vertical-align:top; }
   table.company-table tr.relation-visited td{ background: rgba(255,255,255,0.03); }
   table.company-table tr.contacted td{ background: var(--green-dim); }
-  .company-name{ font-weight:600; }
+  .company-name{ font-weight:600; padding:3px 5px; margin:-3px -5px; border-radius:4px; }
+  .company-name[contenteditable]:hover, .editable-type[contenteditable]:hover{ background:rgba(201,162,39,0.10); box-shadow:0 0 0 1px rgba(201,162,39,0.35); }
+  .company-name[contenteditable]:focus, .editable-type[contenteditable]:focus{ background:rgba(201,162,39,0.14); box-shadow:0 0 0 1px var(--gold); outline:none; }
+  .editable-type{ padding:3px 5px; margin:-3px -5px; border-radius:4px; }
+  .row-delete{ padding:4px 10px !important; font-size:10px !important; }
   .tag{ display:inline-block; font-family:'Kanit',sans-serif; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px; }
   .tag-visited{ background:rgba(255,255,255,0.08); color:var(--muted); }
   .chk{ width:16px; height:16px; accent-color: var(--green); cursor:pointer; }
@@ -148,7 +152,17 @@
   }
   .btn-primary:hover{ background:#DFC24E; }
 
-  .report-list{ margin-top:30px; display:flex; flex-direction:column; gap:22px; }
+  .archive-bar{ display:flex; justify-content:space-between; align-items:center; margin-top:30px; flex-wrap:wrap; gap:14px; }
+  .archive-stats{ display:flex; gap:18px; flex-wrap:wrap; }
+  .astat{ font-size:11.5px; color:var(--muted); font-family:'Kanit',sans-serif; }
+  .astat b{ color:var(--gold); font-size:15px; }
+  .archive-search{ display:flex; align-items:center; gap:8px; }
+  .archive-search label{ font-size:11.5px; color:var(--muted); font-family:'Kanit',sans-serif; }
+  .archive-search input[type=date]{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px; color:var(--text); padding:7px 10px; font-size:12.5px;
+  }
+  .report-list{ margin-top:14px; display:flex; flex-direction:column; gap:22px; }
+
   .report-date-group{ background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
   .report-date-head{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--panel2); flex-wrap:wrap; gap:10px; }
   .report-date-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; }
@@ -167,16 +181,18 @@
   .re-time{
     font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:var(--gold); min-width:48px; padding-top:1px;
   }
-  .report-entry .re-main{ flex:1; min-width:220px; }
-  .report-entry .re-company{ font-family:'Kanit',sans-serif; font-weight:600; font-size:13.5px; color:#fff; }
-  .report-entry .re-person{ font-size:11.5px; color:var(--muted); margin-top:2px; }
-  .report-entry .re-activities{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-  .report-entry .re-feedback{ font-size:12px; color:var(--text); margin-top:6px; line-height:1.6; max-width:520px; }
+  .report-entry .re-main{
+    flex:1; min-width:220px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+  }
+  .report-entry .re-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; }
+  .report-entry .re-person{ font-size:12px; color:#B7C0CC; margin-top:3px; }
+  .report-entry .re-activities{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .report-entry .re-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.65; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; }
 
   .re-delete{ background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:6px; padding:6px 12px; font-size:11px; cursor:pointer; font-family:'Sarabun',sans-serif; }
   .re-delete:hover{ border-color:var(--red); color:var(--red); }
   .report-empty{ padding:40px 20px; text-align:center; color:var(--muted); font-size:13px; }
-  .re-activity-tag{ font-size:10px; font-family:'Kanit',sans-serif; font-weight:600; background:var(--gold-dim); color:var(--gold-lt); padding:2px 9px; border-radius:10px; }
+  .re-activity-tag, .rd-tag, .act-badge{ font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:3px 10px; border-radius:9px; display:inline-flex; align-items:center; gap:4px; }
 
   .report-date-actions{ display:flex; gap:8px; }
   .btn-report{
@@ -209,18 +225,20 @@
 
   .rd-timeline{ position:relative; padding-left:30px; }
   .rd-timeline::before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--gold), var(--line)); }
-  .rd-item{ position:relative; padding-bottom:20px; }
+  .rd-item{ position:relative; padding:0 0 14px 14px; }
+  .rd-item-inner{ background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
   .rd-item::before{
-    content:""; position:absolute; left:-24px; top:2px; width:12px; height:12px; border-radius:50%;
+    content:""; position:absolute; left:-30px; top:16px; width:12px; height:12px; border-radius:50%;
     background:var(--gold); border:2px solid #0D1420; box-shadow:0 0 0 2px var(--gold);
   }
   .rd-item-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
   .rd-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:var(--gold); background:var(--gold-dim); padding:2px 9px; border-radius:5px; }
-  .rd-company{ font-family:'Kanit',sans-serif; font-weight:600; font-size:14px; color:#fff; }
-  .rd-person{ font-size:11.5px; color:var(--muted); margin-top:3px; }
+  .rd-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; }
+  .rd-person{ font-size:12px; color:#B7C0CC; margin-top:4px; }
+  .rd-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
   .rd-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-  .rd-tag{ font-size:10px; font-family:'Kanit',sans-serif; font-weight:600; background:rgba(34,197,94,0.13); color:#6EE7B7; padding:2px 9px; border-radius:9px; border:1px solid rgba(34,197,94,0.3); }
-  .rd-feedback{ font-size:12px; color:#D1D5DB; margin-top:7px; line-height:1.7; background:var(--panel2); border-left:2px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; }
+  .rd-tag{ font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:3px 10px; border-radius:9px; display:inline-flex; align-items:center; gap:4px; }
+  .rd-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.7; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; }
   .rd-footer{ margin-top:26px; padding-top:14px; border-top:1px dashed var(--line); font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between; }
 
   @media print{
@@ -241,8 +259,8 @@
       <svg viewBox="0 0 24 24" stroke-width="2"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
       Rayong Sales Territory Plan
     </div>
-    <h1 contenteditable="true" id="mainTitle">แผนปฏิบัติการเข้าพบลูกค้า จังหวัดระยอง</h1>
-    <div class="sub" contenteditable="true" id="mainSub">รวมรายชื่อบริษัทเป้าหมายทั้งหมด จัดกลุ่มตามตำบลตามลำดับเส้นทางจริง (Nearest-Neighbor) พร้อมให้กรอกแผนการเข้าพบเอง — คลิกหัวข้อเพื่อแก้ไขข้อความ คลิกแถวบริษัทเพื่อบันทึกผล Feedback</div>
+    <h1 contenteditable="true" id="mainTitle" data-editkey="mainTitle">แผนปฏิบัติการเข้าพบลูกค้า จังหวัดระยอง</h1>
+    <div class="sub" contenteditable="true" id="mainSub" data-editkey="mainSub">รวมรายชื่อบริษัทเป้าหมายทั้งหมด จัดกลุ่มตามตำบลตามลำดับเส้นทางจริง (Nearest-Neighbor) พร้อมให้กรอกแผนการเข้าพบเอง — คลิกหัวข้อเพื่อแก้ไขข้อความ คลิกแถวบริษัทเพื่อบันทึกผล Feedback</div>
     <div class="edit-hint">เคล็ดลับ: หัวข้อและคำอธิบายทุกจุดแก้ไขได้โดยคลิกที่ข้อความแล้วพิมพ์ใหม่</div>
 
     <div class="toolbar">
@@ -317,6 +335,15 @@
       <button class="btn-primary" id="rfSubmit">บันทึกรายการ</button>
     </div>
 
+    <div class="archive-bar">
+      <div class="archive-stats" id="archiveStats"></div>
+      <div class="archive-search">
+        <label>ค้นหาย้อนหลัง:</label>
+        <input type="date" id="rfSearchDate">
+        <button class="filter-select" id="rfSearchClear" style="cursor:pointer;">ล้างตัวกรอง</button>
+      </div>
+    </div>
+
     <div class="report-list" id="reportList"></div>
   </div>
 
@@ -349,6 +376,21 @@ const SITE_DATA = {"ปลวกแดง": {"chain": ["มาบยางพร
 </script>
 <script>
 (function(){
+
+const ACTIVITY_META = {
+  'แนะนำตัว': { color:'#3B82F6', icon:'<path d="M8 12l3 3 5-6"/><circle cx="12" cy="12" r="9"/>' },
+  'ส่งของ': { color:'#A78BFA', icon:'<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>' },
+  'ใบเสนอราคา': { color:'#F59E0B', icon:'<path d="M6 2h9l3 3v17H6z"/><path d="M9 8h6M9 12h6M9 16h4"/>' },
+  'ปิดการขาย': { color:'#22C55E', icon:'<path d="M12 2l2.4 6.8L21 9l-5.5 4.6L17 21l-5-3.6L7 21l1.5-7.4L3 9l6.6-0.2z"/>' },
+  'ติดตามงาน': { color:'#22D3EE', icon:'<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>' },
+  'อื่นๆ': { color:'#94A3B8', icon:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' },
+};
+function activityBadge(name){
+  const meta = ACTIVITY_META[name] || ACTIVITY_META['อื่นๆ'];
+  const c = meta.color;
+  return `<span class="act-badge" style="background:${c}22; color:${c}; border:1px solid ${c}55;">`+
+    `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>${name}</span>`;
+}
 
 const STATUS_OPTIONS = [
   {v:'', label:'— ยังไม่ระบุ —', cls:''},
@@ -481,31 +523,67 @@ function statusOptionsHtml(current){
   return STATUS_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===current?'selected':''}>${o.label}</option>`).join('');
 }
 
+function loadCompanyOverrides(){
+  try{ return JSON.parse(localStorage.getItem('companyOverrides') || '{"edits":{},"deletes":[],"additions":{}}'); }
+  catch(e){ return {edits:{}, deletes:[], additions:{}}; }
+}
+function saveCompanyOverrides(ov){
+  localStorage.setItem('companyOverrides', JSON.stringify(ov));
+}
+function sectionKey(dist, tambon){ return dist + '|' + tambon; }
+
+function applyCompanyOverrides(){
+  const ov = loadCompanyOverrides();
+  Object.entries(SITE_DATA).forEach(([dist, data])=>{
+    data.sections.forEach(section=>{
+      // remove deleted
+      section.companies = section.companies.filter(c=>!ov.deletes.includes(c.id));
+      // apply edits
+      section.companies.forEach(c=>{
+        if (ov.edits[c.id]){
+          if (ov.edits[c.id].name !== undefined) c.name = ov.edits[c.id].name;
+          if (ov.edits[c.id].type !== undefined) c.type = ov.edits[c.id].type;
+        }
+      });
+      // append additions for this section
+      const key = sectionKey(dist, section.tambon);
+      const added = ov.additions[key] || [];
+      added.forEach(a=>{ if(!ov.deletes.includes(a.id)) section.companies.push(a); });
+    });
+    data.total_companies = data.sections.reduce((s,sec)=>s+sec.companies.length,0);
+  });
+}
+
 async function renderCompanyRow(c, dist){
   const fb = await loadFeedback(c.id);
   const tr = document.createElement('tr');
   tr.className = (c.relation === 'เคยเข้าพบแล้ว' ? 'relation-visited ' : '') + (fb.contacted ? 'contacted' : '');
   tr.dataset.name = c.name.toLowerCase();
   tr.dataset.tambon = c.tambon.toLowerCase();
-  tr.dataset.relation = c.relation;
+  tr.dataset.relation = c.relation || '';
   tr.dataset.contacted = fb.contacted ? 'yes' : 'no';
+  tr.dataset.id = c.id;
 
   const relTag = c.relation ? `<span class="tag tag-visited">${c.relation}</span>` : '';
   const curOpt = STATUS_OPTIONS.find(o=>o.v===fb.status) || STATUS_OPTIONS[0];
 
   tr.innerHTML = `
     <td><input type="checkbox" class="chk chk-contacted" ${fb.contacted?'checked':''}></td>
-    <td><div class="company-name">${c.name}</div>${relTag}</td>
+    <td><div class="company-name" contenteditable="true" spellcheck="false">${c.name}</div>${relTag}</td>
     <td>${c.tambon}</td>
-    <td>${c.type||''}</td>
+    <td><div class="editable-type" contenteditable="true" spellcheck="false">${c.type||''}</div></td>
     <td><select class="status-select ${curOpt.cls}">${statusOptionsHtml(fb.status)}</select></td>
     <td><textarea class="feedback-note" placeholder="บันทึก Feedback ลูกค้า...">${fb.note||''}</textarea></td>
     <td><a class="maplink" href="${gmapsLink(c.name, c.tambon, dist)}" target="_blank" rel="noopener">เปิดแผนที่</a></td>
+    <td><button class="re-delete row-delete" title="ลบบริษัทนี้ออกจากรายการ">ลบ</button></td>
   `;
 
   const chk = tr.querySelector('.chk-contacted');
   const sel = tr.querySelector('.status-select');
   const note = tr.querySelector('.feedback-note');
+  const nameEl = tr.querySelector('.company-name');
+  const typeEl = tr.querySelector('.editable-type');
+  const delBtn = tr.querySelector('.row-delete');
 
   function persist(){
     const data = {contacted: chk.checked, status: sel.value, note: note.value};
@@ -519,6 +597,36 @@ async function renderCompanyRow(c, dist){
   sel.addEventListener('change', persist);
   let noteTimer;
   note.addEventListener('input', ()=>{ clearTimeout(noteTimer); noteTimer = setTimeout(persist, 600); });
+
+  function persistNameType(){
+    const ov = loadCompanyOverrides();
+    ov.edits[c.id] = ov.edits[c.id] || {};
+    ov.edits[c.id].name = nameEl.textContent.trim();
+    ov.edits[c.id].type = typeEl.textContent.trim();
+    saveCompanyOverrides(ov);
+    tr.dataset.name = nameEl.textContent.trim().toLowerCase();
+    flashSaved();
+  }
+  nameEl.addEventListener('blur', persistNameType);
+  typeEl.addEventListener('blur', persistNameType);
+
+  delBtn.addEventListener('click', ()=>{
+    if(!confirm(`ลบ "${c.name}" ออกจากรายการใช่หรือไม่?`)) return;
+    const ov = loadCompanyOverrides();
+    if (!ov.deletes.includes(c.id)) ov.deletes.push(c.id);
+    saveCompanyOverrides(ov);
+    const dayCard = tr.closest('.day-card');
+    tr.remove();
+    if (dayCard){
+      updateDayProgress(dayCard);
+      const dmeta = dayCard.querySelector('.dmeta');
+      if (dmeta){
+        const n = dayCard.querySelectorAll('tbody tr').length;
+        dmeta.textContent = `${n} บริษัท`;
+      }
+    }
+    flashSaved();
+  });
 
   return tr;
 }
@@ -557,10 +665,15 @@ async function buildTambonSection(dist, section, distId, tIndex){
   table.className = 'company-table';
   table.innerHTML = `<thead><tr>
       <th style="width:34px">✓</th><th>ชื่อสถานประกอบการ</th><th style="width:90px">ตำบล</th>
-      <th style="width:150px">ประเภทกิจการ</th><th style="width:120px">สถานะ</th><th style="width:180px">Feedback</th><th style="width:80px">แผนที่</th>
+      <th style="width:150px">ประเภทกิจการ</th><th style="width:120px">สถานะ</th><th style="width:180px">Feedback</th><th style="width:80px">แผนที่</th><th style="width:50px"></th>
     </tr></thead><tbody></tbody>`;
   const tbody = table.querySelector('tbody');
   body.appendChild(table);
+
+  const addRow = document.createElement('div');
+  addRow.style.cssText = 'padding:10px 12px;';
+  addRow.innerHTML = `<button class="btn-report add-company-btn">+ เพิ่มบริษัทใหม่ในตำบลนี้</button>`;
+  body.appendChild(addRow);
 
   head.addEventListener('click', ()=>{
     const isOpen = body.classList.toggle('open');
@@ -575,6 +688,24 @@ async function buildTambonSection(dist, section, distId, tIndex){
     tbody.appendChild(row);
   }
   updateDayProgress(card);
+
+  addRow.querySelector('.add-company-btn').addEventListener('click', async ()=>{
+    const newId = 'new' + Date.now() + Math.floor(Math.random()*1000);
+    const newCompany = {id:newId, name:'บริษัทใหม่ (คลิกแก้ไขชื่อ)', tambon:section.tambon, type:'', relation:''};
+    const ov = loadCompanyOverrides();
+    const key = sectionKey(dist, section.tambon);
+    ov.additions[key] = ov.additions[key] || [];
+    ov.additions[key].push(newCompany);
+    saveCompanyOverrides(ov);
+    const row = await renderCompanyRow(newCompany, dist);
+    tbody.appendChild(row);
+    updateDayProgress(card);
+    const dmeta = card.querySelector('.dmeta');
+    if (dmeta) dmeta.textContent = `${tbody.querySelectorAll('tr').length} บริษัท`;
+    row.querySelector('.company-name').focus();
+    flashSaved();
+  });
+
   return card;
 }
 
@@ -589,7 +720,7 @@ async function buildDistrictBlock(dist, data, num){
   head.innerHTML = `
     <div class="district-num">0${num}</div>
     <div>
-      <div class="district-title" contenteditable="true">อำเภอ${dist}</div>
+      <div class="district-title" contenteditable="true" data-editkey="districtTitle-${distId}">อำเภอ${dist}</div>
       <div class="district-meta">${data.total_companies} บริษัทเป้าหมาย &nbsp;·&nbsp; ${data.sections.length} ตำบล</div>
     </div>
     <div class="collapse-arrow open">▾</div>`;
@@ -655,7 +786,33 @@ async function buildDistrictBlock(dist, data, num){
   return block;
 }
 
+function bindEditableTexts(root){
+  root.querySelectorAll('[data-editkey]').forEach(el=>{
+    const key = 'edittext:' + el.dataset.editkey;
+    const saved = localStorage.getItem(key);
+    if (saved !== null){
+      try{ el.textContent = JSON.parse(saved); }catch(e){ el.textContent = saved; }
+    }
+    el.addEventListener('blur', ()=>{
+      localStorage.setItem(key, JSON.stringify(el.textContent));
+      flashSaved();
+    });
+  });
+}
+
+function flashSaved(){
+  const dot = document.getElementById('saveDot');
+  const txt = document.getElementById('saveText');
+  if (!dot) return;
+  dot.style.background = 'var(--green)';
+  txt.textContent = 'บันทึกแล้ว';
+  setTimeout(()=>{ txt.textContent = 'ข้อมูล Feedback บันทึกอัตโนมัติ'; }, 1200);
+}
+
 async function init(){
+  applyCompanyOverrides();
+  bindEditableTexts(document.querySelector('.masthead'));
+
   const totalCompanies = Object.values(SITE_DATA).reduce((s,d)=>s+d.total_companies,0);
   const totalTambons = Object.values(SITE_DATA).reduce((s,d)=>s+d.sections.length,0);
   document.getElementById('kpiRow').innerHTML = `
@@ -670,6 +827,7 @@ async function init(){
   for (const [dist, data] of Object.entries(SITE_DATA)) {
     const block = await buildDistrictBlock(dist, data, num);
     container.appendChild(block);
+    bindEditableTexts(block);
     num++;
   }
 
@@ -711,7 +869,7 @@ async function init(){
   document.getElementById('exportBtn').addEventListener('click', ()=>{
     const dump = {};
     for (const key in localStorage){
-      if (key.startsWith('feedback:') || key === 'dailyReports') dump[key] = JSON.parse(localStorage.getItem(key));
+      if (key.startsWith('feedback:') || key === 'dailyReports' || key === 'companyOverrides' || key.startsWith('edittext:')) dump[key] = JSON.parse(localStorage.getItem(key));
     }
     const blob = new Blob([JSON.stringify(dump, null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
@@ -734,7 +892,7 @@ async function init(){
         const dump = JSON.parse(ev.target.result);
         let count = 0;
         for (const key in dump){
-          if (key.startsWith('feedback:') || key === 'dailyReports'){
+          if (key.startsWith('feedback:') || key === 'dailyReports' || key === 'companyOverrides' || key.startsWith('edittext:')){
             localStorage.setItem(key, JSON.stringify(dump[key]));
             count++;
           }
@@ -794,14 +952,33 @@ async function init(){
   rfDate.value = new Date().toISOString().slice(0,10);
   rfTime.value = nowHHMM();
 
-  function renderReportList(){
+  let reportDateFilter = '';
+
+  function renderArchiveStats(){
     const list = loadReports();
+    const uniqueDates = new Set(list.map(e=>e.date));
+    const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
+    const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
+    document.getElementById('archiveStats').innerHTML = `
+      <div class="astat">บันทึกทั้งหมด <b>${uniqueDates.size}</b> วัน</div>
+      <div class="astat">เข้าพบสะสม <b>${list.length}</b> ครั้ง</div>
+      <div class="astat">ใบเสนอราคาสะสม <b>${quotes}</b> ใบ</div>
+      <div class="astat">ปิดการขายสะสม <b>${closed}</b> งาน</div>
+    `;
+  }
+
+  function renderReportList(){
+    renderArchiveStats();
+    let list = loadReports();
+    if (reportDateFilter) list = list.filter(e=>e.date===reportDateFilter);
     const reportListEl = document.getElementById('reportList');
     if (list.length === 0){
-      reportListEl.innerHTML = `<div class="report-empty">ยังไม่มีบันทึกการเข้าพบ — กรอกแบบฟอร์มด้านบนเพื่อเริ่มบันทึก</div>`;
+      reportListEl.innerHTML = reportDateFilter
+        ? `<div class="report-empty">ไม่พบบันทึกของวันที่เลือก</div>`
+        : `<div class="report-empty">ยังไม่มีบันทึกการเข้าพบ — กรอกแบบฟอร์มด้านบนเพื่อเริ่มบันทึก</div>`;
       return;
     }
-    // group by date, newest first
+    // group by date, newest first — all historical days remain here permanently, never overwritten
     const byDate = {};
     list.forEach(e=>{ (byDate[e.date] = byDate[e.date] || []).push(e); });
     const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
@@ -814,7 +991,7 @@ async function init(){
       const dObj = new Date(date+'T00:00:00');
       const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
       const entriesHtml = entries.map(e=>{
-        const tagsHtml = e.activities.map(a=>`<span class="re-activity-tag">${a}</span>`).join('');
+        const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
         return `<div class="report-entry" data-id="${e.id}">
           <div class="re-time">${e.time || '--:--'}</div>
           <div class="re-main">
@@ -918,8 +1095,9 @@ async function init(){
     const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
 
     const itemsHtml = list.map(e=>{
-      const tagsHtml = e.activities.map(a=>`<span class="rd-tag">${a}</span>`).join('');
+      const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
       return `<div class="rd-item">
+        <div class="rd-item-inner">
         <div class="rd-item-head">
           <span class="rd-time">${e.time || '--:--'}</span>
           <span class="rd-company">${e.company || '—'}</span>
@@ -927,6 +1105,7 @@ async function init(){
         <div class="rd-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
         <div class="rd-tags">${tagsHtml}</div>
         ${e.feedback ? `<div class="rd-feedback">${e.feedback}</div>` : ''}
+        </div>
       </div>`;
     }).join('');
 
@@ -995,13 +1174,26 @@ async function init(){
   });
 
   renderReportList();
+
+  const rfSearchDate = document.getElementById('rfSearchDate');
+  const rfSearchClear = document.getElementById('rfSearchClear');
+  rfSearchDate.addEventListener('change', ()=>{
+    reportDateFilter = rfSearchDate.value;
+    renderReportList();
+  });
+  rfSearchClear.addEventListener('click', ()=>{
+    rfSearchDate.value = '';
+    reportDateFilter = '';
+    renderReportList();
+  });
 }
 
 init();
 })();
 </script>
 </body>
-</html><!DOCTYPE html>
+</html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>หน้าสอง</title>
@@ -1028,8 +1220,7 @@ init();
         }
     </style>
 </head>
-<body>
-     
+<body>    
     <!-- ย้ายมาอยู่ตรงนี้ ปุ่มจะลอยไปที่มุมบนขวาอัตโนมัติ -->
     <a href="index.html" class="btn-yellow">กลับหน้าแรก</a>
 </body>
