@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>แผนปฏิบัติการเข้าพบลูกค้า จังหวัดระยอง</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
   :root{
     --ink:#0B1220; --panel:#111827; --panel2:#1F2937; --panel3:#151E2E; --line:#2A3441;
@@ -42,6 +44,28 @@
     color:var(--text); font-family:'Sarabun',sans-serif; font-size:13px;
   }
   .save-status{ font-size:11px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+  .sync-badge{ font-size:11px; color:var(--muted); display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:6px 12px; }
+  .sync-dot{ width:7px; height:7px; border-radius:50%; background:#6B7280; }
+  .sync-dot.connected{ background:var(--green); box-shadow:0 0 6px var(--green); }
+  .sync-dot.error{ background:var(--red); }
+  .sync-panel{ display:none; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-top:14px; }
+  .sync-panel.open{ display:block; }
+  .sync-panel-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; margin-bottom:8px; }
+  .sync-panel-desc{ font-size:11.5px; color:var(--muted); line-height:1.7; margin-bottom:12px; }
+  .sync-panel-desc code{ background:var(--panel2); padding:1px 6px; border-radius:4px; color:var(--gold-lt); font-size:11px; }
+  .sync-panel textarea{
+    width:100%; min-height:120px; background:var(--panel2); border:1px solid var(--line); border-radius:8px;
+    color:var(--text); font-family:monospace; font-size:11.5px; padding:12px; line-height:1.6;
+  }
+  .sync-panel-actions{ display:flex; gap:10px; margin-top:12px; }
+  .override-banner{
+    display:flex; justify-content:space-between; align-items:center; gap:14px; background:var(--amber-dim);
+    border:1px solid var(--amber); border-radius:8px; padding:10px 16px; margin-top:18px; font-size:12.5px; color:#FDE68A;
+  }
+  .override-banner button{
+    background:var(--amber); color:#1F1300; border:none; border-radius:6px; padding:6px 14px; font-family:'Kanit',sans-serif;
+    font-weight:700; font-size:11.5px; cursor:pointer; white-space:nowrap;
+  }
   .save-dot{ width:7px; height:7px; border-radius:50%; background:var(--green); }
 
   .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:22px; }
@@ -279,9 +303,27 @@
         <option value="no">ยังไม่ติดต่อ</option>
       </select>
       <div class="save-status"><span class="save-dot" id="saveDot"></span><span id="saveText">ข้อมูล Feedback บันทึกอัตโนมัติ</span></div>
+      <div class="sync-badge" id="syncBadge">
+        <span class="sync-dot" id="syncDot"></span><span id="syncText">ยังไม่เชื่อมต่อทีม (โหมดเครื่องเดียว)</span>
+      </div>
+      <button class="filter-select" id="syncSettingsBtn" style="cursor:pointer;">ตั้งค่าซิงค์ทีม</button>
       <button class="filter-select" id="exportBtn" style="cursor:pointer;">ส่งออกข้อมูล (.json)</button>
       <button class="filter-select" id="importBtn" style="cursor:pointer;">นำเข้าข้อมูล</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </div>
+
+    <div class="sync-panel" id="syncPanel">
+      <div class="sync-panel-title">ตั้งค่าซิงค์ข้อมูลทีม (Firebase Realtime Database)</div>
+      <div class="sync-panel-desc">
+        วางค่า <code>firebaseConfig</code> ทั้งก้อนจาก Firebase Console (Project Settings → Your apps) ลงในช่องด้านล่าง แล้วกด "เชื่อมต่อ" —
+        ค่านี้จะถูกจำไว้ในเบราว์เซอร์นี้ ถ้าต้องการให้ทีมทุกคนเชื่อมต่ออัตโนมัติโดยไม่ต้องวางเอง แนะนำให้แก้ค่า
+        <code>FIREBASE_CONFIG</code> ในซอร์สโค้ด HTML แล้วแจกไฟล์เดียวกันให้ทีม
+      </div>
+      <textarea id="syncConfigInput" placeholder='วางที่นี่ เช่น:&#10;{&#10;  "apiKey": "...",&#10;  "authDomain": "...",&#10;  "databaseURL": "https://xxxx.firebaseio.com",&#10;  "projectId": "...",&#10;  ...&#10;}'></textarea>
+      <div class="sync-panel-actions">
+        <button class="btn-primary" id="syncConnectBtn" style="margin-top:0;">เชื่อมต่อ</button>
+        <button class="filter-select" id="syncDisconnectBtn" style="cursor:pointer;">ยกเลิกการเชื่อมต่อ</button>
+      </div>
     </div>
   </div>
 
@@ -292,6 +334,11 @@
 
   <div id="page1">
     <div class="kpi-row" id="kpiRow"></div>
+  <div class="override-banner" id="overrideChangeBanner" style="display:none;">
+    <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
+    <button onclick="location.reload()">รีเฟรชตอนนี้</button>
+  </div>
+
     <div id="districtContainer"></div>
   </div>
 
@@ -377,6 +424,111 @@ const SITE_DATA = {"ปลวกแดง": {"chain": ["มาบยางพร
 <script>
 (function(){
 
+/* ============ FIREBASE TEAM SYNC ============
+   To make your whole team connect automatically without pasting config each time,
+   replace null below with your firebaseConfig object from the Firebase Console
+   (Project Settings > Your apps), then distribute this same HTML file to your team. */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyB6Tzu2kTRULZ1s-oGAd7xZIYpqdXUqp9w",
+  authDomain: "sales-nicha.firebaseapp.com",
+  databaseURL: "https://sales-nicha-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sales-nicha",
+  storageBucket: "sales-nicha.firebasestorage.app",
+  messagingSenderId: "934539052951",
+  appId: "1:934539052951:web:8ed95ddc677bc6208c66d2",
+  measurementId: "G-VZ4V32EP5H"
+};
+
+let fbDb = null;
+let syncConnected = false;
+let feedbackListenersAttached = false;
+
+function getStoredFirebaseConfig(){
+  if (FIREBASE_CONFIG && FIREBASE_CONFIG.databaseURL && !FIREBASE_CONFIG.databaseURL.includes('PASTE_YOUR')) return FIREBASE_CONFIG;
+  try{
+    const raw = localStorage.getItem('firebaseConfig');
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function updateSyncBadge(state){
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  if (!dot) return;
+  dot.className = 'sync-dot' + (state==='connected' ? ' connected' : (state==='error' ? ' error' : ''));
+  txt.textContent = state==='connected' ? 'เชื่อมต่อทีมแล้ว (เรียลไทม์)'
+    : state==='error' ? 'เชื่อมต่อไม่สำเร็จ ตรวจสอบ config'
+    : 'ยังไม่ได้เชื่อมต่อทีม (โหมดเครื่องเดียว)';
+}
+
+function initFirebaseSync(config){
+  try{
+    if (!firebase.apps || firebase.apps.length === 0){
+      firebase.initializeApp(config);
+    }
+    fbDb = firebase.database();
+    syncConnected = true;
+    updateSyncBadge('connected');
+    attachRealtimeListeners();
+  }catch(e){
+    console.error('Firebase init failed', e);
+    syncConnected = false;
+    updateSyncBadge('error');
+  }
+}
+
+function attachRealtimeListeners(){
+  if (!fbDb) return;
+  // daily reports: any remote change re-renders the report list
+  fbDb.ref('dailyReports').on('value', (snap)=>{
+    const all = snap.val() || {};
+    reportsCache = Object.values(all);
+    localStorage.setItem('dailyReports', JSON.stringify(reportsCache));
+    if (document.getElementById('reportList')) renderReportList();
+  });
+  // feedback: patch matching rows live without full rebuild
+  fbDb.ref('feedback').on('value', (snap)=>{
+    const all = snap.val() || {};
+    Object.keys(all).forEach(id=>{
+      feedbackCache[id] = all[id];
+      refreshFeedbackRowUI(id, all[id]);
+    });
+  });
+  // editable texts: update matching elements live
+  fbDb.ref('editTexts').on('value', (snap)=>{
+    const all = snap.val() || {};
+    Object.keys(all).forEach(key=>{
+      const el = document.querySelector(`[data-editkey="${key}"]`);
+      if (el && document.activeElement !== el) el.textContent = all[key];
+    });
+  });
+  // company overrides: notify user rather than silently restructure the page
+  fbDb.ref('companyOverrides').on('value', ()=>{
+    const banner = document.getElementById('overrideChangeBanner');
+    if (banner) banner.style.display = 'flex';
+  });
+}
+
+function refreshFeedbackRowUI(id, data){
+  document.querySelectorAll(`tr[data-id="${id}"]`).forEach(tr=>{
+    const chk = tr.querySelector('.chk-contacted');
+    const sel = tr.querySelector('.status-select');
+    const note = tr.querySelector('.feedback-note');
+    if (!chk) return;
+    if (document.activeElement !== chk) chk.checked = !!data.contacted;
+    if (sel && document.activeElement !== sel){
+      sel.value = data.status || '';
+      sel.className = 'status-select ' + (STATUS_OPTIONS.find(o=>o.v===sel.value)||{cls:''}).cls;
+    }
+    if (note && document.activeElement !== note) note.value = data.note || '';
+    tr.dataset.contacted = data.contacted ? 'yes' : 'no';
+    tr.classList.toggle('contacted', !!data.contacted);
+    updateDayProgress(tr.closest('.day-card'));
+  });
+}
+
+
+
 const ACTIVITY_META = {
   'แนะนำตัว': { color:'#3B82F6', icon:'<path d="M8 12l3 3 5-6"/><circle cx="12" cy="12" r="9"/>' },
   'ส่งของ': { color:'#A78BFA', icon:'<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>' },
@@ -402,17 +554,45 @@ const STATUS_OPTIONS = [
 
 let feedbackCache = {};
 
+let reportsCache = null;
+
+function loadReports(){
+  if (reportsCache) return reportsCache;
+  try{ reportsCache = JSON.parse(localStorage.getItem('dailyReports') || '[]'); }
+  catch(e){ reportsCache = []; }
+  return reportsCache;
+}
+
+async function addReportEntry(entry){
+  reportsCache = loadReports().concat([entry]);
+  localStorage.setItem('dailyReports', JSON.stringify(reportsCache));
+  if (syncConnected){
+    try{ await fbDb.ref('dailyReports/'+entry.id).set(entry); }catch(e){ console.error(e); }
+  }
+}
+
+async function removeReportEntry(id){
+  reportsCache = loadReports().filter(e=>e.id!==id);
+  localStorage.setItem('dailyReports', JSON.stringify(reportsCache));
+  if (syncConnected){
+    try{ await fbDb.ref('dailyReports/'+id).remove(); }catch(e){ console.error(e); }
+  }
+}
+
 async function loadFeedback(id){
   if (feedbackCache[id] !== undefined) return feedbackCache[id];
+  let val = {contacted:false, status:'', note:''};
   try{
-    const raw = localStorage.getItem('feedback:'+id);
-    const val = raw ? JSON.parse(raw) : {contacted:false, status:'', note:''};
-    feedbackCache[id] = val;
-    return val;
-  }catch(e){
-    feedbackCache[id] = {contacted:false, status:'', note:''};
-    return feedbackCache[id];
-  }
+    if (syncConnected){
+      const snap = await fbDb.ref('feedback/'+id).once('value');
+      if (snap.exists()) val = snap.val();
+    } else {
+      const raw = localStorage.getItem('feedback:'+id);
+      if (raw) val = JSON.parse(raw);
+    }
+  }catch(e){ /* keep default */ }
+  feedbackCache[id] = val;
+  return val;
 }
 
 async function saveFeedback(id, data){
@@ -420,13 +600,16 @@ async function saveFeedback(id, data){
   const dot = document.getElementById('saveDot');
   const txt = document.getElementById('saveText');
   try{
-    localStorage.setItem('feedback:'+id, JSON.stringify(data));
+    if (syncConnected){
+      await fbDb.ref('feedback/'+id).set(data);
+    }
+    localStorage.setItem('feedback:'+id, JSON.stringify(data)); // local cache / offline fallback
     dot.style.background = 'var(--green)';
-    txt.textContent = 'บันทึกแล้ว';
+    txt.textContent = syncConnected ? 'ซิงค์กับทีมแล้ว' : 'บันทึกแล้ว';
     setTimeout(()=>{ txt.textContent = 'ข้อมูล Feedback บันทึกอัตโนมัติ'; }, 1500);
   }catch(e){
     dot.style.background = 'var(--red)';
-    txt.textContent = 'บันทึกไม่สำเร็จ (พื้นที่จัดเก็บเต็มหรือเบราว์เซอร์บล็อก)';
+    txt.textContent = 'บันทึกไม่สำเร็จ (ตรวจสอบการเชื่อมต่อ)';
   }
 }
 
@@ -524,20 +707,35 @@ function statusOptionsHtml(current){
 }
 
 function loadCompanyOverrides(){
-  try{ return JSON.parse(localStorage.getItem('companyOverrides') || '{"edits":{},"deletes":[],"additions":{}}'); }
-  catch(e){ return {edits:{}, deletes:[], additions:{}}; }
+  try{ return JSON.parse(localStorage.getItem('companyOverrides') || '{"edits":{},"deletes":{},"additions":{}}'); }
+  catch(e){ return {edits:{}, deletes:{}, additions:{}}; }
 }
 function saveCompanyOverrides(ov){
   localStorage.setItem('companyOverrides', JSON.stringify(ov));
 }
-function sectionKey(dist, tambon){ return dist + '|' + tambon; }
+function sectionKey(dist, tambon){ return (dist + '|' + tambon).replace(/[.#$/\[\]]/g, '_'); }
+
+async function fetchRemoteOverrides(){
+  if (!syncConnected) return;
+  try{
+    const snap = await fbDb.ref('companyOverrides').once('value');
+    const remote = snap.val();
+    if (remote){
+      saveCompanyOverrides({
+        edits: remote.edits || {},
+        deletes: remote.deletes || {},
+        additions: remote.additions || {},
+      });
+    }
+  }catch(e){ console.error('fetchRemoteOverrides failed', e); }
+}
 
 function applyCompanyOverrides(){
   const ov = loadCompanyOverrides();
   Object.entries(SITE_DATA).forEach(([dist, data])=>{
     data.sections.forEach(section=>{
       // remove deleted
-      section.companies = section.companies.filter(c=>!ov.deletes.includes(c.id));
+      section.companies = section.companies.filter(c=>!ov.deletes[c.id]);
       // apply edits
       section.companies.forEach(c=>{
         if (ov.edits[c.id]){
@@ -547,8 +745,8 @@ function applyCompanyOverrides(){
       });
       // append additions for this section
       const key = sectionKey(dist, section.tambon);
-      const added = ov.additions[key] || [];
-      added.forEach(a=>{ if(!ov.deletes.includes(a.id)) section.companies.push(a); });
+      const added = ov.additions[key] ? Object.values(ov.additions[key]) : [];
+      added.forEach(a=>{ if(!ov.deletes[a.id]) section.companies.push(a); });
     });
     data.total_companies = data.sections.reduce((s,sec)=>s+sec.companies.length,0);
   });
@@ -605,6 +803,9 @@ async function renderCompanyRow(c, dist){
     ov.edits[c.id].type = typeEl.textContent.trim();
     saveCompanyOverrides(ov);
     tr.dataset.name = nameEl.textContent.trim().toLowerCase();
+    if (syncConnected){
+      fbDb.ref('companyOverrides/edits/'+c.id).set(ov.edits[c.id]).catch(e=>console.error(e));
+    }
     flashSaved();
   }
   nameEl.addEventListener('blur', persistNameType);
@@ -613,8 +814,11 @@ async function renderCompanyRow(c, dist){
   delBtn.addEventListener('click', ()=>{
     if(!confirm(`ลบ "${c.name}" ออกจากรายการใช่หรือไม่?`)) return;
     const ov = loadCompanyOverrides();
-    if (!ov.deletes.includes(c.id)) ov.deletes.push(c.id);
+    ov.deletes[c.id] = true;
     saveCompanyOverrides(ov);
+    if (syncConnected){
+      fbDb.ref('companyOverrides/deletes/'+c.id).set(true).catch(e=>console.error(e));
+    }
     const dayCard = tr.closest('.day-card');
     tr.remove();
     if (dayCard){
@@ -694,9 +898,12 @@ async function buildTambonSection(dist, section, distId, tIndex){
     const newCompany = {id:newId, name:'บริษัทใหม่ (คลิกแก้ไขชื่อ)', tambon:section.tambon, type:'', relation:''};
     const ov = loadCompanyOverrides();
     const key = sectionKey(dist, section.tambon);
-    ov.additions[key] = ov.additions[key] || [];
-    ov.additions[key].push(newCompany);
+    ov.additions[key] = ov.additions[key] || {};
+    ov.additions[key][newId] = newCompany;
     saveCompanyOverrides(ov);
+    if (syncConnected){
+      fbDb.ref('companyOverrides/additions/'+key+'/'+newId).set(newCompany).catch(e=>console.error(e));
+    }
     const row = await renderCompanyRow(newCompany, dist);
     tbody.appendChild(row);
     updateDayProgress(card);
@@ -786,18 +993,35 @@ async function buildDistrictBlock(dist, data, num){
   return block;
 }
 
-function bindEditableTexts(root){
-  root.querySelectorAll('[data-editkey]').forEach(el=>{
-    const key = 'edittext:' + el.dataset.editkey;
-    const saved = localStorage.getItem(key);
-    if (saved !== null){
-      try{ el.textContent = JSON.parse(saved); }catch(e){ el.textContent = saved; }
+async function bindEditableTexts(root){
+  const els = [...root.querySelectorAll('[data-editkey]')];
+  for (const el of els){
+    const editKey = el.dataset.editkey;
+    const key = 'edittext:' + editKey;
+    let val = null;
+    if (syncConnected){
+      try{
+        const snap = await fbDb.ref('editTexts/'+editKey).once('value');
+        if (snap.exists()) val = snap.val();
+      }catch(e){ /* fall through to local cache */ }
     }
+    if (val === null){
+      const saved = localStorage.getItem(key);
+      if (saved !== null){
+        try{ val = JSON.parse(saved); }catch(e){ val = saved; }
+      }
+    }
+    if (val !== null) el.textContent = val;
+
     el.addEventListener('blur', ()=>{
-      localStorage.setItem(key, JSON.stringify(el.textContent));
+      const v = el.textContent;
+      localStorage.setItem(key, JSON.stringify(v));
+      if (syncConnected){
+        fbDb.ref('editTexts/'+editKey).set(v).catch(e=>console.error(e));
+      }
       flashSaved();
     });
-  });
+  }
 }
 
 function flashSaved(){
@@ -810,8 +1034,13 @@ function flashSaved(){
 }
 
 async function init(){
+  const storedConfig = getStoredFirebaseConfig();
+  if (storedConfig){
+    initFirebaseSync(storedConfig);
+    await fetchRemoteOverrides();
+  }
   applyCompanyOverrides();
-  bindEditableTexts(document.querySelector('.masthead'));
+  await bindEditableTexts(document.querySelector('.masthead'));
 
   const totalCompanies = Object.values(SITE_DATA).reduce((s,d)=>s+d.total_companies,0);
   const totalTambons = Object.values(SITE_DATA).reduce((s,d)=>s+d.sections.length,0);
@@ -827,7 +1056,7 @@ async function init(){
   for (const [dist, data] of Object.entries(SITE_DATA)) {
     const block = await buildDistrictBlock(dist, data, num);
     container.appendChild(block);
-    bindEditableTexts(block);
+    await bindEditableTexts(block);
     num++;
   }
 
@@ -929,14 +1158,6 @@ async function init(){
   companyListEl.innerHTML = allNames.map(n=>`<option value="${n}"></option>`).join('');
 
   // ---- Daily Report: storage helpers ----
-  function loadReports(){
-    try{ return JSON.parse(localStorage.getItem('dailyReports') || '[]'); }
-    catch(e){ return []; }
-  }
-  function saveReports(list){
-    localStorage.setItem('dailyReports', JSON.stringify(list));
-  }
-
   const rfDate = document.getElementById('rfDate');
   const rfTime = document.getElementById('rfTime');
   const rfPerson = document.getElementById('rfPerson');
@@ -1024,17 +1245,16 @@ async function init(){
     });
 
     reportListEl.querySelectorAll('.re-delete').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
+      btn.addEventListener('click', async ()=>{
         if(!confirm('ต้องการลบบันทึกนี้ใช่หรือไม่?')) return;
         const id = btn.dataset.id;
-        const list2 = loadReports().filter(e=>e.id!==id);
-        saveReports(list2);
+        await removeReportEntry(id);
         renderReportList();
       });
     });
   }
 
-  rfSubmit.addEventListener('click', ()=>{
+  rfSubmit.addEventListener('click', async ()=>{
     const date = rfDate.value || new Date().toISOString().slice(0,10);
     const time = rfTime.value || nowHHMM();
     const person = rfPerson.value.trim();
@@ -1050,9 +1270,7 @@ async function init(){
       date, time, person, company, activities, feedback,
       createdAt: new Date().toISOString(),
     };
-    const list = loadReports();
-    list.push(entry);
-    saveReports(list);
+    await addReportEntry(entry);
 
     // reset only company/customer/activities/feedback — keep date so you can log
     // another activity for the same day quickly; time refreshes to "now"
@@ -1186,42 +1404,41 @@ async function init(){
     reportDateFilter = '';
     renderReportList();
   });
+
+  // ---- sync settings panel ----
+  const syncPanel = document.getElementById('syncPanel');
+  const syncSettingsBtn = document.getElementById('syncSettingsBtn');
+  const syncConfigInput = document.getElementById('syncConfigInput');
+  const syncConnectBtn = document.getElementById('syncConnectBtn');
+  const syncDisconnectBtn = document.getElementById('syncDisconnectBtn');
+
+  const existingStoredConfig = (()=>{ try{ return localStorage.getItem('firebaseConfig'); }catch(e){ return null; } })();
+  if (existingStoredConfig) syncConfigInput.value = existingStoredConfig;
+  updateSyncBadge(syncConnected ? 'connected' : 'idle');
+
+  syncSettingsBtn.addEventListener('click', ()=>{
+    syncPanel.classList.toggle('open');
+  });
+
+  syncConnectBtn.addEventListener('click', async ()=>{
+    let cfg;
+    try{ cfg = JSON.parse(syncConfigInput.value); }
+    catch(e){ alert('รูปแบบ config ไม่ถูกต้อง กรุณาวางเป็น JSON object ที่ถูกต้อง'); return; }
+    if (!cfg.databaseURL){ alert('ไม่พบ databaseURL ใน config — กรุณาตรวจสอบว่าสร้าง Realtime Database แล้ว และ copy URL มาใส่ในช่อง databaseURL ของ config ด้วย'); return; }
+    localStorage.setItem('firebaseConfig', JSON.stringify(cfg));
+    alert('บันทึกการตั้งค่าแล้ว กำลังโหลดหน้าใหม่เพื่อเชื่อมต่อ...');
+    location.reload();
+  });
+
+  syncDisconnectBtn.addEventListener('click', ()=>{
+    if (!confirm('ยกเลิกการเชื่อมต่อทีม? ข้อมูลจะกลับไปใช้แบบเครื่องเดียว (localStorage) ข้อมูลที่เคยซิงค์ไว้จะยังอยู่บน Firebase เหมือนเดิม')) return;
+    localStorage.removeItem('firebaseConfig');
+    location.reload();
+  });
 }
 
 init();
 })();
 </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>หน้าสอง</title>
-    <style>
-        .btn-yellow {
-            /* โค้ดสั่งให้ไปอยู่มุมบนขวา */
-            position: absolute;
-            top: 20px;                 /* ห่างจากขอบบน 20 พิกเซล */
-            right: 20px;               /* ห่างจากขอบขวา 20 พิกเซล */
-            
-            display: inline-block;
-            background-color: #f59e0b; 
-            color: #1e293b;            
-            padding: 8px 16px;
-            font-size: 14px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-family: sans-serif;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        .btn-yellow:hover {
-            background-color: #fbbf24;
-        }
-    </style>
-</head>
-<body>    
-    <!-- ย้ายมาอยู่ตรงนี้ ปุ่มจะลอยไปที่มุมบนขวาอัตโนมัติ -->
-    <a href="index.html" class="btn-yellow">กลับหน้าแรก</a>
 </body>
 </html>
