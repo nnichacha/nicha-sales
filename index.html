@@ -70,6 +70,8 @@ var BACKUP_COUNT_KEY = "emt-edits-since-backup";
 var CLOUD_URL_KEY = "emt-cloud-url";
 var GOOGLE_CLIENT_ID_KEY = "emt-google-client-id";
 var AUTH_KEY = "emt-auth-session";
+var COMMISSION_PIN = "888999";
+var COMMISSION_UNLOCK_KEY = "emt-commission-unlocked";
 var DEFAULT_CLOUD_URL = "https://script.google.com/macros/s/AKfycbzkGJRpsD0RehUL8y-_i3wCITmTWE7PUDb4V2rsj-tckooQED4NI2NdNQxaEpWvWDm-eg/exec";
 var LocalStore = {
   get: function (key) {
@@ -130,6 +132,16 @@ function fmtDate(s) {
   if (isNaN(d.getTime())) return s;
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" });
 }
+function fmtDateTime(d) {
+  if (!d) return "-";
+  var dt = (d instanceof Date) ? d : new Date(d);
+  if (isNaN(dt.getTime())) return "-";
+  var today = new Date();
+  var isToday = dt.toDateString() === today.toDateString();
+  var timeStr = dt.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  if (isToday) return "วันนี้ " + timeStr + " น.";
+  return dt.toLocaleDateString("th-TH", { day: "2-digit", month: "short" }) + " " + timeStr + " น.";
+}
 function esc(s) {
   if (s === null || s === undefined) return "";
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -157,6 +169,7 @@ var STATE = {
   gisReady: false,
   auth: { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null },
   authError: null,
+  commissionUnlocked: false,
   projectsUI: { q: "", status: "", workType: "", sortKey: "id", sortDir: "desc", page: 1 },
   customersUI: { q: "", sortKey: "won", sortDir: "desc" }
 };
@@ -289,6 +302,12 @@ function handleUnauthorized(errCode) {
 }
 
 function manualSyncNow() { pullFromCloud(true); }
+function manualSaveNow() {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถบันทึกได้"); return; }
+  window.clearTimeout(STATE.syncTimer);
+  pushToCloud();
+  showToast("กำลังบันทึกขึ้นคลาวด์…");
+}
 function changeCloudUrl() {
   var next = window.prompt("วาง Web app URL ของ Google Apps Script (เว้นว่างเพื่อปิดการซิงก์คลาวด์):", STATE.cloudUrl || "");
   if (next === null) return;
@@ -324,6 +343,25 @@ function needsLoginGate() {
 function canEdit() {
   if (!STATE.googleClientId) return true; // no login configured = single-user local mode
   return STATE.auth.role === "editor";
+}
+
+function tryOpenCommission() {
+  if (STATE.commissionUnlocked) { setTab("commission"); return; }
+  var entered = window.prompt("กรุณาใส่รหัสผ่านเพื่อดูข้อมูลคอมมิชชั่น:");
+  if (entered === null) return;
+  if (entered.trim() === COMMISSION_PIN) {
+    STATE.commissionUnlocked = true;
+    try { window.sessionStorage.setItem(COMMISSION_UNLOCK_KEY, "1"); } catch (e) {}
+    setTab("commission");
+  } else {
+    showToast("รหัสผ่านไม่ถูกต้อง");
+  }
+}
+function lockCommission() {
+  STATE.commissionUnlocked = false;
+  try { window.sessionStorage.removeItem(COMMISSION_UNLOCK_KEY); } catch (e) {}
+  setTab("dashboard");
+  showToast("ล็อกหน้าคอมมิชชั่นแล้ว");
 }
 
 function saveAuthSession() {
@@ -765,7 +803,7 @@ function renderApp() {
     var active = STATE.tab === n.key;
     return '<button class="sidebar-btn' + (active ? " active" : "") + '" onclick="setTab(\'' + n.key + '\')">' + icon(n.icon, 17) + '<span>' + esc(n.label) + '</span></button>';
   }).join("") +
-    '<button class="sidebar-btn' + (STATE.tab === "commission" ? " active" : "") + '" onclick="setTab(\'commission\')">' + icon("wallet", 17) + '<span>' + esc(derived.commission.label) + '</span></button>' +
+    '<button class="sidebar-btn' + (STATE.tab === "commission" ? " active" : "") + '" onclick="tryOpenCommission()">' + icon("wallet", 17) + '<span>' + esc(derived.commission.label) + '</span></button>' +
     '<button class="sidebar-btn" onclick="openStatusManager()">' + icon("settings", 17) + '<span>จัดการสถานะ</span></button>';
 
   app.innerHTML =
@@ -810,10 +848,15 @@ function renderSidebarFooter() {
       '<div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(STATE.auth.name || STATE.auth.email) + '</div>' +
       '<button class="icon-btn" style="padding:0;font-size:10px;color:#8FA3BD" onclick="signOut()">ออกจากระบบ</button></div></div>';
   }
+  var lastSyncLine = "";
+  if (STATE.cloudUrl && STATE.lastSyncedAt) {
+    lastSyncLine = '<div style="font-size:10px;color:#6E82A0;margin-top:3px">อัปเดตล่าสุด: ' + fmtDateTime(STATE.lastSyncedAt) + '</div>';
+  }
   el.innerHTML = userBlock +
     '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD">' +
     (STATE.saving ? icon("loader", 12) + " กำลังบันทึก…" : icon("check", 12, COLORS.green) + " บันทึกลงเครื่องนี้แล้ว") + '</div>' +
-    cloudBlock +
+    cloudBlock + lastSyncLine +
+    (STATE.cloudUrl && canEdit() ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
     (STATE.cloudUrl ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="manualSyncNow()">' + icon("cloud", 12) + ' ดึงข้อมูลล่าสุดจากคลาวด์</button>' : '') +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeCloudUrl()">' + (STATE.cloudUrl ? "เปลี่ยน/ปิดการซิงก์คลาวด์" : "เชื่อมต่อ Google Sheets…") + '</button>' +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeGoogleClientId()">' + (STATE.googleClientId ? "ตั้งค่าระบบ Login" : "เปิดใช้ระบบ Login…") + '</button>' +
@@ -848,6 +891,14 @@ function renderLoginScreen() {
   }, 5500);
 }
 
+function renderCommissionLocked() {
+  return '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center">' +
+    '<div style="width:52px;height:52px;border-radius:99px;background:' + COLORS.amberBg + ';display:flex;align-items:center;justify-content:center;margin-bottom:16px">' + icon("wallet", 22, COLORS.amber) + '</div>' +
+    '<div class="disp" style="font-size:16px;color:' + COLORS.ink + ';margin-bottom:6px">หน้านี้ต้องใส่รหัสผ่าน</div>' +
+    '<div style="font-size:12.5px;color:' + COLORS.muted + ';margin-bottom:18px">ข้อมูลคอมมิชชั่นถูกล็อกไว้เพื่อความเป็นส่วนตัว</div>' +
+    '<button class="btn-primary" onclick="tryOpenCommission()">' + icon("check", 15) + ' ใส่รหัสผ่าน</button></div>';
+}
+
 function renderMain(derived) {
   derived = derived || computeDerived();
   var el = document.getElementById("main-content");
@@ -858,7 +909,7 @@ function renderMain(derived) {
   else if (STATE.tab === "customers") html = renderCustomersShell(derived);
   else if (STATE.tab === "status") html = renderStatusView(derived);
   else if (STATE.tab === "top10") html = renderTop10(derived);
-  else if (STATE.tab === "commission") html = renderCommission(derived);
+  else if (STATE.tab === "commission") html = STATE.commissionUnlocked ? renderCommission(derived) : renderCommissionLocked();
   el.innerHTML = html;
   if (STATE.tab === "projects") refreshProjectsTable(derived);
   if (STATE.tab === "customers") refreshCustomersTable(derived);
@@ -898,7 +949,18 @@ function renderDashboard(d) {
     '<div class="card">' + cardTitleHtml("users", "Won ตาม Segment") + svgPieChart(d.segmentSplit, "value", "name", null, 200) + '</div>' +
     '</div>';
 
-  return sectionHeaderHtml("ภาพรวมทั้งหมด", "แดชบอร์ดยอดขาย", "สรุปสถานะ Pipeline ทั้งหมดแบบเรียลไทม์") + kpiRow + row1 + row2;
+  var updatedBanner = "";
+  if (STATE.cloudUrl) {
+    var statusTxt, statusColor;
+    if (STATE.syncStatus === "syncing") { statusTxt = "กำลังซิงก์ข้อมูลล่าสุด…"; statusColor = COLORS.muted; }
+    else if (STATE.syncStatus === "error") { statusTxt = "ใช้ข้อมูลในเครื่อง (ซิงก์คลาวด์ไม่สำเร็จ)"; statusColor = COLORS.amber; }
+    else { statusTxt = "ข้อมูลอัปเดตล่าสุด: " + fmtDateTime(STATE.lastSyncedAt); statusColor = COLORS.green; }
+    updatedBanner = '<div style="display:flex;align-items:center;gap:7px;margin-bottom:18px;padding:8px 14px;background:#fff;border:1px solid ' + COLORS.line + ';border-radius:8px;font-size:12px;color:' + statusColor + ';width:fit-content">' +
+      icon(STATE.syncStatus === "syncing" ? "loader" : "cloud", 13, statusColor) + statusTxt +
+      (canEdit() ? '<button class="icon-btn" style="padding:2px 8px;margin-left:6px;border:1px solid ' + COLORS.line + ';border-radius:6px;font-size:11px;color:' + COLORS.blue + '" onclick="manualSyncNow()">รีเฟรช</button>' : '') +
+      '</div>';
+  }
+  return sectionHeaderHtml("ภาพรวมทั้งหมด", "แดชบอร์ดยอดขาย", "สรุปสถานะ Pipeline ทั้งหมดแบบเรียลไทม์") + updatedBanner + kpiRow + row1 + row2;
 }
 
 /* ============================== PROJECTS VIEW ============================== */
@@ -967,7 +1029,7 @@ function refreshProjectsTable(d) {
   var rowsHtml = pageRows.map(function (p, i) {
     var bg = i % 2 ? COLORS.canvas : "#fff";
     var statusChipColor = d.statusColorMap[p.status] || COLORS.muted;
-    var customerCell, segTypeCell, workTypeCell, statusCell, saleCell, actionsCell, noteCell, invoiceCell;
+    var customerCell, segTypeCell, workTypeCell, statusCell, saleCell, actionsCell, noteCell, invoiceCell, sendQuCell;
 
     if (editable) {
       var segOpts = SEGMENTS.map(function (s) { return '<option value="' + attr(s) + '"' + (p.segment === s ? " selected" : "") + '>' + esc(s) + '</option>'; }).join("");
@@ -982,6 +1044,7 @@ function refreshProjectsTable(d) {
       saleCell = '<input class="cell-input mono" type="number" style="text-align:right" value="' + (p.sale || 0) + '" onchange="quickUpdate(' + p.id + ',{sale:Number(this.value)})"/>';
       noteCell = '<input class="cell-input mono" style="font-size:11.5px" value="' + attr(p.note || "") + '" placeholder="J0000" onchange="quickUpdate(' + p.id + ',{note:this.value})"/>';
       invoiceCell = '<input class="cell-input mono" style="font-size:11.5px" value="' + attr(p.invoice || "") + '" placeholder="IV-000000000" onchange="quickUpdate(' + p.id + ',{invoice:this.value})"/>';
+      sendQuCell = '<input class="cell-input" type="date" style="font-size:11.5px" value="' + attr(p.sendQu || "") + '" onchange="quickUpdate(' + p.id + ',{sendQu:this.value})"/>';
       actionsCell = '<div style="display:flex;gap:4px">' +
         '<button class="icon-btn" title="แก้ไขแบบละเอียด" onclick="openEditProjectForm(' + p.id + ')">' + icon("edit", 13) + '</button>' +
         '<button class="icon-btn" title="ลบ" style="color:' + COLORS.red + '" onclick="askDeleteProject(' + p.id + ')">' + icon("trash", 13) + '</button>' +
@@ -994,6 +1057,7 @@ function refreshProjectsTable(d) {
       saleCell = '<span class="mono">' + fmtTHB(p.sale) + '</span>';
       noteCell = '<span class="mono" style="font-size:11.5px">' + esc(p.note || "-") + '</span>';
       invoiceCell = '<span class="mono" style="font-size:11.5px">' + esc(p.invoice || "-") + '</span>';
+      sendQuCell = '<span style="font-size:11.5px;color:' + COLORS.muted + '">' + fmtDate(p.sendQu) + '</span>';
       actionsCell = "";
     }
 
@@ -1007,17 +1071,18 @@ function refreshProjectsTable(d) {
       '<td class="td-cell">' + statusCell + '</td>' +
       '<td class="td-cell" style="text-align:right">' + saleCell + '</td>' +
       '<td class="td-cell" style="font-size:11.5px;color:' + COLORS.muted + '">' + fmtDate(p.requestedDate) + '</td>' +
+      '<td class="td-cell">' + sendQuCell + '</td>' +
       '<td class="td-cell">' + actionsCell + '</td></tr>';
   }).join("");
 
   if (pageRows.length === 0) {
-    rowsHtml = '<tr><td class="td-cell" colspan="10" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>';
+    rowsHtml = '<tr><td class="td-cell" colspan="11" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>';
   }
 
   wrap.innerHTML = '<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table><thead><tr>' +
     th("ลูกค้า", "customer", 130) + '<th class="th-cell">Segment / Type</th>' + th("รายละเอียดงาน", "description") +
     th("เลขที่ใบเสนอราคา", "note", 120) + th("Invoice", "invoice", 130) +
-    '<th class="th-cell">ประเภทงาน</th>' + th("Status", "status", 140) + th("Sale (THB)", "sale", 110) + th("Requested", "requestedDate", 100) +
+    '<th class="th-cell">ประเภทงาน</th>' + th("Status", "status", 140) + th("Sale (THB)", "sale", 110) + th("Requested", "requestedDate", 100) + th("ส่งใบเสนอราคา", "sendQu", 110) +
     '<th class="th-cell" style="width:76px"></th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>' +
     '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid ' + COLORS.line + '">' +
     '<span style="font-size:12px;color:' + COLORS.muted + '">หน้า ' + ui.page + ' จาก ' + totalPages + '</span>' +
@@ -1047,7 +1112,7 @@ function refreshSidebarNav() {
     var active = STATE.tab === n.key;
     return '<button class="sidebar-btn' + (active ? " active" : "") + '" onclick="setTab(\'' + n.key + '\')">' + icon(n.icon, 17) + '<span>' + esc(n.label) + '</span></button>';
   }).join("") +
-    '<button class="sidebar-btn' + (STATE.tab === "commission" ? " active" : "") + '" onclick="setTab(\'commission\')">' + icon("wallet", 17) + '<span>' + esc(d.commission.label) + '</span></button>' +
+    '<button class="sidebar-btn' + (STATE.tab === "commission" ? " active" : "") + '" onclick="tryOpenCommission()">' + icon("wallet", 17) + '<span>' + esc(d.commission.label) + '</span></button>' +
     '<button class="sidebar-btn" onclick="openStatusManager()">' + icon("settings", 17) + '<span>จัดการสถานะ</span></button>';
   var navEl = document.querySelector("aside nav");
   if (navEl) navEl.innerHTML = navHtml;
@@ -1229,7 +1294,10 @@ function renderCommission(d) {
     '<th class="th-cell" style="position:sticky;top:0">Invoice</th><th class="th-cell" style="position:sticky;top:0;text-align:right">Sale (THB)</th>' +
     '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div></div>';
 
-  return sectionHeaderHtml("Commission", "งานที่จบและได้คอมมิชชั่นแล้ว", c.sub) + kpiHtml + ctxBox + table;
+  return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
+    sectionHeaderHtml("Commission", "งานที่จบและได้คอมมิชชั่นแล้ว", c.sub) +
+    '<button class="btn-secondary" style="flex-shrink:0;display:flex;align-items:center;gap:6px" onclick="lockCommission()">' + icon("x", 14) + ' ล็อกหน้านี้</button>' +
+    '</div>' + kpiHtml + ctxBox + table;
 }
 
 /* ============================== MODALS ============================== */
@@ -1508,10 +1576,19 @@ function init() {
       if (a && a.exp && a.exp > Date.now()) STATE.auth = a;
     } catch (e) { /* ignore */ }
   }
+  try { STATE.commissionUnlocked = window.sessionStorage.getItem(COMMISSION_UNLOCK_KEY) === "1"; } catch (e) {}
   renderApp();
   if (STATE.cloudUrl && !needsLoginGate()) {
     window.setTimeout(function () { pullFromCloud(false); }, 200);
   }
+  window.setInterval(function () {
+    if (document.visibilityState !== "visible") return;
+    if (!STATE.cloudUrl || needsLoginGate()) return;
+    var busy = STATE.formOpen || STATE.statusManagerOpen || STATE.confirmDeleteId !== null || STATE.importPending;
+    var typing = document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].indexOf(document.activeElement.tagName) !== -1;
+    if (busy || typing) return;
+    pullFromCloud(false);
+  }, 45000);
 }
 init();
 </script>
