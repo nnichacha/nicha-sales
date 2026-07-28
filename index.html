@@ -25,14 +25,27 @@
   .status-chip { display:inline-flex; align-items:center; gap:6px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; border: none; cursor: pointer; }
   .badge-M { background:#E5EEFB; color:#2E5395; }
   .badge-F { background:#FBF1DF; color:#8A5A00; }
-  .kpi-card { position: relative; border-radius: 12px; padding: 16px 18px; color: #fff; min-height: 100px;
-    display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 6px 18px rgba(20,48,79,0.16);
-    background-image: linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
-    background-size: 26px 26px; }
-  .kpi-card::before, .kpi-card::after { content: ""; position: absolute; width: 10px; height: 10px; border-color: rgba(255,255,255,0.55); }
+  .kpi-card { position: relative; border-radius: 10px; padding: 17px 18px 16px; color: #fff; min-height: 104px;
+    display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 24px rgba(6,16,28,0.34), inset 0 1px 0 rgba(255,255,255,0.08);
+    background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 24px 24px; border-top: 2px solid rgba(255,255,255,0.22); overflow: hidden; }
+  .kpi-card::before, .kpi-card::after { content: ""; position: absolute; width: 11px; height: 11px; border-color: rgba(255,255,255,0.6); z-index: 2; }
   .kpi-card::before { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
   .kpi-card::after { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
-  .card { background: #fff; border-radius: 12px; border: 1px solid #DCE3EC; padding: 18px; box-shadow: 0 1px 2px rgba(20,48,79,0.04); }
+  .kpi-rivet { position: absolute; width: 5px; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.35); box-shadow: 0 1px 1px rgba(0,0,0,0.4) inset; }
+  .kpi-shine { position: absolute; top: -60%; left: -20%; width: 60%; height: 220%; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.10) 50%, transparent 60%); pointer-events: none; }
+  .hazard-bar { height: 6px; border-radius: 3px;
+    background-image: repeating-linear-gradient(135deg, #C9A227 0, #C9A227 12px, #0B1F35 12px, #0B1F35 24px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+  .dash-hero { position: relative; background: linear-gradient(155deg, #0B1F35 0%, #14304F 55%, #1B3A5C 100%);
+    border-radius: 14px; padding: 26px 28px 22px; margin-bottom: 22px; overflow: hidden;
+    box-shadow: 0 14px 32px rgba(6,16,28,0.28); }
+  .dash-hero::before { content: ""; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 28px 28px; }
+  .dash-hero::after { content: ""; position: absolute; top: -40%; right: -8%; width: 55%; height: 220%;
+    background: linear-gradient(115deg, transparent 42%, rgba(91,155,213,0.14) 50%, transparent 58%); pointer-events: none; }
+  .card { background: #fff; border-radius: 12px; border: 1px solid #DCE3EC; border-top: 3px solid #1B3A5C; padding: 18px; box-shadow: 0 2px 10px rgba(20,48,79,0.06); }
   .th-cell { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7A90;
     font-weight: 700; padding: 10px 12px; border-bottom: 1px solid #DCE3EC; background: #F7FAFD; white-space: nowrap; cursor: pointer; }
   .td-cell { padding: 9px 12px; font-size: 12.5px; border-bottom: 1px solid #DCE3EC; vertical-align: middle; }
@@ -594,7 +607,7 @@ function computeDerived() {
   var currentContext = [];
   if (currentQ) currentContext.push({ label: currentQ.name + " (เสร็จแล้ว รอคอมมิชชั่น)", rows: withCat.filter(function (p) { return p.status === currentQ.name; }) });
   otherOpenStatuses.forEach(function (s) { currentContext.push({ label: s.name, rows: withCat.filter(function (p) { return p.status === s.name; }) }); });
-  var commissionLabel = closedQuarters.length ? "คอมมิชชั่น " + closedQuarters.map(function (q) { return "Q" + q.q; }).join("-") : "คอมมิชชั่น";
+  var commissionLabel = "Commission";
   var commissionSub = currentQ
     ? "Q" + currentQ.q + " คือไตรมาสปัจจุบันที่กำลังดำเนินอยู่"
     : 'เพิ่มสถานะรูปแบบ "Done Q4" ใน "จัดการสถานะ" เพื่อให้ระบบตรวจจับไตรมาสอัตโนมัติ';
@@ -753,24 +766,27 @@ function workTypeBadgeHtml(type) {
 }
 function kpiCardHtml(label, value, sub, tone, iconName) {
   var bg = {
-    navy: "linear-gradient(135deg," + COLORS.navy + "," + COLORS.navy2 + ")",
-    green: "linear-gradient(135deg,#1B7A54,#28A06B)",
-    red: "linear-gradient(135deg,#A5322A,#C0392B)",
-    amber: "linear-gradient(135deg,#A9760F,#C98A1F)",
-    blue: "linear-gradient(135deg,#264A85,#3563AC)"
+    navy: "linear-gradient(150deg,#081525 0%,#14304F 55%,#20476E 100%)",
+    green: "linear-gradient(150deg,#0F4A32 0%,#1B7A54 55%,#22946A 100%)",
+    red: "linear-gradient(150deg,#6B1E18 0%,#A5322A 55%,#C0392B 100%)",
+    amber: "linear-gradient(150deg,#6E4E0B 0%,#A9760F 55%,#C98A1F 100%)",
+    blue: "linear-gradient(150deg,#152E52 0%,#264A85 55%,#3563AC 100%)"
   }[tone || "navy"];
   return '<div class="kpi-card" style="background:' + bg + '">' +
-    '<div style="display:flex;align-items:center;justify-content:space-between">' +
-    '<span style="font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.85;font-weight:600">' + esc(label) + '</span>' +
-    (iconName ? '<span style="opacity:.75">' + icon(iconName, 15) + '</span>' : '') + '</div>' +
-    '<div><div class="disp" style="font-size:25px;line-height:1.1">' + esc(value) + '</div>' +
-    (sub ? '<div style="font-size:11px;opacity:.8;margin-top:3px">' + esc(sub) + '</div>' : '') + '</div></div>';
+    '<span class="kpi-shine"></span>' +
+    '<span class="kpi-rivet" style="bottom:7px;left:7px"></span><span class="kpi-rivet" style="bottom:7px;right:7px"></span>' +
+    '<div style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between">' +
+    '<span style="font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.88;font-weight:700">' + esc(label) + '</span>' +
+    (iconName ? '<span style="opacity:.8">' + icon(iconName, 15) + '</span>' : '') + '</div>' +
+    '<div style="position:relative;z-index:2"><div class="disp" style="font-size:26px;line-height:1.1;text-shadow:0 2px 6px rgba(0,0,0,0.25)">' + esc(value) + '</div>' +
+    (sub ? '<div style="font-size:11px;opacity:.82;margin-top:3px">' + esc(sub) + '</div>' : '') + '</div></div>';
 }
 function sectionHeaderHtml(eyebrow, title, sub) {
   return '<div style="margin-bottom:22px">' +
     (eyebrow ? '<div class="mono" style="font-size:11px;letter-spacing:1.5px;color:' + COLORS.sky + ';text-transform:uppercase;margin-bottom:4px;font-weight:600">' + esc(eyebrow) + '</div>' : '') +
     '<h1 class="disp" style="font-size:24px;color:' + COLORS.ink + ';margin:0">' + esc(title) + '</h1>' +
-    (sub ? '<div style="color:' + COLORS.muted + ';font-size:13px;margin-top:5px">' + sub + '</div>' : '') + '</div>';
+    '<div class="hazard-bar" style="width:52px;margin-top:9px;opacity:0.9"></div>' +
+    (sub ? '<div style="color:' + COLORS.muted + ';font-size:13px;margin-top:9px">' + sub + '</div>' : '') + '</div>';
 }
 function cardTitleHtml(iconName, text) {
   return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:14px">' +
@@ -808,7 +824,7 @@ function renderApp() {
 
   app.innerHTML =
     '<div style="display:flex;min-height:100vh;background:' + COLORS.canvas + ';color:' + COLORS.text + '">' +
-    '<aside style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh">' +
+    '<aside class="blueprint-grid" style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;border-right:2px solid rgba(201,162,39,0.35)">' +
     '<div style="display:flex;align-items:center;gap:10px;padding:0 4px 20px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
     '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#2E5395,#5B9BD5);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px" class="disp">EMT</div>' +
     '<div><div class="disp" style="font-size:14.5px;line-height:1.2">Sales Pipeline</div><div style="font-size:11px;color:#8FA3BD;margin-top:1px">Personal Tracker</div></div></div>' +
@@ -929,6 +945,13 @@ function renderToast() {
 
 /* ============================== DASHBOARD ============================== */
 function renderDashboard(d) {
+  var heroHtml = '<div class="dash-hero">' +
+    '<div style="position:relative;z-index:2">' +
+    '<div class="mono" style="font-size:11px;letter-spacing:2px;color:' + COLORS.sky + ';text-transform:uppercase;margin-bottom:6px;font-weight:700">EMT · ภาพรวมทั้งหมด</div>' +
+    '<h1 class="disp" style="font-size:27px;color:#fff;margin:0;text-shadow:0 2px 8px rgba(0,0,0,0.3)">แดชบอร์ดยอดขาย</h1>' +
+    '<div style="color:#9FB2C9;font-size:13px;margin-top:6px">สรุปสถานะ Pipeline ทั้งหมดแบบเรียลไทม์</div>' +
+    '<div class="hazard-bar" style="width:96px;margin-top:14px"></div>' +
+    '</div></div>';
   var kpiRow = '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px">' +
     kpiCardHtml("Pipeline รวม", fmtTHB(d.kpis.totalQuoted), "THB ที่เสนอราคาทั้งหมด", "navy", "trending") +
     kpiCardHtml("Won", fmtTHB(d.kpis.won), "ยอดขายที่ยืนยันแล้ว", "green", "check") +
@@ -960,7 +983,7 @@ function renderDashboard(d) {
       (canEdit() ? '<button class="icon-btn" style="padding:2px 8px;margin-left:6px;border:1px solid ' + COLORS.line + ';border-radius:6px;font-size:11px;color:' + COLORS.blue + '" onclick="manualSyncNow()">รีเฟรช</button>' : '') +
       '</div>';
   }
-  return sectionHeaderHtml("ภาพรวมทั้งหมด", "แดชบอร์ดยอดขาย", "สรุปสถานะ Pipeline ทั้งหมดแบบเรียลไทม์") + updatedBanner + kpiRow + row1 + row2;
+  return heroHtml + updatedBanner + kpiRow + row1 + row2;
 }
 
 /* ============================== PROJECTS VIEW ============================== */
@@ -1044,7 +1067,7 @@ function refreshProjectsTable(d) {
       saleCell = '<input class="cell-input mono" type="number" style="text-align:right" value="' + (p.sale || 0) + '" onchange="quickUpdate(' + p.id + ',{sale:Number(this.value)})"/>';
       noteCell = '<input class="cell-input mono" style="font-size:11.5px" value="' + attr(p.note || "") + '" placeholder="J0000" onchange="quickUpdate(' + p.id + ',{note:this.value})"/>';
       invoiceCell = '<input class="cell-input mono" style="font-size:11.5px" value="' + attr(p.invoice || "") + '" placeholder="IV-000000000" onchange="quickUpdate(' + p.id + ',{invoice:this.value})"/>';
-      sendQuCell = '<input class="cell-input" type="date" style="font-size:11.5px" value="' + attr(p.sendQu || "") + '" onchange="quickUpdate(' + p.id + ',{sendQu:this.value})"/>';
+      sendQuCell = '<span style="font-size:11.5px;color:' + COLORS.muted + ';cursor:pointer;border-bottom:1px dashed ' + COLORS.line + '" title="แก้ไขวันที่ผ่านปุ่มแก้ไขแบบละเอียด" onclick="openEditProjectForm(' + p.id + ')">' + fmtDate(p.sendQu) + '</span>';
       actionsCell = '<div style="display:flex;gap:4px">' +
         '<button class="icon-btn" title="แก้ไขแบบละเอียด" onclick="openEditProjectForm(' + p.id + ')">' + icon("edit", 13) + '</button>' +
         '<button class="icon-btn" title="ลบ" style="color:' + COLORS.red + '" onclick="askDeleteProject(' + p.id + ')">' + icon("trash", 13) + '</button>' +
