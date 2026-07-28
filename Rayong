@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แผนปฏิบัติการเข้าพบลูกค้า จังหวัดระยอง</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B1220; --panel:#111827; --panel2:#1F2937; --panel3:#151E2E; --line:#2A3441;
+    --gold:#C9A227; --gold-lt:#F5E6B8; --gold-dim:rgba(201,162,39,0.15);
+    --text:#E5E7EB; --muted:#94A3B8;
+    --green:#22C55E; --green-dim:rgba(34,197,94,0.15);
+    --amber:#F59E0B; --amber-dim:rgba(245,158,11,0.15);
+    --red:#EF4444; --red-dim:rgba(239,68,68,0.15);
+    --gray:#6B7280;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Sarabun',sans-serif; background:var(--ink); color:var(--text); }
+  .page{ max-width:1240px; margin:0 auto; padding:40px 36px 80px; }
+
+  [contenteditable="true"]{ outline:none; border-radius:4px; transition:background .15s; }
+  [contenteditable="true"]:hover{ background:rgba(201,162,39,0.10); box-shadow:0 0 0 1px rgba(201,162,39,0.35); }
+  [contenteditable="true"]:focus{ background:rgba(201,162,39,0.14); box-shadow:0 0 0 1px var(--gold); }
+  .edit-hint{ font-size:10px; color:var(--muted); font-style:italic; margin-top:4px; }
+
+  .masthead{ border-bottom:2px solid var(--gold); padding-bottom:22px; margin-bottom:8px; }
+  .eyebrow{ font-family:'Kanit',sans-serif; font-weight:600; font-size:11.5px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; display:flex; align-items:center; gap:8px; }
+  .eyebrow svg{ width:16px; height:16px; stroke:var(--gold); fill:none; }
+  h1{ font-family:'Kanit',sans-serif; font-weight:700; font-size:30px; color:#fff; margin:10px 0 6px; }
+  .sub{ color:var(--muted); font-size:13.5px; max-width:760px; line-height:1.7; }
+
+  .toolbar{ display:flex; gap:12px; margin-top:22px; flex-wrap:wrap; align-items:center; }
+  .search-box{ position:relative; flex:1; min-width:240px; }
+  .search-box input{
+    width:100%; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 14px 10px 38px;
+    color:var(--text); font-family:'Sarabun',sans-serif; font-size:13px;
+  }
+  .search-box svg{ position:absolute; left:12px; top:11px; width:16px; height:16px; stroke:var(--muted); fill:none; }
+  .filter-select{
+    background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+    color:var(--text); font-family:'Sarabun',sans-serif; font-size:13px;
+  }
+  .save-status{ font-size:11px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+  .save-dot{ width:7px; height:7px; border-radius:50%; background:var(--green); }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:22px; }
+  .kpi{ background:var(--panel); padding:16px 18px; }
+  .kpi .l{ font-family:'Kanit',sans-serif; font-size:10.5px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+  .kpi .v{ font-family:'Kanit',sans-serif; font-weight:700; font-size:26px; color:var(--gold); margin-top:4px; }
+
+  .district-block{ margin-top:56px; }
+  .district-head{ display:flex; align-items:baseline; gap:14px; border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:22px; cursor:pointer; }
+  .district-num{ font-family:'Kanit',sans-serif; font-weight:800; font-size:34px; color:var(--panel2); -webkit-text-stroke: 1.5px var(--gold); flex-shrink:0; }
+  .district-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:22px; color:#fff; }
+  .district-meta{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .collapse-arrow{ margin-left:auto; color:var(--muted); font-size:14px; transition:transform .2s; }
+  .collapse-arrow.open{ transform:rotate(180deg); }
+
+  .road-wrap{ background:linear-gradient(180deg,#0E1522,#0B1220); border:1px solid var(--line); border-radius:12px; padding:8px 4px 2px; margin-bottom:22px; position:relative; overflow:hidden; }
+  .road-wrap svg{ width:100%; height:auto; display:block; }
+  .road-pin-name{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; fill:#fff; cursor:pointer; }
+  .road-pin-count{ font-family:'Kanit',sans-serif; font-weight:600; font-size:11px; fill:var(--gold); }
+  .road-km-text{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11.5px; fill:#0B1220; }
+  .road-km-chip{ fill:var(--gold); }
+  .road-badge-text{ font-family:'Kanit',sans-serif; font-weight:800; font-size:14px; }
+  .car-icon{ filter:drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
+
+  .day-list{ display:flex; flex-direction:column; gap:10px; }
+  .day-card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .day-card-head{
+    display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer;
+    background:var(--panel2);
+  }
+  .day-card-head .dtitle{ font-family:'Kanit',sans-serif; font-weight:600; font-size:13px; color:#fff; }
+  .day-card-head .dmeta{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .day-progress{ display:flex; align-items:center; gap:8px; }
+  .day-progress-bar{ width:70px; height:6px; background:var(--line); border-radius:3px; overflow:hidden; }
+  .day-progress-bar div{ height:100%; background:var(--green); }
+  .day-progress-text{ font-size:10.5px; color:var(--muted); font-family:'Kanit',sans-serif; }
+  .day-caret{ color:var(--muted); font-size:12px; transition:transform .2s; }
+  .day-caret.open{ transform:rotate(180deg); }
+  .day-body{ display:none; padding:4px 0; }
+  .day-body.open{ display:block; }
+
+  table.company-table{ border-collapse:collapse; width:100%; font-size:12px; }
+  table.company-table th{
+    background:var(--panel3); font-family:'Kanit',sans-serif; font-weight:600; padding:8px 10px; text-align:left;
+    color:var(--muted); font-size:10px; letter-spacing:0.4px; text-transform:uppercase; position:sticky; top:0;
+  }
+  table.company-table td{ padding:8px 10px; border-top:1px solid var(--line); color:var(--text); vertical-align:top; }
+  table.company-table tr.relation-visited td{ background: rgba(255,255,255,0.03); }
+  table.company-table tr.contacted td{ background: var(--green-dim); }
+  .company-name{ font-weight:600; }
+  .tag{ display:inline-block; font-family:'Kanit',sans-serif; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px; }
+  .tag-visited{ background:rgba(255,255,255,0.08); color:var(--muted); }
+  .chk{ width:16px; height:16px; accent-color: var(--green); cursor:pointer; }
+  select.status-select{
+    background:var(--panel2); border:1px solid var(--line); border-radius:6px; color:var(--text); font-size:11px;
+    padding:4px 6px; font-family:'Sarabun',sans-serif; min-width:110px;
+  }
+  select.status-select.st-goon{ color:var(--green); }
+  select.status-select.st-no{ color:var(--red); }
+  select.status-select.st-wait{ color:var(--amber); }
+  select.status-select.st-closed{ color:var(--gold); }
+  textarea.feedback-note{
+    width:100%; min-width:180px; background:var(--panel2); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); font-size:11.5px; font-family:'Sarabun',sans-serif; padding:6px 8px; resize:vertical; min-height:32px;
+  }
+  .maplink{ color:#60A5FA; font-size:11px; text-decoration:none; }
+  .maplink:hover{ text-decoration:underline; }
+
+  .legend-row{ display:flex; gap:18px; margin:14px 0 20px; flex-wrap:wrap; font-size:11.5px; color:var(--muted); }
+  .legend-item{ display:flex; align-items:center; gap:6px; }
+  .legend-dot{ width:10px; height:10px; border-radius:3px; }
+
+  .footnote{ margin-top:50px; padding:18px 22px; border-radius:10px; background:var(--panel); border:1px dashed var(--line); font-size:11.5px; color:var(--muted); line-height:1.8; }
+  .footnote b{ color:var(--text); }
+
+  .page-nav{ display:flex; gap:8px; margin-top:26px; border-bottom:1px solid var(--line); }
+  .page-tab{
+    background:transparent; border:none; color:var(--muted); font-family:'Kanit',sans-serif; font-weight:600; font-size:13.5px;
+    padding:10px 18px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .page-tab:hover{ color:var(--text); }
+  .page-tab.active{ color:var(--gold); border-bottom-color:var(--gold); }
+
+  .report-form-wrap{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-top:26px; }
+  .report-form-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:15px; color:#fff; margin-bottom:14px; }
+  .report-form-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:11px; color:var(--muted); font-family:'Kanit',sans-serif; font-weight:500; }
+  .field input[type=text], .field input[type=date], .field textarea{
+    background:var(--panel2); border:1px solid var(--line); border-radius:6px; color:var(--text);
+    padding:8px 10px; font-family:'Sarabun',sans-serif; font-size:13px;
+  }
+  .field textarea{ resize:vertical; }
+  .activity-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    display:flex; align-items:center; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:20px;
+    padding:6px 14px; font-size:12px; color:var(--text); cursor:pointer; user-select:none;
+  }
+  .chip input{ accent-color:var(--gold); cursor:pointer; }
+  .chip:has(input:checked){ border-color:var(--gold); background:var(--gold-dim); color:var(--gold-lt); }
+  .btn-primary{
+    margin-top:16px; background:var(--gold); color:#0B1220; border:none; border-radius:8px; padding:10px 22px;
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+  .btn-primary:hover{ background:#DFC24E; }
+
+  .report-list{ margin-top:30px; display:flex; flex-direction:column; gap:22px; }
+  .report-date-group{ background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .report-date-head{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--panel2); flex-wrap:wrap; gap:10px; }
+  .report-date-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; }
+  .report-date-stats{ display:flex; gap:14px; flex-wrap:wrap; }
+  .rstat{ font-size:11.5px; color:var(--muted); font-family:'Kanit',sans-serif; }
+  .rstat b{ color:var(--gold); font-size:14px; }
+  .report-entries{ position:relative; padding:20px 18px 8px 34px; }
+  .report-entries::before{
+    content:""; position:absolute; left:44px; top:8px; bottom:16px; width:2px; background:var(--line);
+  }
+  .report-entry{ position:relative; padding:0 0 22px 26px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+  .report-entry::before{
+    content:""; position:absolute; left:-4.5px; top:3px; width:12px; height:12px; border-radius:50%;
+    background:var(--gold); border:2px solid var(--ink); z-index:1;
+  }
+  .re-time{
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:var(--gold); min-width:48px; padding-top:1px;
+  }
+  .report-entry .re-main{ flex:1; min-width:220px; }
+  .report-entry .re-company{ font-family:'Kanit',sans-serif; font-weight:600; font-size:13.5px; color:#fff; }
+  .report-entry .re-person{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .report-entry .re-activities{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .report-entry .re-feedback{ font-size:12px; color:var(--text); margin-top:6px; line-height:1.6; max-width:520px; }
+
+  .re-delete{ background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:6px; padding:6px 12px; font-size:11px; cursor:pointer; font-family:'Sarabun',sans-serif; }
+  .re-delete:hover{ border-color:var(--red); color:var(--red); }
+  .report-empty{ padding:40px 20px; text-align:center; color:var(--muted); font-size:13px; }
+  .re-activity-tag{ font-size:10px; font-family:'Kanit',sans-serif; font-weight:600; background:var(--gold-dim); color:var(--gold-lt); padding:2px 9px; border-radius:10px; }
+
+  .report-date-actions{ display:flex; gap:8px; }
+  .btn-report{
+    background:transparent; border:1px solid var(--gold); color:var(--gold); border-radius:6px; padding:6px 14px;
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:11.5px; cursor:pointer;
+  }
+  .btn-report:hover{ background:var(--gold-dim); }
+
+  .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:100; padding:24px; }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{ background:var(--panel); border:1px solid var(--line); border-radius:12px; max-width:760px; width:100%; max-height:88vh; display:flex; flex-direction:column; }
+  .modal-head{ display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line); }
+  .modal-head h3{ font-family:'Kanit',sans-serif; font-size:15px; color:#fff; margin:0; }
+  .modal-close{ background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1; }
+  .modal-body{ padding:0; overflow-y:auto; background:#0D1420; }
+  .modal-foot{ padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; }
+
+  /* ---- printable industrial report doc ---- */
+  #reportDoc{ padding:30px 34px 40px; }
+  .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--gold); padding-bottom:16px; margin-bottom:22px; flex-wrap:wrap; gap:14px; }
+  .rd-header .rd-brand{ display:flex; align-items:center; gap:10px; }
+  .rd-header .rd-brand svg{ width:26px; height:26px; stroke:var(--gold); fill:none; }
+  .rd-header .rd-brand-text{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; }
+  .rd-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:19px; color:#fff; margin-top:10px; }
+  .rd-sub{ font-size:11.5px; color:var(--muted); margin-top:4px; }
+  .rd-kpis{ display:flex; gap:10px; text-align:right; }
+  .rd-kpi{ background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:8px 14px; min-width:76px; }
+  .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:19px; color:var(--gold); }
+  .rd-kpi .l{ font-size:9.5px; color:var(--muted); letter-spacing:0.4px; }
+
+  .rd-timeline{ position:relative; padding-left:30px; }
+  .rd-timeline::before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--gold), var(--line)); }
+  .rd-item{ position:relative; padding-bottom:20px; }
+  .rd-item::before{
+    content:""; position:absolute; left:-24px; top:2px; width:12px; height:12px; border-radius:50%;
+    background:var(--gold); border:2px solid #0D1420; box-shadow:0 0 0 2px var(--gold);
+  }
+  .rd-item-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .rd-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:var(--gold); background:var(--gold-dim); padding:2px 9px; border-radius:5px; }
+  .rd-company{ font-family:'Kanit',sans-serif; font-weight:600; font-size:14px; color:#fff; }
+  .rd-person{ font-size:11.5px; color:var(--muted); margin-top:3px; }
+  .rd-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .rd-tag{ font-size:10px; font-family:'Kanit',sans-serif; font-weight:600; background:rgba(34,197,94,0.13); color:#6EE7B7; padding:2px 9px; border-radius:9px; border:1px solid rgba(34,197,94,0.3); }
+  .rd-feedback{ font-size:12px; color:#D1D5DB; margin-top:7px; line-height:1.7; background:var(--panel2); border-left:2px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; }
+  .rd-footer{ margin-top:26px; padding-top:14px; border-top:1px dashed var(--line); font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between; }
+
+  @media print{
+    body *{ visibility:hidden; }
+    #reportDoc, #reportDoc *{ visibility:visible; }
+    #reportDoc{ position:absolute; left:0; top:0; width:100%; background:#0D1420; }
+  }
+
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="eyebrow">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
+      Rayong Sales Territory Plan
+    </div>
+    <h1 contenteditable="true" id="mainTitle">แผนปฏิบัติการเข้าพบลูกค้า จังหวัดระยอง</h1>
+    <div class="sub" contenteditable="true" id="mainSub">รวมรายชื่อบริษัทเป้าหมายทั้งหมด จัดกลุ่มตามตำบลตามลำดับเส้นทางจริง (Nearest-Neighbor) พร้อมให้กรอกแผนการเข้าพบเอง — คลิกหัวข้อเพื่อแก้ไขข้อความ คลิกแถวบริษัทเพื่อบันทึกผล Feedback</div>
+    <div class="edit-hint">เคล็ดลับ: หัวข้อและคำอธิบายทุกจุดแก้ไขได้โดยคลิกที่ข้อความแล้วพิมพ์ใหม่</div>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="ค้นหาชื่อบริษัทหรือตำบล...">
+      </div>
+      <select class="filter-select" id="filterRelation">
+        <option value="">ทุกความสัมพันธ์</option>
+        <option value="เคยเข้าพบแล้ว">เคยเข้าพบแล้ว</option>
+        <option value="">ยังไม่เคยเข้าพบ</option>
+      </select>
+      <select class="filter-select" id="filterContacted">
+        <option value="">ทุกสถานะ</option>
+        <option value="yes">ติดต่อแล้ว</option>
+        <option value="no">ยังไม่ติดต่อ</option>
+      </select>
+      <div class="save-status"><span class="save-dot" id="saveDot"></span><span id="saveText">ข้อมูล Feedback บันทึกอัตโนมัติ</span></div>
+      <button class="filter-select" id="exportBtn" style="cursor:pointer;">ส่งออกข้อมูล (.json)</button>
+      <button class="filter-select" id="importBtn" style="cursor:pointer;">นำเข้าข้อมูล</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <button class="page-tab active" id="tabInfo">ข้อมูลบริษัท</button>
+    <button class="page-tab" id="tabReport">Daily Report</button>
+  </div>
+
+  <div id="page1">
+    <div class="kpi-row" id="kpiRow"></div>
+    <div id="districtContainer"></div>
+  </div>
+
+  <div id="page2" style="display:none;">
+    <div class="report-form-wrap">
+      <div class="report-form-title">บันทึกการเข้าพบวันนี้</div>
+      <div class="report-form-grid">
+        <div class="field">
+          <label>วันที่เข้าพบ</label>
+          <input type="date" id="rfDate">
+        </div>
+        <div class="field">
+          <label>เวลาเข้าพบ</label>
+          <input type="time" id="rfTime">
+        </div>
+        <div class="field">
+          <label>ชื่อลูกค้า / ผู้ติดต่อ</label>
+          <input type="text" id="rfPerson" placeholder="ชื่อ-นามสกุลผู้ติดต่อฝั่งลูกค้า">
+        </div>
+        <div class="field" style="grid-column:span 3;">
+          <label>ชื่อโรงงาน / บริษัทที่เข้าพบ</label>
+          <input type="text" id="rfCompany" list="companyList" placeholder="พิมพ์หรือเลือกชื่อบริษัท">
+          <datalist id="companyList"></datalist>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>กิจกรรมที่ทำวันนี้ (เลือกได้หลายข้อ)</label>
+        <div class="activity-chips" id="activityChips">
+          <label class="chip"><input type="checkbox" value="แนะนำตัว">แนะนำตัว / เปิดตลาดใหม่</label>
+          <label class="chip"><input type="checkbox" value="ส่งของ">ส่งของ / ส่งตัวอย่าง</label>
+          <label class="chip"><input type="checkbox" value="ใบเสนอราคา">ทำใบเสนอราคา</label>
+          <label class="chip"><input type="checkbox" value="ปิดการขาย">ปิดการขาย</label>
+          <label class="chip"><input type="checkbox" value="ติดตามงาน">ติดตามงาน</label>
+          <label class="chip"><input type="checkbox" value="อื่นๆ">อื่นๆ</label>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>Feedback จากลูกค้า / รายละเอียดเพิ่มเติม</label>
+        <textarea id="rfFeedback" placeholder="บันทึกรายละเอียดการเข้าพบ..." style="min-height:60px;"></textarea>
+      </div>
+      <button class="btn-primary" id="rfSubmit">บันทึกรายการ</button>
+    </div>
+
+    <div class="report-list" id="reportList"></div>
+  </div>
+
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="modalTitle">รายงานประจำวัน</h3>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="reportDoc"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-report" id="modalCopy">คัดลอกรายงาน (ข้อความ)</button>
+        <button class="btn-report" id="modalPrint">พิมพ์ / บันทึกเป็น PDF</button>
+        <button class="btn-report" id="modalDownload">ดาวน์โหลด (.txt)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    <b>หมายเหตุระเบียบวิธี:</b> ระยะทางระหว่างพื้นที่คำนวณจากพิกัดศูนย์กลางของแต่ละตำบล (เส้นตรงตามพิกัด ไม่ใช่ระยะทางถนนจริง) บริษัทภายในตำบลเดียวกันใช้พิกัดศูนย์กลางร่วมกัน —
+    ข้อมูลการติ๊ก "ติดต่อแล้ว" สถานะ และบันทึก Feedback จะถูกบันทึกอัตโนมัติในเบราว์เซอร์นี้ (ส่วนตัว ไม่แชร์กับผู้อื่น) การแก้ไขหัวข้อ/คำอธิบายจะไม่ถูกบันทึกข้ามเซสชัน หากต้องการเก็บถาวรแนะนำให้บันทึกไฟล์หลังแก้ไข
+  </div>
+
+</div>
+
+<script>
+const SITE_DATA = {"ปลวกแดง": {"chain": ["มาบยางพร", "ปลวกแดง", "แม่น้ำคู้", "ละหาร", "ตาสิทธิ์"], "tambon_counts": [{"tambon": "มาบยางพร", "count": 194}, {"tambon": "ปลวกแดง", "count": 111}, {"tambon": "แม่น้ำคู้", "count": 28}, {"tambon": "ละหาร", "count": 1}, {"tambon": "ตาสิทธิ์", "count": 120}], "legs": [{"from": "มาบยางพร", "to": "ปลวกแดง", "km": 9.0}, {"from": "ปลวกแดง", "to": "แม่น้ำคู้", "km": 4.4}, {"from": "แม่น้ำคู้", "to": "ละหาร", "km": 9.7}, {"from": "ละหาร", "to": "ตาสิทธิ์", "km": 22.0}], "total_companies": 454, "sections": [{"tambon": "มาบยางพร", "companies": [{"id": "c1", "name": "บริษัท กัง เยน ไดมอนด์ ทูลส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c2", "name": "บริษัท คาทาทา อิเลคทริค (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c3", "name": "บริษัท คาโตะ โคเกียวโชะ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c4", "name": "บริษัท คิงซิกแนล เคเบิล เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c5", "name": "บริษัท คิวทีซี เอนเนอร์ยี่ จำกัด (มหาชน)", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c6", "name": "บริษัท คูโบต้า ไอรอน เวอร์ค (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c7", "name": "บริษัท จาวา เทค (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c8", "name": "บริษัท จินร้ง อิเล็กทรอนิกส์ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c9", "name": "บริษัท จินหง เมทอล โปรดักส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c10", "name": "บริษัท จินเหมา เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c11", "name": "บริษัท จีดับเบิ้ลยู พรีซิชั่น แมนูแฟคเจอริ่ง จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c12", "name": "บริษัท จีเอฟ เทค จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c13", "name": "บริษัท จูง ชิง พรีซิชั่น อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c14", "name": "บริษัท จ่งทั้ว อินดัสเทรียล จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c15", "name": "บริษัท ชินจิน เอสเอ็ม (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c16", "name": "บริษัท ชินเอ็นเนอร์ยี เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c17", "name": "บริษัท ชิบะ เมทัล (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c18", "name": "บริษัท ชูแคน (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c19", "name": "บริษัท ซอนเซ็น แมชชินเนอรี แมนูแฟคเจอริ่ง (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c20", "name": "บริษัท ซันอัลลอย  อินดัสตรี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c21", "name": "บริษัท ซันโซน อินเตอร์เนชั่นแนล (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c22", "name": "บริษัท ซากามิ พีซีไอ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c23", "name": "บริษัท ซาโดชิมะ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c24", "name": "บริษัท ซินย่า อิเล็กทรอนิกส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c25", "name": "บริษัท ซินเทียน แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c26", "name": "บริษัท ซูมิเดน สตีล ไวร์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c27", "name": "บริษัท ซูมิโตโม อีเล็คตริก ไวริ่ง ซิสเต็มส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c28", "name": "บริษัท ดรีมคาร์ เซ็นเตอร์ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c29", "name": "บริษัท ดอนลี่ ไดร์ฟ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c30", "name": "บริษัท ดับบลิวทีที อิเลคทรอนิคส์ จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c31", "name": "บริษัท ดับเบิ้ล ฮอร์ส ดรีลลิ่ง ทูลส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c32", "name": "บริษัท ดิงโท อินดัสเตรียล จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c33", "name": "บริษัท ดีทีเอส แดร็คเซิลไมเออร์ ออโทโมทีฟ ซีสเท็มส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c34", "name": "บริษัท ดูคาติ พาวเวอร์เทรน(ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c35", "name": "บริษัท ดูคาติ มอเตอร์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c36", "name": "บริษัท ต้าชิ่ง อินเตอร์เนชั่นแนล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c37", "name": "บริษัท ทรีโอ-ทรอนนิกส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c38", "name": "บริษัท ทอง นา แมนูแฟคเทอริ่ง คอร์ปอเรชั่น (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c39", "name": "บริษัท ทอรี พรีซิชั่น แมนูแฟคเจอริ่ง จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c40", "name": "บริษัท ทาดะ เพรส (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c41", "name": "บริษัท ที. โอ. ไทย จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c42", "name": "บริษัท ทีเอเอ เมทัล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c43", "name": "บริษัท ท็อปโซ่ ทูลส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c44", "name": "บริษัท นากาโตะ ฮีท ทรีทเม้นท์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c45", "name": "บริษัท นาคางาว่า-เอพีเอ็ม (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c46", "name": "บริษัท นิชชิน แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c47", "name": "บริษัท นิชโช ไซโก้ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c48", "name": "บริษัท นิว ไทย วีล เมนูแฟคเจอริ่ง จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c49", "name": "บริษัท นิฮอน พลาสท์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c50", "name": "บริษัท นีโอเพิร์ล เอเชีย แปซิฟิค จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c51", "name": "บริษัท บอลี่ ไพพ์ จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c52", "name": "บริษัท บัตเตอร์ฟลาย นิว แมททีเรียลส์ จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c53", "name": "บริษัท บัลเดอร์ เทคโนโลยี จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c54", "name": "บริษัท บีเมทัล เทคโนโลยี จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c55", "name": "บริษัท บ๊อช ออโตโมทีฟ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c56", "name": "บริษัท ผิงหู ซินเฉิงฟา พรีซิชั่น แมนูแฟคเจอร์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c57", "name": "บริษัท พลูสเต็ปส์ อินเตอร์เนชั่นนอล จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c58", "name": "บริษัท พี-เพอร์ซัน แอนด์ ซัพพลาย จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c59", "name": "บริษัท พูเรม อาปิโก จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c60", "name": "บริษัท ฟอร์ติเทอร์ เทคโนโลยี่ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c61", "name": "บริษัท ฟิชเชอร์แอนด์พายเคิล แอพพลายแอนเซส (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c62", "name": "บริษัท มังกร อะลูมิเนียม จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c63", "name": "บริษัท มานูไทย เทคโนโลยี จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c64", "name": "บริษัท มารุนิกซ์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c65", "name": "บริษัท มาเธอร์ซัน ลูเมน (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c66", "name": "บริษัท มิคเซล จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c67", "name": "บริษัท มิตซุย คินโซคุ แคทาลิสท์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c68", "name": "บริษัท มิทสึยะ เซโก้ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c69", "name": "บริษัท มิ้นท์ เอเชีย แปซิฟิก จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c70", "name": "บริษัท มูเบีย สมบูรณ์ ออโตโมทีฟ จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c71", "name": "บริษัท ม่ายฉี อินเตอร์เนชั่นแนล แมชชีนเนอรี่ แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c72", "name": "บริษัท ยงกุย อีเล็คทริค (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c73", "name": "บริษัท ยามาดะ สมบูรณ์ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c74", "name": "บริษัท ยี่ซิงเฉิง จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c75", "name": "บริษัท ยูอาสะ ซาโต (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c76", "name": "บริษัท ยูเนี่ยนออโตพาร์ทส มานูแฟคเชอริ่ง จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c77", "name": "บริษัท ยูเอซีเจ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c78", "name": "บริษัท ระยองอีซูซุเซลส์ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c79", "name": "บริษัท รันไชน์ แมชชีนเนอรี่ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c80", "name": "บริษัท ลองวิน อุตสาหกรรม (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c81", "name": "บริษัท ลอฟเทน (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c82", "name": "บริษัท วอล์คส์ เอทีอาร์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c83", "name": "บริษัท วอสเซน เมนูแฟคเจอร์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c84", "name": "บริษัท วายทีโอที (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c85", "name": "บริษัท วินโนวา (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c86", "name": "บริษัท วีนแฟง อุตสาหกรรม (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c87", "name": "บริษัท ว่านเจีย เพาเวอร์ ไวร์ แอนด์ เคเบิล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c88", "name": "บริษัท ศูนย์บริการเหล็กสยาม จำกัด (มหาชน)", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c89", "name": "บริษัท สมบูรณ์หล่อเหล็กเหนียวอุตสาหกรรม จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c90", "name": "บริษัท สมาร์ท เทคโนโลยี แมนูแฟคเจอริ่ง (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c91", "name": "บริษัท สยาม อาซาฮี แมนูแฟคเจอริ่ง จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c92", "name": "บริษัท สยาม เอ็มทีเค จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c93", "name": "บริษัท สยามโกชิ มานูแฟคเชอริ่ง จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c94", "name": "บริษัท สินธานีอุตสาหกรรม จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c95", "name": "บริษัท สเตท อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c96", "name": "บริษัท หงหลิน อีเลคตริคเพาเวอร์เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c97", "name": "บริษัท หัว กวง เวลดิ้ง แอดวานซ์ แมททีเรียลส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c98", "name": "บริษัท หางดอง เทคโนโลยี จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c99", "name": "บริษัท ออยล์เลส (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c100", "name": "บริษัท ออโตโมทีฟ โมลด์ เทคโนโลยี จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c101", "name": "บริษัท อะซิมโค ซีลลิ่ง เทคโนโลยีส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c102", "name": "บริษัท อัทสุมิเท็ค (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c103", "name": "บริษัท อัทสุมิเท็ค แอนด์ ฮายาชิ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c104", "name": "บริษัท อัลต้าทรอนิกส์ อินเตอร์เนชั่นแนล จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c105", "name": "บริษัท อามาโนะ ไทม์ แอนด์ แอร์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c106", "name": "บริษัท อิจิโกห์ อินดัสตรีส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c107", "name": "บริษัท อินเตอร์เนชั่นแนล แคสติ้ง โปรดักส์ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c108", "name": "บริษัท อิเล็กทรอวัค (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c109", "name": "บริษัท อิโตะ ไทย ออโต้ บอดี้ เวิร์ค จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c110", "name": "บริษัท อิโตะ ไทย เมททัลเวิร์ค จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c111", "name": "บริษัท อีเกิ้ล ออตตาวา (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c112", "name": "บริษัท อีเรย์ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c113", "name": "บริษัท ฮอลลี่ เมทัล โปรดักส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c114", "name": "บริษัท ฮันวา เมทัลส์ (ประเทศไทย)  จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c115", "name": "บริษัท ฮานัม อิเลคทริคซิตี้ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c116", "name": "บริษัท ฮามาตั่น (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c117", "name": "บริษัท เกาฉี อิเล็กทรอนิกส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c118", "name": "บริษัท เค ไอ อินดัสเตรียล จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c119", "name": "บริษัท เซล อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c120", "name": "บริษัท เซ็นโด (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c121", "name": "บริษัท เดลต้า พาร์ท แอนด์ ดาย จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c122", "name": "บริษัท เดลต้า ไดกิ เมทัล (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c123", "name": "บริษัท เดอแรม ดูเพล็กซ์ (เซาท์อีสเอเชีย) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c124", "name": "บริษัท เต๋อจิ้นชาง ออปโตอิเล็กทรอนิกส์ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c125", "name": "บริษัท เต๋อเซิ่งชาง นิว แมททีเรียล (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c126", "name": "บริษัท เนกซ์เทียร์ ออโตโมทีฟ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c127", "name": "บริษัท เบนช์ ฟิตเนส อิควิปเม้นท์ จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c128", "name": "บริษัท เบนดะ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c129", "name": "บริษัท เปาเจีย แมชชีนเนอรี่ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c130", "name": "บริษัท เฟยเจ๋อ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c131", "name": "บริษัท เมทัลลิงค์ อินดัสเทรียล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c132", "name": "บริษัท เมทแท็ก อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c133", "name": "บริษัท เมริเดียน แอลเอ็ม (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c134", "name": "บริษัท เรซ ออโต้ พาร์ทส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c135", "name": "บริษัท เว็บฟอร์จ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c136", "name": "บริษัท เหอชาง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c137", "name": "บริษัท เหิงเตี้ยน กรุ๊ป ดีเอ็มอีจีซี (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c138", "name": "บริษัท เอชจี เกาลี อิเล็กทรอนิคส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c139", "name": "บริษัท เอชแอลที แมนูแฟคเจอริ่ง จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c140", "name": "บริษัท เอนวิชั่น อินเตอร์เนชั่นแนล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c141", "name": "บริษัท เอสดีไอ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c142", "name": "บริษัท เอสวายเคซี เซอร์คิท (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c143", "name": "บริษัท เอสอีไอ ไทย อิเล็คทริค คอนดัคเตอร์ จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c144", "name": "บริษัท เอเชีย วีล จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c145", "name": "บริษัท เอเซียน มารูอิชิ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c146", "name": "บริษัท เอ็นแอลเอ็กซ์ อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c147", "name": "บริษัท เอ็มเค ออโต้พาร์ทแอนด์ซัพพลาย จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c148", "name": "บริษัท เฮงใหม่ ออโตเมชั่น (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c149", "name": "บริษัท แคนาดอล ไพพ์ จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c150", "name": "บริษัท แซดเอฟ ชัสซิส ซิสเท็ม (ระยอง) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c151", "name": "บริษัท แปซิฟิค ชีท แอนด์ คอยล์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c152", "name": "บริษัท แอพพลายด์ เมททัล พรีซิชั่น เทคโนโลยี จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c153", "name": "บริษัท แอมคอล อินเตอร์เนชั่นแนล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c154", "name": "บริษัท แอร์ เรดิเอเตอร์ส (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c155", "name": "บริษัท โกลด์สุวรรณ ออโต้พาร์ท แมนูแฟคเจอร์ จำกัด", "tambon": "มาบยางพร", "type": "เพลาช่วงล่างรถพ่วง รถกึ่งพ่วง", "relation": ""}, {"id": "c156", "name": "บริษัท โกลบอล จงเหอ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c157", "name": "บริษัท โกลบอล พาวเวอร์ เซ็นทรัล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c158", "name": "บริษัท โดวะ เมทัลส์ แอนด์ ไมนิ่ง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c159", "name": "บริษัท โตโยต้า พาวิลเลี่ยม ระยอง (2005) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c160", "name": "บริษัท โทไค คิไค ยูเท็ค (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c161", "name": "บริษัท โปรหลังคาเหล็กเมทัลชีล จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c162", "name": "บริษัท โปรเฟสชั่นนอล พรีซิชั่น แมนูแฟจเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c163", "name": "บริษัท โพสโค โค้ทเต้ด สตีล (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c164", "name": "บริษัท โฟซี (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c165", "name": "บริษัท โรกิ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c166", "name": "บริษัท โรเบิร์ต บ๊อช ออโตโมทีฟ เทคโนโลยีส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c167", "name": "บริษัท โวเลอร์ เฮาส์โฮลด์ โปรดักส์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c168", "name": "บริษัท โอกุระ คลัทช์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c169", "name": "บริษัท โอคายาม่า เซอิโกะ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c170", "name": "บริษัท โอคุชิน แมชชีนเนอรี่ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c171", "name": "บริษัท โอมิ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c172", "name": "บริษัท โอวลาง ออโตโมทีฟ พาร์ทส์ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c173", "name": "บริษัท โอะทิค (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c174", "name": "บริษัท โฮริอุจิ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c175", "name": "บริษัท โฮเซอิ เบรค (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c176", "name": "บริษัท ไดกิ้น คอมเพรสเซอร์ อินดัสทรีส์ จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c177", "name": "บริษัท ไทย บียอนซ์ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c178", "name": "บริษัท ไทย มิยาเกะ ฟอร์จิ้ง จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c179", "name": "บริษัท ไทย ยาชิโร่ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c180", "name": "บริษัท ไทย ออโตโมทีฟ แอนด์ แอพพลิแอนซ์ จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c181", "name": "บริษัท ไทยชวนแฟง จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c182", "name": "บริษัท ไทยมอเตอร์เชน จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c183", "name": "บริษัท ไทยเมตัลเทค จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c184", "name": "บริษัท ไทโน่ รีฟริจเจอเรชั่น เทคโนโลยี(ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c185", "name": "บริษัท ไท้รุ่ยซิน เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c186", "name": "บริษัท ไพร์ม สตีล มิลล์ จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c187", "name": "บริษัท ไวด์ เวย์ โมลด์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c188", "name": "บริษัท ไห่เหยน เคเบิล (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c189", "name": "บริษัท ไอที ฟอร์จิ้ง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c190", "name": "บริษัท ไอออน ออโตโมบิล แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c191", "name": "บริษัท ไอเจทีที (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c192", "name": "บริษัท ไฮ พรีซิชั่น ทูบ (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c193", "name": "บริษัท ไฮ-เล็กซ์ แอคท์ ระยอง (ประเทศไทย) จำกัด", "tambon": "มาบยางพร", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c194", "name": "บริษัท ไฮไมล์ (ไทยแลนด์) จำกัด", "tambon": "มาบยางพร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}]}, {"tambon": "ปลวกแดง", "companies": [{"id": "c195", "name": " บริษัท อีสเทิร์น พี ยู โฟม อินดัสตรี จำกัด ", "tambon": "ปลวกแดง", "type": "ผู้ผลิตเบาะรถยนต์และรถจักรยานยนต์", "relation": ""}, {"id": "c196", "name": "จี - เทคคุโตะ อีสเทิร์น จำกัด", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมชิ้นส่วนรถยนต์", "relation": ""}, {"id": "c197", "name": "ชูนิชิ โมลด์ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมแม่พิมพ์สำหรับฉีดพลาสติก", "relation": ""}, {"id": "c198", "name": "ดาน่า สไปเซอร์ (ประเทศไทย) จำกัด(สอจ.นศ.)", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c199", "name": "บริษัท คาร์ดีฟฟ์ เคเบิ้ล (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c200", "name": "บริษัท คาวาซากิ มอเตอร์ เอ็นเตอร์ไพรส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c201", "name": "บริษัท คาเนมิทสึ พูลเล่ย์ จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c202", "name": "บริษัท จงหลี ออโตโมทีฟ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c203", "name": "บริษัท จีเคเอ็น ไดรฟไลน์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c204", "name": "บริษัท จือหลิน ออโต้ พาร์ท (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c205", "name": "บริษัท จูเหอ อิเล็กทรอนิกส์ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c206", "name": "บริษัท ชิน ชิน (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c207", "name": "บริษัท ชุนหวาง เมททัล จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c208", "name": "บริษัท ซันลิท (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c209", "name": "บริษัท ซันเยียร์ อิเล็คทรอนิกส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c210", "name": "บริษัท ซาอิค เอ็นจิเนียริ่ง เซอร์วิส จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c211", "name": "บริษัท ซี เอ แอล บี (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c212", "name": "บริษัท ซีพีเอส อิเล็กทรอนิกส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c213", "name": "บริษัท ซีเจซี มอเตอร์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c214", "name": "บริษัท ซูกิโนะ เพรส (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c215", "name": "บริษัท ดานิลี่ จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c216", "name": "บริษัท ดาน่า สไปเซอร์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c217", "name": "บริษัท ที เอ็น ระยอง จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c218", "name": "บริษัท นาคามูระ พรีซิชั่น (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c219", "name": "บริษัท นิชินโบะ สมบูรณ์ ออโตโมทีฟ จำกัด", "tambon": "ปลวกแดง", "type": "ประกอบการผลิตชิ้นส่วนยานยนต์ ระบบเบรคยนต์", "relation": ""}, {"id": "c220", "name": "บริษัท นิชโช เดนกิ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c221", "name": "บริษัท นิสเซ พลาสติก แมชซีนเนอรี่ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ประกอบเครื่องฉีดขึ้นรูปพลาสติก", "relation": ""}, {"id": "c222", "name": "บริษัท บริดจสโตน เมตัลฟา (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c223", "name": "บริษัท บางกอกอิสเทิร์นคอยล์เซ็นเตอร์ จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c224", "name": "บริษัท บ๊อช โฮม คอมฟอร์ท คอมโพเน้นท์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c225", "name": "บริษัท พลาเซส (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c226", "name": "บริษัท พาโนเทค เอ็มเอฟจี จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c227", "name": "บริษัท มอยสเท็น จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c228", "name": "บริษัท ยังซิน เมทัล (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ผลิตชิ้นส่วนโลหะประเภทน๊อตและสกรู (Bolt, Nut และ Screw)", "relation": ""}, {"id": "c229", "name": "บริษัท ยานากาว่า เทคโนฟอร์จ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c230", "name": "บริษัท ยามะเซอิไทย จำกัด", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c231", "name": "บริษัท ยูนิซอน เอ็นจิเนียริ่ง จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c232", "name": "บริษัท ระยอง กัลวาไนซิ่ง จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c233", "name": "บริษัท ริลซัน อินดัสทรีส์ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c234", "name": "บริษัท วาย เอ็ม (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c235", "name": "บริษัท วี อาร์ ที ออโตโมบิลส์ จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c236", "name": "บริษัท สตีลสต๊อก อินเตอร์เนชั่นแนล จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c237", "name": "บริษัท สมบูรณ์ โซมิค แมนูแฟคเจอริ่ง จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c238", "name": "บริษัท สยาม เมทัล เทคโนโลยี จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c239", "name": "บริษัท สุพรีม เฟลตัล (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ผลิตและจำหน่ายแผ่นฉนวนป้องกันเสียงรบกวนภายในยานพาหนะทุกชนิด", "relation": ""}, {"id": "c240", "name": "บริษัท หลานซิน รับเบอร์ แอนด์ พลาสติก เทคโนโลจี (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c241", "name": "บริษัท ออโต้อัลลายแอนซ์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c242", "name": "บริษัท อิสริ่งเฮ้าเซ่น (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ผลิตเบาะที่นั่งสำหรับยานพาหนะ", "relation": ""}, {"id": "c243", "name": "บริษัท อีซูซุมอเตอร์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c244", "name": "บริษัท อีทีเค อีเอ็มเอส เอเซีย โปรดักชั่นส์ จำกัด", "tambon": "ปลวกแดง", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c245", "name": "บริษัท ฮันออน ซิสเต็มส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c246", "name": "บริษัท ฮาร์เวสท์ พรีซิชั่น (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c247", "name": "บริษัท เกรท วอลล์ มอเตอร์ แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c248", "name": "บริษัท เชี่ยวชาญ อินดัสทรี่ (1989) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c249", "name": "บริษัท เดลฮี เทคโน จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c250", "name": "บริษัท เน็กซ์ โค้ทติ้ง จำกัด", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c251", "name": "บริษัท เบรมโบ้ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c252", "name": "บริษัท เลียร์ ออโตโมทีฟ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c253", "name": "บริษัท เว็นท์ กรายน์ดิ้ง เทคโนโลยี่ส์ จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c254", "name": "บริษัท เอก โมบิลิตี้ จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c255", "name": "บริษัท เอคซ์ควิซิท ออโต้โมทีฟ พาร์ทส์ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c256", "name": "บริษัท เอพิคโวลท์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c257", "name": "บริษัท เอฟทีเอส ออโตโมทีฟ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c258", "name": "บริษัท เอส ที บี เท็กซ์ไทล์ อินดัสตรี จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c259", "name": "บริษัท เอสทรา ออโตโมทีฟ ซิสเต็มส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c260", "name": "บริษัท เอสอีดับบลิวเอส-คอมโพเนนท์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c261", "name": "บริษัท เอสเอส63 ออโต้เซอร์วิส จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c262", "name": "บริษัท เอสเอ็มอาร์ซี ออโตโมทีฟ สมาร์ท อินทีเรีย เทค (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c263", "name": "บริษัท เอ็นที เซอิมิทซุ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c264", "name": "บริษัท เอ็นวี โกชั่น จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c265", "name": "บริษัท เอ็นเอสที ทูบิวล่า โปรเซสซิ่ง (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ผลิตและจัดจำหน่ายท่อเหล็ก ผลิตภัณฑ์ในกลุ่มเหล็กและโลหะ", "relation": ""}, {"id": "c266", "name": "บริษัท เอ็นเอสที ไวร์ แอนด์ เวลดิ้ง (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c267", "name": "บริษัท เอ็มฮาร์ท เทคโนโลยีส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c268", "name": "บริษัท เฮลบรี ทองแดง อินดัสทรี (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c269", "name": "บริษัท เฮอร์เร็นคเน็ช (เอเซีย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c270", "name": "บริษัท แคททาเลอร์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c271", "name": "บริษัท แซดเอฟ ซีวี โซลูชั่นส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c272", "name": "บริษัท แซดเอฟ พาสซีฟ เซฟตี้ ซิสเต็มส์ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c273", "name": "บริษัท แพคเมท แอโรสเปซ จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c274", "name": "บริษัท แม็กซิส อินเตอร์เนชั่นแนล (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ผลิตยางรถยนต์และยางทุกประเภทที่ใช้สำหรับยานพาหนะและอุตสาหกรรมอื่นที่เกี่ยวข้อง", "relation": ""}, {"id": "c275", "name": "บริษัท แวร์เทค อินเตอร์เนชั่นแนล จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c276", "name": "บริษัท แอนคา แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c277", "name": "บริษัท แอนคา แมนูแฟคเจอริ่ง โซลูชั่นส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "อกแบบและผลิตชิ้นส่วนเครื่องกล ชิ้นส่วนอุปกรณ์ไฟฟ้า", "relation": ""}, {"id": "c278", "name": "บริษัท แอนโทลิน (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c279", "name": "บริษัท โคปแลนด์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": "เคยเข้าพบแล้ว"}, {"id": "c280", "name": "บริษัท โตโกะ เซอิซากุเซียว (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c281", "name": "บริษัท โตโยต้า โบโชคุ ฟิลเทรชั่น ซิสเต็ม (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c282", "name": "บริษัท โทยู อินดัสทรีส์ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c283", "name": "บริษัท โฟเรอเซีย อีมิสชัน คอนโทรล เทคโนโลยี่ส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c284", "name": "บริษัท โยชิโอกะ เซกิ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c285", "name": "บริษัท โยโกฮามา รับเบอร์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c286", "name": "บริษัท โยโกฮาม่า โมลด์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ผลิตแม่พิมพ์", "relation": ""}, {"id": "c287", "name": "บริษัท โยโรซึ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c288", "name": "บริษัท โยโรซึ เอ็นจิเนียริ่ง ซิสเต็ม (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c289", "name": "บริษัท ไดโด สิทธิผล จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c290", "name": "บริษัท ไดโดะ เอสพี (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c291", "name": "บริษัท ไทย คอนส์ แอนด์ บิลดิ้ง เมนูแฟ็คเจอริ่ง จำกัด (มหาชน)", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c292", "name": "บริษัท ไทย จีแอนด์บี แมนูแฟคเจอริ่ง จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c293", "name": "บริษัท ไทยซัมมิท อีสเทิร์น ซีบอร์ด โอโตพาร์ท อินดัสตรี จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c294", "name": "บริษัท ไทยไฟน์ ซินเตอร์ จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": "เคยเข้าพบแล้ว"}, {"id": "c295", "name": "บริษัท ไมน์ ออโต้โมทีฟ พาร์ทส์ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c296", "name": "บริษัท ไฮ-เทค พรีซิชั่น โมลด์ (ไทยแลนด์) จำกัด", "tambon": "ปลวกแดง", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c297", "name": "บริษัท ไฮเซ็ท เอ็นจิ้น ซิสเทม (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c298", "name": "บริษัท ไฮโดร เอ็นจิเนียริ่ง (เอเชีย) จำกัด", "tambon": "ปลวกแดง", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c299", "name": "บริษัทดานิลี่ ประเทศไทย จำกัด", "tambon": "ปลวกแดง", "type": "ออกแบบ ผลิต และติดตั้งเครื่องจักรสำหรับอุตสาหกรรมเหล็กและโลหะ", "relation": ""}, {"id": "c300", "name": "ยามาเซอิไทย จำกด", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c301", "name": "ออโต้อัลลายแอนซ์ (ประเทศไทย) จำกัด(สอจ.นศ.)", "tambon": "ปลวกแดง", "type": "ประกอบรถยนต์ และแผงเซลล์แสงอาทิตย์", "relation": ""}, {"id": "c302", "name": "เอ็นอาร์บี แบริ่งส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "ผลิตชิ้นส่วนรถยนต์", "relation": ""}, {"id": "c303", "name": "เอ็นเอสที ไวร์ แอนด์ เวลดิ้ง (ประเทศไทย) จำกัด(สอจ.นศ.)", "tambon": "ปลวกแดง", "type": "ผลิตเหล็กม้วน", "relation": ""}, {"id": "c304", "name": "แอนคา ชีท เมททอล โซลูชั่นส์ (ประเทศไทย)", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c305", "name": "โฟเรอเซีย แอนด์ ซัมมิท อินทีเรีย ซิสเต็มส์ (ประเทศไทย) จำกัด", "tambon": "ปลวกแดง", "type": "อุตสาหกรรมผลิตชิ้นส่วนรถยนต์", "relation": ""}]}, {"tambon": "แม่น้ำคู้", "companies": [{"id": "c306", "name": "นิคมอุตสาหกรรมดับบลิวเอชเอ อีสเทิร์นซีบอร์ด 4 ", "tambon": "แม่น้ำคู้", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c307", "name": "บริษัท ฉางอาน ออโต้ คอมโพเน้นท์ส (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c308", "name": "บริษัท ฉางอาน ออโต้ เซ้าท์อีส เอเชีย จำกัด", "tambon": "แม่น้ำคู้", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c309", "name": "บริษัท ซิงซิง รีฟริจเจอเรชั่น (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c310", "name": "บริษัท ซินซ วิน ไทย จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c311", "name": "บริษัท ดักส์ ซูง จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c312", "name": "บริษัท ดักส์ ซูง ไดแคสติ้ง จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c313", "name": "บริษัท ติ่งเฮ่า อินเตอร์เนชั่นแนล แอดวานซ์ แมททีเรียลส์ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c314", "name": "บริษัท ติ่งเฮ่า อินเตอร์เนชั่นแนล แอดวานซ์ แมททีเรียลส์ แอนด์ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c315", "name": "บริษัท ฟิวเจอร์ซายน์ เทรดดิ้ง จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c316", "name": "บริษัท ภูสินธารา จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c317", "name": "บริษัท มูนซุง อิเล็คทรอนิค (ไทยแลนด์) จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c318", "name": "บริษัท หัวเฟิง ทูลส์ (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c319", "name": "บริษัท อัล เมทัล จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c320", "name": "บริษัท อิล จิน อิเล็กทรอนิคส์ (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c321", "name": "บริษัท เคียงฮัน (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c322", "name": "บริษัท เซ้าท์ สตาร์ จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c323", "name": "บริษัท เฟิงเทียน อิเล็กทรอนิกส์ (ไทยแลนด์) จำกัด", "tambon": "แม่น้ำคู้", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c324", "name": "บริษัท เอส.ดี.จี (เอส.ดี โกลเบิล) จำกัด", "tambon": "แม่น้ำคู้", "type": "ผลิตอะไหล่ อุปกรณ์อิเล็กทรอนิกส์ และเครื่องใช้อิเล็กทรอนิกส์สำหรับใช้ในครัวเรือน", "relation": ""}, {"id": "c325", "name": "บริษัท เฮซุง อิเลคทรอนิคส์(ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c326", "name": "บริษัท แคนาเดียน โซลาร์ แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c327", "name": "บริษัท ไทย ฮิราโอะ จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c328", "name": "บริษัท ไทยยูนิต แบร์ริ่ง มอเตอร์ จำกัด", "tambon": "แม่น้ำคู้", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c329", "name": "บริษัท ไทยล็อค ฟาสท์เทนเนอร์ส จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c330", "name": "บริษัท ไทยไวร์ อินดัสทรี (ระยอง) จำกัด", "tambon": "แม่น้ำคู้", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c331", "name": "บริษัท ไฟเบอร์ คิง จำกัด", "tambon": "แม่น้ำคู้", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c332", "name": "บริษัท ไฮเท็ค แคสต์  จำกัด", "tambon": "แม่น้ำคู้", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c333", "name": "ห้างหุ้นส่วนจำกัด อีสเทิร์นการาจ", "tambon": "แม่น้ำคู้", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}]}, {"tambon": "ละหาร", "companies": [{"id": "c334", "name": "บริษัท คาวามาตะ อินโนเวชั่น (ประเทศไทย) จำกัด", "tambon": "ละหาร", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}]}, {"tambon": "ตาสิทธิ์", "companies": [{"id": "c335", "name": "ซูมิริโกะ เคมิคัล แอนด์ พลาสติก โปรดักส์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์อัจฉริยะและเซมิคอนดักเตอร์", "relation": ""}, {"id": "c336", "name": "ทาเคดะอุตสาหกรรม (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ปั้มชิ้นส่วนยานยนต์", "relation": ""}, {"id": "c337", "name": "บริษัท กราวด์ เอฟเฟคส์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c338", "name": "บริษัท กีล อินดัสเตรียล (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c339", "name": "บริษัท คิริว (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c340", "name": "บริษัท จิคุมะ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c341", "name": "บริษัท จินต๋า พรีซิชั่น (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c342", "name": "บริษัท จูบุ เทคโน (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c343", "name": "บริษัท ชิน สตีล (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c344", "name": "บริษัท ชุน เทียน เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c345", "name": "บริษัท ชุนเล่ย (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c346", "name": "บริษัท ซังอินอีเลคโทรนิคส์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c347", "name": "บริษัท ซัมมิท  ฮิโรทานิ ซูกิฮาร่า จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c348", "name": "บริษัท ซัมมิท แหลมฉบัง โอโต บอดี้ เวิร์ค จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c349", "name": "บริษัท ซิงเดนเก็น(ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c350", "name": "บริษัท ซีโนเล็ค เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c351", "name": "บริษัท ซุงฮวาเทค (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ผลิตและซื้อมาขายไป และแบ่งบรรจุ ชิ้นส่วนพลาสติก และยางสังเคราะห์ สำหรับอุตสาหกรรม เช่น แผ่นฉนวนกันความร้อน และแผ่นฉนวนกันเสียงรถยนต์", "relation": ""}, {"id": "c352", "name": "บริษัท ซุรุกะ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c353", "name": "บริษัท ซูซูกิ มอเตอร์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c354", "name": "บริษัท ดง วู ไทย จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c355", "name": "บริษัท ดานิลี่ ออโตเมชั่น จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c356", "name": "บริษัท ดูชอน ออโตโมทีฟ (ประเทศไทย) จำกัด ", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c357", "name": "บริษัท ทัก สปริง อินดัสทรี จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c358", "name": "บริษัท ทีที แอสเซมบลี อีสท์  จำกัด", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c359", "name": "บริษัท ท็อป ลิงค์ อินดัสเทรียล (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c360", "name": "บริษัท นิสสัน สปริง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c361", "name": "บริษัท บอร์กวอร์เนอร์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c362", "name": "บริษัท บอร์กวอร์เนอร์ พีดีเอส (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c363", "name": "บริษัท ปาร์คเกอร์ เอ็นยิเนียริ่ง (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c364", "name": "บริษัท พรีซิชั่น วาล์ว (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c365", "name": "บริษัท พีจีไอ ออโต้ คอมโพเนนท์ส (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c366", "name": "บริษัท ฟอร์ด มอเตอร์ คัมปะนี (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c367", "name": "บริษัท ฟาสท์ ออโต้ ไดร์ฟ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c368", "name": "บริษัท ฟูเซะราชิ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c369", "name": "บริษัท ฟู่หยวน โคทิงค์ จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c370", "name": "บริษัท มันน์ แอนด์ ฮุมเมิล (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c371", "name": "บริษัท มารูยาซึ อินดัสตรีส์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c372", "name": "บริษัท มาร์ส อินดัสทรี (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c373", "name": "บริษัท มิค ที โท่ อินดัสทรีส์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c374", "name": "บริษัท ยู-ชิน (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ผลิตและจำหน่ายชิ้นส่วนยานยยนต์", "relation": ""}, {"id": "c375", "name": "บริษัท ยูไนเต็ดคอยล์เซ็นเตอร์ จำกัด", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c376", "name": "บริษัท ริทึม ออโตโมทีฟ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c377", "name": "บริษัท วาย-โอกูระ ออโตโมทีฟ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c378", "name": "บริษัท วาร์เรค (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c379", "name": "บริษัท วิโค่ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c380", "name": "บริษัท วีสทีออน ออโตโมทีฟ อิเลคทรอนิคส์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c381", "name": "บริษัท วูเทคไทย จำกัด", "tambon": "ตาสิทธิ์", "type": "ประกอบล้อรถยนต์และชุดเพลา ผลิตชิ้นส่วนพลาสติก ผลิตและประกอบพาเลทและบรรจุภัณฑ์ที่ทำจากเหล็ก ให้เช่า ให้บริการพื้นที่อาอาคสำนักงานและโรงงาน", "relation": ""}, {"id": "c382", "name": "บริษัท สมบูรณ์ ฟอร์จจิ้ง เทคโนโลยี จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c383", "name": "บริษัท สยาม ชูโย จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c384", "name": "บริษัท สยาม โฮวา จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c385", "name": "บริษัท สุทาอิ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c386", "name": "บริษัท สุพรีม โฟสทรีออน (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c387", "name": "บริษัท หงษ์ลี่ ออโต้ พาร์ท (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c388", "name": "บริษัท ออโต้ อินทีเรียร์ โปรดักส์ จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c389", "name": "บริษัท อาร์เมย์ไท จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c390", "name": "บริษัท อิมาอิ เมทัล (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c391", "name": "บริษัท อีซูซุ โลจิสติกส์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c392", "name": "บริษัท อียูพี ยานยนต์ไฟฟ้า (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c393", "name": "บริษัท อูเมโตกุ ไทยแลนด์ จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c394", "name": "บริษัท อเมริกัน แอ็คเซิล แอนด์ แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c395", "name": "บริษัท ฮันอิล ฟอร์จิ้ง (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c396", "name": "บริษัท ฮิโรเทค แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c397", "name": "บริษัท เค.ดับบลิว. ไวร์เมช จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c398", "name": "บริษัท เคจี สตีล (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c399", "name": "บริษัท เคียวว่า คาสติ้ง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c400", "name": "บริษัท เจมส์สัน ออโตโมทีฟ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c401", "name": "บริษัท เจเทคโตะ คอลัมน์ ซิสเต็มส์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c402", "name": "บริษัท เจเทคโตะ โคทติ้ง (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c403", "name": "บริษัท เจเอฟอี สตีล กัลวาไนซิ่ง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c404", "name": "บริษัท เซอิมิทซุ ไทย จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c405", "name": "บริษัท เซี่ยงหลง แมนูแฟคเจอริ่ง (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c406", "name": "บริษัท เมทัลซ่า (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c407", "name": "บริษัท เมอร์รี่ อิเลคทรอนิคส์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c408", "name": "บริษัท เมืองใหม่โครเมี่ยม อิเล็คโตร เพลทติ้ง จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c409", "name": "บริษัท เยนเฟิง ออโตโมทีฟ อินทีเรีย ซิสเต็มส์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c410", "name": "บริษัท เหิงหยวน ไซเอนซ์ แอนด์ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c411", "name": "บริษัท เอ-พลา ไฮเทค จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c412", "name": "บริษัท เอช-ดี มอเตอร์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c413", "name": "บริษัท เอช-ดี มอเตอร์ไซเคิล (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c414", "name": "บริษัท เอชดีเอ็มซี (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c415", "name": "บริษัท เอสเซนเวย์ เทคโนโลยี ดีเวลลอปเม้นท์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c416", "name": "บริษัท เออาร์บี (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c417", "name": "บริษัท เอเทค ออโตโมทีฟ จำกัด", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c418", "name": "บริษัท เอ็นเอชเค สปริง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ผลิตอุปกรณ์ชิ้นส่วนภายในรถยนต์", "relation": ""}, {"id": "c419", "name": "บริษัท เอ็มเอสเอสแอล ดับเบิ้ลยูเอช ซิสเต็ม (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ผลิตชุดสายไฟยานยนต์ (Wiring Harness)", "relation": ""}, {"id": "c420", "name": "บริษัท แคลเรียน เอเซีย (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เก็บชิ้นส่วนวิทยุติดรถยนต์", "relation": ""}, {"id": "c421", "name": "บริษัท แซดเอฟ เลมฟอร์เดอร์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c422", "name": "บริษัท แอคเวล ระยอง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ผลิตและประกอบชิ้นส่วนยานพาหนะ รวมทั้งนำเข้า ส่งออก และเป็นตัวแทนจำหน่ายและอื่นไที่เกี่ยวข้อง", "relation": ""}, {"id": "c423", "name": "บริษัท แอร์ อินเตอร์เนชั่นแนล เทอร์มอล ซิสเต็มส์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c424", "name": "บริษัท แอลจี อีเลคทรอนิคส์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c425", "name": "บริษัท แอสเตโม ระยอง จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c426", "name": "บริษัท แฮร์ริงตัน อินดัสทรีส์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c427", "name": "บริษัท โกลบอล อีโค-แคน สต็อค (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c428", "name": "บริษัท โกลเด้นคอนน์ เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c429", "name": "บริษัท โคพาร์ทเนอร์ เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "การผลิตเคเบิลเส้นใยนำแสง", "relation": ""}, {"id": "c430", "name": "บริษัท โคเบลโก้ คอนสตรัคชั่น แมชีนเนอรี่ เซาท์อีส เอเชีย จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c431", "name": "บริษัท โจเนส เทค (ประเทศไทย) จํากัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c432", "name": "บริษัท โดวะ เทอร์โมเทค (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c433", "name": "บริษัท โพรสเปค อินเตอร์เนชั่นแนล จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c434", "name": "บริษัท โยโกยาม่า โกเกียว (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c435", "name": "บริษัท โยโกฮามา ไทร์ แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c436", "name": "บริษัท โลจิสติก อัลลายแอนซ์ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c437", "name": "บริษัท โอริกส์ อิเล็คทริคอล เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c438", "name": "บริษัท ไทย เจอี เทคโนโลยี จำกัด", "tambon": "ตาสิทธิ์", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c439", "name": "บริษัท ไทยซัมมิท พีเค คอร์ปอเรชั่น จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c440", "name": "บริษัท ไทยซัมมิท พีเค คอร์เปอเรชั่น จำกัด", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c441", "name": "บริษัท ไทยซัมมิท ระยอง ออโต พาร์ท อินดัสตรี จำกัด ", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c442", "name": "บริษัท ไทยซัมมิท ระยอง โอโตพาร์ท อินดัสตรี จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c443", "name": "บริษัท ไทยซัมมิท เคเบิ้ล แอนด์ พาร์ท จำกัด ", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c444", "name": "บริษัท ไทยซัมมิท เมจิ ฟอร์จจิ้ง จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c445", "name": "บริษัท ไทยซัมมิท เอนจิเนียริง จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c446", "name": "บริษัท ไทยซัมมิท โรลฟอร์มมิ่ง เทคโนโลยี จำกัด", "tambon": "ตาสิทธิ์", "type": "ผลิตชิ้นส่วนรถยนต์", "relation": ""}, {"id": "c447", "name": "บริษัท ไทยซัมมิท โอโตโมทีฟ จำกัด", "tambon": "ตาสิทธิ์", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c448", "name": "บริษัท ไทยซัมมิทมิทซูบะอีเล็คทริคแมนูแฟ็คเจอริ่ง จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c449", "name": "บริษัท ไทยเรย์ เมทัล จำกัด", "tambon": "ตาสิทธิ์", "type": "การผลิตเหล็กและเหล็กกล้า", "relation": ""}, {"id": "c450", "name": "บริษัท ไทยโอกาว่า จำกัด", "tambon": "ตาสิทธิ์", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c451", "name": "บริษัท ไทเกอร์เฟล็กซ์ (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "การผลิตอุปกรณ์เดินสายไฟฟ้า", "relation": ""}, {"id": "c452", "name": "บริษัท ไฮเออร์ แอนด์ ดีเทล ออโต้ พาร์ท (ไทยแลนด์) จำกัด", "tambon": "ตาสิทธิ์", "type": "เป็นธุรกิจผลิตชิ้นส่วนรถยนต์ เครื่องยนต์ดีเซล การผลิตชิ้นส่วนและอุปกรณ์เสริมอื่นๆ", "relation": ""}, {"id": "c453", "name": "บริษัทไทยซัมมิท โอโตโมทีฟ จำกัด สาขา 1", "tambon": "ตาสิทธิ์", "type": "อุตสาหกรรมยานยนต์สมัยใหม่และ EV", "relation": ""}, {"id": "c454", "name": "โบโชคุ ออโตโมทีฟ (ประเทศไทย) จำกัด", "tambon": "ตาสิทธิ์", "type": "ชิ้นส่วนยานยนต์", "relation": ""}]}]}, "นิคมพัฒนา": {"chain": ["พนานิคม", "มะขามคู่", "นิคมพัฒนา", "มาบข่า"], "tambon_counts": [{"tambon": "พนานิคม", "count": 57}, {"tambon": "มะขามคู่", "count": 38}, {"tambon": "นิคมพัฒนา", "count": 26}, {"tambon": "มาบข่า", "count": 43}], "legs": [{"from": "พนานิคม", "to": "มะขามคู่", "km": 7.6}, {"from": "มะขามคู่", "to": "นิคมพัฒนา", "km": 9.5}, {"from": "นิคมพัฒนา", "to": "มาบข่า", "km": 5.9}], "total_companies": 164, "sections": [{"tambon": "พนานิคม", "companies": [{"id": "c455", "name": "BYD Auto (Thailand) Co., Ltd.", "tambon": "พนานิคม", "type": "ผลิตและประกอบยานยนต์ไฟฟ้า (EV) และแบตเตอรี่รถยนต์ไฟฟ้า", "relation": ""}, {"id": "c456", "name": "Choho Industrial (Thailand) Co., Ltd.", "tambon": "พนานิคม", "type": "ผลิตและจำหน่ายโซ่ เฟือง สำหรับรถยนต์ รถจักรยานยนต์ และเครื่องจักรกลการเกษตร", "relation": ""}, {"id": "c457", "name": "Fly High Technology Co., Ltd.", "tambon": "พนานิคม", "type": "ผลิตและจำหน่ายลวดเหล็กอุตสาหกรรม ลวดสำหรับยางรถยนต์ และตัวยึดโลหะ", "relation": ""}, {"id": "c458", "name": "Forvia Faurecia (Thailand) Co., Ltd.", "tambon": "พนานิคม", "type": "ผลิตชิ้นส่วนภายในรถยนต์ ระบบไอเสีย และเบาะนั่งรถยนต์", "relation": ""}, {"id": "c459", "name": "Haite Group", "tambon": "พนานิคม", "type": "ผลิตเครื่องมือและอุปกรณ์วัดขนาดเชิงอุตสาหกรรม: โรงงานแห่งนี้เน้นผลิตเครื่องมือและอุปกรณ์วัดขนาดเชิงอุตสาหกรรม: โรงงานแห่งนี้เน้นการผลิตและจัดจำหน่ายเครื่องมือวัดความละเอียดสูง", "relation": ""}, {"id": "c460", "name": "Quantum SPT Co., Ltd.", "tambon": "พนานิคม", "type": "ผลิตเครื่องปั๊มเซอร์โวไฟฟ้าแรงดันสูงพิเศษ (Ultra-high pressure electric servo pumps) และเครื่องจักรเฉพาะทาง", "relation": ""}, {"id": "c461", "name": "TZY / Thaiya Group", "tambon": "พนานิคม", "type": "ผลิตชิ้นส่วนโลหะปั๊มขึ้นรูป ชิ้นส่วนพลาสติก และแม่พิมพ์สำหรับยานยนต์", "relation": ""}, {"id": "c462", "name": "บริษัท กวิน เอส.อินดัสทรี่ จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c463", "name": "บริษัท กู่เด้ง แมชชีนเนอรี่ แอสเซ็มบลิ่ง (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c464", "name": "บริษัท ควอร์ค แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c465", "name": "บริษัท คีพ เบสท์ พีซีบี แอสเซมบลี (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c466", "name": "บริษัท จงเทียนต๋า ทูลส์ (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "ารผลิตเครื่องมือที่ใช้งานด้วยมือและเครื่องโลหะ", "relation": ""}, {"id": "c467", "name": "บริษัท จงเป่า เอ็นเตอร์ไพรส์ จำกัด", "tambon": "พนานิคม", "type": "การขายส่งแร่โลหะที่เป็นเหล็กและนอกกลุ่มเหล็ก", "relation": ""}, {"id": "c468", "name": "บริษัท ฉี๋จิง อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c469", "name": "บริษัท ชาญนครวิศวกรรม จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c470", "name": "บริษัท ชูฮู อินดัสเตรียล (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c471", "name": "บริษัท ซันฮัว อินเทลลิเจ้นต์ ไดรฟ์ (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c472", "name": "บริษัท ซีเอฟโมโต ออโต้ พาทส์ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c473", "name": "บริษัท ดีซีเอ็ม(ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c474", "name": "บริษัท ทอริน (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c475", "name": "บริษัท ท๊อปปิ้ง ฮัดสัน พรีซิชั่น อินดัสเทรียล จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c476", "name": "บริษัท นิสเซ่นส์ แฮนดิคราฟท์ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c477", "name": "บริษัท บลู เทค จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c478", "name": "บริษัท บีวายดี ออโต้ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c479", "name": "บริษัท บีวายดี ออโต้ คอมโพเนนท์ส (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c480", "name": "บริษัท ปิ่นเพชร มารีน จำกัด", "tambon": "พนานิคม", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c481", "name": "บริษัท ฝอซาน จินเปิ่น (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c482", "name": "บริษัท ฟางต้า โฮลดิ้ง (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c483", "name": "บริษัท ฟีนิกซ์ เอ็นจิเนียริ่ง แอนด์ คอนสตรัคชั่น จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c484", "name": "บริษัท มี่ ฮา เมทัล เวิร์คส์ (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c485", "name": "บริษัท ยานคอน ไลท์ติ้ง (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c486", "name": "บริษัท รีเจนท์ พรีซิชั่น (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c487", "name": "บริษัท สิรินเอ็นจิเนียริ่ง จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c488", "name": "บริษัท อดิชั่น ไลท์ติ้ง (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c489", "name": "บริษัท อินโฟร์ เอ็นไวรอนเมนท์ อินเทลลิเจนท์ อีควิปเมนท์ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c490", "name": "บริษัท อิโนแวนซ์ ออโตโมทีฟ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c491", "name": "บริษัท อ่าวดุ้ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c492", "name": "บริษัท เคเคอี เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c493", "name": "บริษัท เคเอ็มเอส เมนเทนแนนซ์ แอนด์ เซอร์วิส จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c494", "name": "บริษัท เจซี เทค เอเซีย จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c495", "name": "บริษัท เจตาแบค จำกัด (มหาชน)", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c496", "name": "บริษัท เจ้าด้า อีควิปเม้นท์ (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c497", "name": "บริษัท เซียว เซียง เคมีคอล อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c498", "name": "บริษัท เทียนสี คิทเช่น แอพพลายแอนซ์ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c499", "name": "บริษัท เฟิร์ส ควอลิตี้ เซอร์คิท จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c500", "name": "บริษัท เฟ่ยหลิงไทย ทูลส์ จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c501", "name": "บริษัท เอ ทีม เมนเทนแนนท์ แอนด์ เซอร์วิส จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c502", "name": "บริษัท เอฟแอลวาย เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c503", "name": "บริษัท เอส. เอฟ. สตีล สตรัคเจอร์ แมนูแฟคเจอริ่ง จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c504", "name": "บริษัท เอ็กซ์เซล แอดวานซ์ อิเล็กทรอนิกส์ (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c505", "name": "บริษัท แคนสโตน (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c506", "name": "บริษัท แทวุน อินดัสเตรียล จำกัด", "tambon": "พนานิคม", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c507", "name": "บริษัท แฟบเทค จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c508", "name": "บริษัท แมนส์ฟิลด์ (ไทยแลนด์) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c509", "name": "บริษัท โฟเรอเซีย ออโตโมทีฟ พาร์ทส (ประเทศไทย) จำกัด", "tambon": "พนานิคม", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c510", "name": "บริษัท ไทยเฮฟวี่ อินดัสตรี จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c511", "name": "บริษัท ไพศาลพูนทรัพย์ระยอง (1999) จำกัด", "tambon": "พนานิคม", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}]}, {"tambon": "มะขามคู่", "companies": [{"id": "c512", "name": "บริษัท กรุ๊ป แอตแลนติก (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c513", "name": "บริษัท คอทโก้เมททอลเวอร์คส จำกัด (มหาชน)", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c514", "name": "บริษัท ซี.อี.เมค.เอ็นจิเนียริ่ง (1999) จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c515", "name": "บริษัท ทองรัน อิควิปเม้นท์ ดีเวลลอปเม้น(ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c516", "name": "บริษัท บิลท์เท็ค ซัพพลาย (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c517", "name": "บริษัท บีเจซี เฮฟวี่ อินดัสทรี จำกัด (มหาชน)", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c518", "name": "บริษัท บีเอ็มซีที อินดัสทรี จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c519", "name": "บริษัท ฟงซาน อินเตอร์เนชั่นแนล (ไทยแลนด์) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c520", "name": "บริษัท มามมุท (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c521", "name": "บริษัท ยี่เจีย คอนสตรัคชั่น เอ็นจิเนียริ่ง (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c522", "name": "บริษัท สตีลเมอร์ จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c523", "name": "บริษัท อัลติเมท สปริงส์ (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c524", "name": "บริษัท อาร์.เอ็ม.ซี.อินดัสเตรียล จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c525", "name": "บริษัท อินฟินิตี้ พาร์ท จำกัด", "tambon": "มะขามคู่", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c526", "name": "บริษัท ฮานม่า (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c527", "name": "บริษัท เจียเหวิน ออโต้ พาร์ท (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c528", "name": "บริษัท เฉียงเหอ พรีซีซั่น แมชชีนเนอรี่ จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c529", "name": "บริษัท เทคสตรอง อิเล็คทรอนิกส์ (ไทยแลนด์) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c530", "name": "บริษัท เบสท์ เพอฟอร์แมนซ์ เอ็นจิเนียริ่ง จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c531", "name": "บริษัท เอชซีจี จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c532", "name": "บริษัท เอชเอชเอ (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c533", "name": "บริษัท เอชไอที (บีเคเค) จำกัด", "tambon": "มะขามคู่", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c534", "name": "บริษัท เอส เอ็น ซี ครีเอติวิตี้ แอนโทโลจี จำกัด", "tambon": "มะขามคู่", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c535", "name": "บริษัท เอส เอ็น ซี แอตแลนติก วอเตอร์ ฮีตเตอร์ เอเซีย จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c536", "name": "บริษัท เอส เอ็น ซี แอตแลนติก ฮีต ปัมพ์ จำกัด", "tambon": "มะขามคู่", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c537", "name": "บริษัท เอสซีไอ สยาม โคเรีย อินดัสเตรียล จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c538", "name": "บริษัท เอสเอ็นซี ครีเอติวิตี้ แอนโทโลจี จำกัด", "tambon": "มะขามคู่", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c539", "name": "บริษัท แคสท์เตม่า เฮฟวี่ อินดัสทรี จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c540", "name": "บริษัท แทนเจ้นท์ คานาเดเวีย จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c541", "name": "บริษัท โอโมดา แอนด์ เจคู (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c542", "name": "บริษัท โอโมดา แอนด์ เจคู แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c543", "name": "บริษัท ไทยเหรียญฟอคลิฟท์ จำกัด", "tambon": "มะขามคู่", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c544", "name": "บริษัท ไทยแมชชีนโปรดักส์ จำกัด", "tambon": "มะขามคู่", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c545", "name": "บริษัท ไท่ฮั้ว นิว เอ็นเนอร์ยี (ไทยแลนด์) จำกัด", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c546", "name": "บริษัท ไฟน์ คอมโปรแนนท์ (ประเทศไทย) จำกัด", "tambon": "มะขามคู่", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c547", "name": "บริษัท ไอ-บีพีพี จำกัด", "tambon": "มะขามคู่", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c548", "name": "ห้างหุ้นส่วนจำกัด เอ็น ไอ เอ็นจิเนียริ่ง", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c549", "name": "ห้างหุ้นส่วนจำกัด เอ็น.อาร์.ดี.สตีลพาร์ท แอนด์ ซัพพลาย 2556", "tambon": "มะขามคู่", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}]}, {"tambon": "นิคมพัฒนา", "companies": [{"id": "c550", "name": "EVERSPARK CO., LTD", "tambon": "นิคมพัฒนา", "type": "ผลิตชิ้นส่วนระบบไฟฟ้า แบตเตอรี่ และอุปกรณ์พลังงาน", "relation": ""}, {"id": "c551", "name": "THAILER SEMICONDUCTOR CO., LTD", "tambon": "นิคมพัฒนา", "type": "ผลิตแผงวงจร ชิ้นส่วนอิเล็กทรอนิกส์ และระบบชิปเซมิคอนดักเตอร์", "relation": ""}, {"id": "c552", "name": "บจก. แปซิฟิค พรีซิชั่น ฟอร์จจิ้ง เทคโนโลยี (ประเทศไทย)", "tambon": "นิคมพัฒนา", "type": "โรงงานผลิตเหล็ก รีดและหล่อหลอมโลหะ/ชิ้นส่วนรถยนต์", "relation": ""}, {"id": "c553", "name": "บริษัท ควาง อิล (ไทย) จำกัด", "tambon": "นิคมพัฒนา", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c554", "name": "บริษัท ควาง อิล เอ็นจิเนียริ่ง (ไทย) จำกัด", "tambon": "นิคมพัฒนา", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c555", "name": "บริษัท จินถัว อินเตอร์เนชั่นแนล อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "นิคมพัฒนา", "type": "ผลิตโลหะขั้นมูลฐาน", "relation": ""}, {"id": "c556", "name": "บริษัท จินเทียน คอปเปอร์ (ไทยแลนด์) จำกัด", "tambon": "นิคมพัฒนา", "type": "ผลิตเครื่องใช้ไฟฟ้าและอุปกรณ์", "relation": ""}, {"id": "c557", "name": "บริษัท จินไซ ทูลส์ (ไทยแลนด์) จำกัด", "tambon": "นิคมพัฒนา", "type": "ผลิตเครื่องจักรและเครื่องกล", "relation": ""}, {"id": "c558", "name": "บริษัท จินไห ฮาร์ดแวร์ จำกัด", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c559", "name": "บริษัท ซันฮัว อินดัสทรี (ไทยแลนด์) จำกัด", "tambon": "นิคมพัฒนา", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c560", "name": "บริษัท ทานตะวัน คอนสตรัคชั่น แอนด์ เซอร์วิส จำกัด", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c561", "name": "บริษัท ลีดเดอร์ เมทัล เทค ไทย จำกัด", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c562", "name": "บริษัท วัฒนไพศาลเอ็นยิเนียริ่ง จำกัด", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c563", "name": "บริษัท อริยะ (2020) จำกัด ", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c564", "name": "บริษัท อินดัสเทรียล คอนสตรัคชั่น แอนด์ เมนแทนแนนซ์ เซอร์วิสเซส จำกัด (มหาชน)", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c565", "name": "บริษัท เค เอส อาร์ อินดัสทรีส์ จำกัด", "tambon": "นิคมพัฒนา", "type": "ผลิตเครื่องใช้ไฟฟ้าและอุปกรณ์", "relation": ""}, {"id": "c566", "name": "บริษัท เจเอชซี อิเล็กทริเคิล แอพพลายแอนซ์ (ประเทศไทย) จำกัด", "tambon": "นิคมพัฒนา", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c567", "name": "บริษัท เฟ้ลปส์ ดอด์จ อินเตอร์เนชั่นแนล (ไทยแลนด์) จำกัด", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c568", "name": "บริษัท เสถียรสเตนเลสสตีล จำกัด (มหาชน)", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c569", "name": "บริษัท เอสทีพี แอนด์ ไอ จำกัด(มหาชน)", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c570", "name": "บริษัท เออาร์ซี ออโตโมทีฟ (ประเทศไทย) จำกัด", "tambon": "นิคมพัฒนา", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c571", "name": "บริษัท แปซิฟิค พรีซิชั่น ฟอร์จจิ้ง เทคโนโลยี (ประเทศไทย)  จำกัด", "tambon": "นิคมพัฒนา", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c572", "name": "บริษัท แสงตะวันแมชชีนเนอรี่ จำกัด", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c573", "name": "บริษัท ไทยคูน เวิลด์ไวด์ กรุ๊ป (ประเทศไทย) จำกัด (มหาชน)", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c574", "name": "บริษัท ไทยเลอ เซมิคอนดักเตอร์ จำกัด", "tambon": "นิคมพัฒนา", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c575", "name": "บริษัท ไทยแมคคานิคัล คอนสตรัคชั่น จำกัด", "tambon": "นิคมพัฒนา", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}]}, {"tambon": "มาบข่า", "companies": [{"id": "c576", "name": "บริษัท คิว-ไทย ออโต้ พาร์ทส จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c577", "name": "บริษัท ซัมซุง เอ็ฟวี อินดัสตรี (ประเทศไทย) จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c578", "name": "บริษัท ซิงหว่าไท่ แมนูแฟคเจอริ่ง จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c579", "name": "บริษัท ซิโทรนิค ออโตโมทีฟ เทคโนโลยี จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c580", "name": "บริษัท ซีทีซีไอ (ประเทศไทย) จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c581", "name": "บริษัท ซีอาร์3 (ประเทศไทย) จำกัด", "tambon": "มาบข่า", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c582", "name": "บริษัท ดี - พัฒนะมงคล จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c583", "name": "บริษัท ถังทอง เอ็นจิเนียริ่ง จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c584", "name": "บริษัท บีที เมทัลเฟล็ก เอ็นจิเนียริ่ง จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c585", "name": "บริษัท พี.ซี.แอนด์ เค.โอ.เอนจิเนียริ่ง จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c586", "name": "บริษัท ฟาสต์ ทู คอร์ปอเรชั่น จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c587", "name": "บริษัท มัลติเฟส ออยล์ แอนด์ แก๊ส จำกัด", "tambon": "มาบข่า", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c588", "name": "บริษัท ลินเด้ (ประเทศไทย) จำกัด (มหาชน)", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c589", "name": "บริษัท วันทู เท็ค จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c590", "name": "บริษัท วี.เอส.เอ. เอ็นจิเนียริ่ง จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c591", "name": "บริษัท วีโซลูชั่น แมนูแฟคเจอริ่ง (ไทยแลนด์) จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c592", "name": "บริษัท สตีลสตรัค เอ็นจิเนียริ่ง จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c593", "name": "บริษัท สปริงฟีลด์ อินดัสทรี ดีเวลลอปเม้นท์ (ประเทศไทย) จำกัด", "tambon": "มาบข่า", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c594", "name": "บริษัท สหกลเซอร์วิสเซ็นเตอร์ จำกัด", "tambon": "มาบข่า", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c595", "name": "บริษัท สหไพศาลอินดัสทรี จำกัด", "tambon": "มาบข่า", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c596", "name": "บริษัท หงทีโอ เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c597", "name": "บริษัท เค.ที.แมชชีนนิ่ง เทคโนโลยี จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c598", "name": "บริษัท เจียยี่ อิเล็กทรอนิค เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "มาบข่า", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c599", "name": "บริษัท เชคแชมป์มอเตอร์ จำกัด", "tambon": "มาบข่า", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c600", "name": "บริษัท เทสโกเอ็นจิเนีย จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c601", "name": "บริษัท เทอร์โมเอ็กซ์ จำกัด", "tambon": "มาบข่า", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c602", "name": "บริษัท เอ ควิก จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c603", "name": "บริษัท เอซ เอ็นจิเนียริ่ง แอนด์ คอนสตรัคชั่น จำกัด", "tambon": "มาบข่า", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c604", "name": "บริษัท เอสทีชี ไดคาสติ้ง (ไทยแลนด์) จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c605", "name": "บริษัท เอเซี่ยนสติล โปรดักส์ จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c606", "name": "บริษัท เอไนเตอร์ อินดัสเตรียล ดีเวลลอปเมนท์ (ไทยแลนด์) จำกัด", "tambon": "มาบข่า", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c607", "name": "บริษัท เอ็ม อี ไอ เอ็นจิเนียริ่ง แอนด์ คอนสตรัคชั่น จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c608", "name": "บริษัท เอ็ม เอ ซี เอส จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c609", "name": "บริษัท เฮาเวล (ไทยแลนด์) จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c610", "name": "บริษัท แอดวานซ์ เซอร์เฟส เทคโนโลยี จำกัด", "tambon": "มาบข่า", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c611", "name": "บริษัท โตชู บลาสเทค จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c612", "name": "บริษัท โป ซิง อินดัสเทรียล (ประเทศไทย) จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c613", "name": "บริษัท โพสโค - ไทยน๊อคซ์ จำกัด (มหาชน)", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c614", "name": "บริษัท ไซน์คอมเพล็คซ์ (ไทยแลนด์) จำกัด", "tambon": "มาบข่า", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c615", "name": "บริษัท ไทย เอ็น ดี ที จำกัด (มหาชน)", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c616", "name": "บริษัท ไทยวอเตอร์ ฟิตติ้ง จำกัด", "tambon": "มาบข่า", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c617", "name": "บริษัท ไทยไซน์ ออโต้ พาร์ท จำกัด", "tambon": "มาบข่า", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c618", "name": "บริษัท ไมเดีย อินเทลลิเจนท์ แมนูแฟคเจอริ่ง (ประเทศไทย) จำกัด", "tambon": "มาบข่า", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}]}]}, "บ้านค่าย": {"chain": ["หนองละลอก", "บ้านค่าย", "บางบุตร", "ชากบก", "หนองบัว"], "tambon_counts": [{"tambon": "หนองละลอก", "count": 44}, {"tambon": "บ้านค่าย", "count": 1}, {"tambon": "บางบุตร", "count": 2}, {"tambon": "ชากบก", "count": 2}, {"tambon": "หนองบัว", "count": 31}], "legs": [{"from": "หนองละลอก", "to": "บ้านค่าย", "km": 8.5}, {"from": "บ้านค่าย", "to": "บางบุตร", "km": 2.2}, {"from": "บางบุตร", "to": "ชากบก", "km": 1.9}, {"from": "ชากบก", "to": "หนองบัว", "km": 12.1}], "total_companies": 80, "sections": [{"tambon": "หนองละลอก", "companies": [{"id": "c619", "name": "บริษท โนวัส เพาเวอร์ อิควิปเมนท์ จำกัด", "tambon": "หนองละลอก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c620", "name": "บริษัท จงต๋า เมทัล เทคโนโลยี จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c621", "name": "บริษัท จัวหลีต้า (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c622", "name": "บริษัท จินตงฟาง ออโตโมทีฟ อินทีเรีย ซิสเต็มส์ (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c623", "name": "บริษัท จี สตีล จำกัด (มหาชน)", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c624", "name": "บริษัท ฉางหลิง (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c625", "name": "บริษัท ซิน เคอ หยวน สตีล จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c626", "name": "บริษัท ซินหยู่ พรีซีชั่น (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c627", "name": "บริษัท ดง ซิง (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c628", "name": "บริษัท ที เอส เอ็น ไวร์ จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c629", "name": "บริษัท นวอินเตอร์เทค จำกัด", "tambon": "หนองละลอก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c630", "name": "บริษัท นิฮอน เทคโน ฮีท ทรีทเม้นท์ จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c631", "name": "บริษัท บิลเทค ออโตโมทีฟ จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c632", "name": "บริษัท ฟินิส เวล เมนูเฟคเจอริ่ง (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c633", "name": "บริษัท ฟิเดลลิตี้ ออโต้ คอมโพเนนส์ (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c634", "name": "บริษัท มิตรสตีล จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c635", "name": "บริษัท ยูนิคอร์น เคม อินดัสทรี่ จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c636", "name": "บริษัท ยูนิตี้ อินดัสเตรียล จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c637", "name": "บริษัท ยูมิคอร์ ออโต้แคท (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c638", "name": "บริษัท ยูไนเต็ด เมคคานิคอล เทคโนโลยี (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c639", "name": "บริษัท รอยัล เมทัล จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c640", "name": "บริษัท รุ่ยโป คอนสตรัคชัน แมชชีนเนอรี่ เซาอีสท์ เอเชีย จำกัด", "tambon": "หนองละลอก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c641", "name": "บริษัท รุ่ยไท่ พรีซิชั่น (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c642", "name": "บริษัท สตรองเกอร์ ไฮดรอลิค (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c643", "name": "บริษัท สตาร์ บัท (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c644", "name": "บริษัท สตาร์คอร์ จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c645", "name": "บริษัท สยามลวดเหล็กอุตสาหกรรม จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c646", "name": "บริษัท สเตเบล (เอเชีย-แปซิฟิค) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c647", "name": "บริษัท หย่งฟง เมคคานิคัล (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c648", "name": "บริษัท หรงลี่ เมทัล โพรดักส์ (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c649", "name": "บริษัท อินโน อินดัสทรี จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c650", "name": "บริษัท อีเลคโทรลักซ์ ประเทศไทย จำกัด", "tambon": "หนองละลอก", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c651", "name": "บริษัท ฮับเบิล ออโต้พาร์ท แมนูเฟคเจอร์ (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c652", "name": "บริษัท ฮาร์สโก้ เมทัล (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c653", "name": "บริษัท เซิงฉวน นิว แมททีเรียล (ไทยแลนด์) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c654", "name": "บริษัท เดลต้า ไฮดรอลิกส์ (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c655", "name": "บริษัท เบโค ไทย จำกัด", "tambon": "หนองละลอก", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c656", "name": "บริษัท เหย่าคุน แมชชินเนอรี่ จำกัด", "tambon": "หนองละลอก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c657", "name": "บริษัท แคทเธอร์พิลลาร์ (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "ผู้ผลิตเครื่องจักรกลหนัก อุปกรณ์ก่อสร้าง", "relation": ""}, {"id": "c658", "name": "บริษัท แสงไทยเมตัลดรัม จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c659", "name": "บริษัท โฮชุง อินดัสเตรียล(ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c660", "name": "บริษัท ไทยสตีลอินเตอร์เนชั่นแนล จำกัด", "tambon": "หนองละลอก", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c661", "name": "บริษัท ไทเลน เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c662", "name": "บริษัท ไวร์มาสเตอร์ (ประเทศไทย) จำกัด", "tambon": "หนองละลอก", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}]}, {"tambon": "บ้านค่าย", "companies": [{"id": "c663", "name": "บริษัท ชูฮะสึ (ประเทศไทย) จำกัด", "tambon": "บ้านค่าย", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}]}, {"tambon": "บางบุตร", "companies": [{"id": "c664", "name": "บริษัท หัวไท่ อินเทลลิเจนท์ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "บางบุตร", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c665", "name": "ห้างหุ่นส่วนจำกัด บ้านค่าย ซัพพลาย แอนด์ เซอร์วิส", "tambon": "บางบุตร", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}]}, {"tambon": "ชากบก", "companies": [{"id": "c666", "name": "บริษัท เจเนซิส เอ็นจิเนียริ่ง แอนด์ เทอร์มอล โซลูชั่นส์ จำกัด", "tambon": "ชากบก", "type": "ผลิตอุปกรณ์ไฟฟ้าอื่นๆ", "relation": ""}, {"id": "c667", "name": "บริษัท เอ็น.ซี.แมชชีนเนอรี่ จำกัด", "tambon": "ชากบก", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}]}, {"tambon": "หนองบัว", "companies": [{"id": "c668", "name": "บริษัท กาแลคซี่ วาล์วส์ (ประเทศไทย) จำกัด ", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c669", "name": "บริษัท ก่วงธงเทคโนโลยี จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c670", "name": "บริษัท ครีเอทีฟ โพลิเมอร์ส จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c671", "name": "บริษัท คอร์อัน ออโต้ พาร์ท (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c672", "name": "บริษัท คิวเอพี ฟิลเตอร์ (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c673", "name": "บริษัท จิโอพลาสท์ จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c674", "name": "บริษัท ซังโกะ ไดคาซติ้ง (ประเทศไทย)จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c675", "name": "บริษัท ที เจ เอฟ เพิ่มทรัพย์ เซอร์วิส จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c676", "name": "บริษัท ทไรส์ (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c677", "name": "บริษัท นาชิ ฟอร์จจิ้ง เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c678", "name": "บริษัท นาชิ เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c679", "name": "บริษัท ฟู่เฉิง เทคโนโลยี (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c680", "name": "บริษัท มูฟวิน แมชชีนเนอรี่ (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c681", "name": "บริษัท วินเฮีย (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c682", "name": "บริษัท ว่านเซิง เทคโนโลยี จำกัด", "tambon": "หนองบัว", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c683", "name": "บริษัท สตีลเล็กซ์ จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c684", "name": "บริษัท สายไฟฟ้า เอ็มซีไอ-ดราก้า จำกัด", "tambon": "หนองบัว", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c685", "name": "บริษัท ออสปิเชียส เมคคานิคอล จำกัด", "tambon": "หนองบัว", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c686", "name": "บริษัท เคซูโตะ เมทารุ จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c687", "name": "บริษัท เคเอ็มซีที (ไทยแลนด์) จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c688", "name": "บริษัท เจ เอฟ อี เฟอร์ไรท์ (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c689", "name": "บริษัท เด็นโซ่ เท็น (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c690", "name": "บริษัท เพียวริเทค เอ็นจิเนียริ่ง จำกัด", "tambon": "หนองบัว", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c691", "name": "บริษัท เมตาฟิล์ม อิเล็คทรอนิคส์ (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "อิเล็กทรอนิกส์และเครื่องใช้ไฟฟ้า", "relation": ""}, {"id": "c692", "name": "บริษัท เม่ยไท่ อะลูมิเนียม จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c693", "name": "บริษัท เว้ลธ์ ฟิวชั่น อินเตอร์-เทค (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c694", "name": "บริษัท แสงไทยฟาร์อีสท์ จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c695", "name": "บริษัท ไทโย กิเคง (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "ยานยนต์และชิ้นส่วน", "relation": ""}, {"id": "c696", "name": "บริษัท ไทโยกิเคง (ประเทศไทย) จำกัด", "tambon": "หนองบัว", "type": "เครื่องจักรกลและอุปกรณ์", "relation": ""}, {"id": "c697", "name": "บริษัท ไป๋ยู่ซุ่น เทคโนโลยี่ (ไทยแลนด์) จำกัด", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}, {"id": "c698", "name": "ภัทรกร มัณชยานนท์", "tambon": "หนองบัว", "type": "โลหะขั้นมูลฐานและผลิตภัณฑ์โลหะ", "relation": ""}]}]}};
+</script>
+<script>
+(function(){
+
+const STATUS_OPTIONS = [
+  {v:'', label:'— ยังไม่ระบุ —', cls:''},
+  {v:'goon', label:'ไปต่อ', cls:'st-goon'},
+  {v:'no', label:'ไม่เกี่ยวข้อง', cls:'st-no'},
+  {v:'wait', label:'รอติดตาม', cls:'st-wait'},
+  {v:'closed', label:'ปิดการขาย', cls:'st-closed'},
+];
+
+let feedbackCache = {};
+
+async function loadFeedback(id){
+  if (feedbackCache[id] !== undefined) return feedbackCache[id];
+  try{
+    const raw = localStorage.getItem('feedback:'+id);
+    const val = raw ? JSON.parse(raw) : {contacted:false, status:'', note:''};
+    feedbackCache[id] = val;
+    return val;
+  }catch(e){
+    feedbackCache[id] = {contacted:false, status:'', note:''};
+    return feedbackCache[id];
+  }
+}
+
+async function saveFeedback(id, data){
+  feedbackCache[id] = data;
+  const dot = document.getElementById('saveDot');
+  const txt = document.getElementById('saveText');
+  try{
+    localStorage.setItem('feedback:'+id, JSON.stringify(data));
+    dot.style.background = 'var(--green)';
+    txt.textContent = 'บันทึกแล้ว';
+    setTimeout(()=>{ txt.textContent = 'ข้อมูล Feedback บันทึกอัตโนมัติ'; }, 1500);
+  }catch(e){
+    dot.style.background = 'var(--red)';
+    txt.textContent = 'บันทึกไม่สำเร็จ (พื้นที่จัดเก็บเต็มหรือเบราว์เซอร์บล็อก)';
+  }
+}
+
+function gmapsLink(name, tam, amp){
+  const q = encodeURIComponent(`${name} ${tam} ${amp} ระยอง`);
+  return `https://www.google.com/maps/search/?api=1&query=${q}`;
+}
+
+function buildRoadSvg(data, distId){
+  const n = data.tambon_counts.length;
+  const segW = 210;
+  const W = Math.max(700, (n-1)*segW + 140);
+  const H = 190;
+  const midY = 108;
+  const amp = 34;
+  const pts = [];
+  for (let i=0;i<n;i++){
+    const x = 70 + i*segW;
+    const y = midY + (i % 2 === 0 ? -amp*0.4 : amp*0.6) * (i===0||i===n-1 ? 0.3 : 1);
+    pts.push([x,y]);
+  }
+  function smoothPath(p){
+    let d = `M ${p[0][0]},${p[0][1]} `;
+    let raw = [];
+    for (let i=0;i<p.length-1;i++){
+      const p0 = p[i===0?0:i-1], p1 = p[i], p2 = p[i+1], p3 = p[i+2===p.length?i+1:i+2];
+      const c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+      const c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+      d += `C ${c1x},${c1y} ${c2x},${c2y} ${p2[0]},${p2[1]} `;
+    }
+    return d;
+  }
+  const roadPath = smoothPath(pts);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<defs><path id="roadpath-${distId}" d="${roadPath}" /></defs>`;
+  svg += `<path d="${roadPath}" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="40" stroke-linecap="round"/>`;
+  svg += `<path d="${roadPath}" fill="none" stroke="#3B4453" stroke-width="34" stroke-linecap="round"/>`;
+  svg += `<path d="${roadPath}" fill="none" stroke="#F5E6B8" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="10 10" opacity="0.85"/>`;
+
+  for (let i=0;i<n-1;i++){
+    const a = pts[i], b = pts[i+1];
+    const mx = (a[0]+b[0])/2, my = (a[1]+b[1])/2;
+    const dx = b[0]-a[0], dy = b[1]-a[1];
+    const len = Math.sqrt(dx*dx+dy*dy);
+    const nx = -dy/len, ny = dx/len;
+    const cx = mx + nx*26, cy = my + ny*26 - 30;
+    const label = `${data.legs[i].km} กม.`;
+    const w = 20 + label.length*6.4;
+    svg += `<rect class="road-km-chip" x="${cx-w/2}" y="${cy-12}" width="${w}" height="22" rx="11"/>`;
+    svg += `<text class="road-km-text" x="${cx}" y="${cy+3}" text-anchor="middle">${label}</text>`;
+  }
+
+  pts.forEach((p,i)=>{
+    const [x,y] = p;
+    const tc = data.tambon_counts[i];
+    const labelAbove = i % 2 === 0;
+    const pinH = 40;
+    const pinTop = labelAbove ? y - pinH - 34 : y - pinH;
+    svg += `
+      <g class="pin-target" data-day-anchor="${distId}-tambon-${i}" style="cursor:pointer">
+        <path d="M ${x} ${y} C ${x-14} ${y-18}, ${x-14} ${pinTop+6}, ${x} ${pinTop} C ${x+14} ${pinTop+6}, ${x+14} ${y-18}, ${x} ${y} Z"
+              fill="#C9A227" stroke="#0B1220" stroke-width="1.5"/>
+        <circle cx="${x}" cy="${pinTop+13}" r="11" fill="#0B1220"/>
+        <text class="road-badge-text" x="${x}" y="${pinTop+17}" text-anchor="middle" fill="#F5E6B8">${i+1}</text>
+      </g>`;
+    const labelY = labelAbove ? pinTop - 12 : pinTop + pinH + 26;
+    svg += `<text class="road-pin-name" data-day-anchor="${distId}-tambon-${i}" x="${x}" y="${labelY}" text-anchor="middle">${tc.tambon}</text>`;
+    svg += `<text class="road-pin-count" x="${x}" y="${labelY+15}" text-anchor="middle">${tc.count} แห่ง</text>`;
+  });
+
+  // car icon animated along the road path
+  svg += `
+    <g class="car-icon">
+      <g>
+        <animateMotion dur="${6+n*2}s" repeatCount="indefinite" rotate="auto">
+          <mpath href="#roadpath-${distId}"/>
+        </animateMotion>
+        <g transform="translate(-13,-8)">
+          <rect x="0" y="4" width="26" height="9" rx="3" fill="#C9A227"/>
+          <rect x="5" y="0" width="14" height="7" rx="2.5" fill="#F5E6B8"/>
+          <circle cx="6" cy="14" r="3" fill="#0B1220"/>
+          <circle cx="20" cy="14" r="3" fill="#0B1220"/>
+          <circle cx="6" cy="14" r="1.2" fill="#5B6472"/>
+          <circle cx="20" cy="14" r="1.2" fill="#5B6472"/>
+        </g>
+      </g>
+    </g>`;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function statusOptionsHtml(current){
+  return STATUS_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===current?'selected':''}>${o.label}</option>`).join('');
+}
+
+async function renderCompanyRow(c, dist){
+  const fb = await loadFeedback(c.id);
+  const tr = document.createElement('tr');
+  tr.className = (c.relation === 'เคยเข้าพบแล้ว' ? 'relation-visited ' : '') + (fb.contacted ? 'contacted' : '');
+  tr.dataset.name = c.name.toLowerCase();
+  tr.dataset.tambon = c.tambon.toLowerCase();
+  tr.dataset.relation = c.relation;
+  tr.dataset.contacted = fb.contacted ? 'yes' : 'no';
+
+  const relTag = c.relation ? `<span class="tag tag-visited">${c.relation}</span>` : '';
+  const curOpt = STATUS_OPTIONS.find(o=>o.v===fb.status) || STATUS_OPTIONS[0];
+
+  tr.innerHTML = `
+    <td><input type="checkbox" class="chk chk-contacted" ${fb.contacted?'checked':''}></td>
+    <td><div class="company-name">${c.name}</div>${relTag}</td>
+    <td>${c.tambon}</td>
+    <td>${c.type||''}</td>
+    <td><select class="status-select ${curOpt.cls}">${statusOptionsHtml(fb.status)}</select></td>
+    <td><textarea class="feedback-note" placeholder="บันทึก Feedback ลูกค้า...">${fb.note||''}</textarea></td>
+    <td><a class="maplink" href="${gmapsLink(c.name, c.tambon, dist)}" target="_blank" rel="noopener">เปิดแผนที่</a></td>
+  `;
+
+  const chk = tr.querySelector('.chk-contacted');
+  const sel = tr.querySelector('.status-select');
+  const note = tr.querySelector('.feedback-note');
+
+  function persist(){
+    const data = {contacted: chk.checked, status: sel.value, note: note.value};
+    tr.dataset.contacted = chk.checked ? 'yes' : 'no';
+    tr.classList.toggle('contacted', chk.checked);
+    sel.className = 'status-select ' + (STATUS_OPTIONS.find(o=>o.v===sel.value)||{cls:''}).cls;
+    saveFeedback(c.id, data);
+    updateDayProgress(tr.closest('.day-card'));
+  }
+  chk.addEventListener('change', persist);
+  sel.addEventListener('change', persist);
+  let noteTimer;
+  note.addEventListener('input', ()=>{ clearTimeout(noteTimer); noteTimer = setTimeout(persist, 600); });
+
+  return tr;
+}
+
+function updateDayProgress(dayCard){
+  if(!dayCard) return;
+  const rows = dayCard.querySelectorAll('tbody tr');
+  const total = rows.length;
+  let done = 0;
+  rows.forEach(r=>{ if(r.dataset.contacted==='yes') done++; });
+  const bar = dayCard.querySelector('.day-progress-bar div');
+  const txt = dayCard.querySelector('.day-progress-text');
+  if(bar) bar.style.width = (total?done/total*100:0) + '%';
+  if(txt) txt.textContent = `${done}/${total}`;
+}
+
+async function buildTambonSection(dist, section, distId, tIndex){
+  const card = document.createElement('div');
+  card.className = 'day-card';
+  card.id = `${distId}-tambon-${tIndex}`;
+  const head = document.createElement('div');
+  head.className = 'day-card-head';
+  head.innerHTML = `
+    <div>
+      <div class="dtitle">ตำบล${section.tambon}</div>
+      <div class="dmeta">${section.companies.length} บริษัท</div>
+    </div>
+    <div class="day-progress">
+      <div class="day-progress-bar"><div style="width:0%"></div></div>
+      <div class="day-progress-text">0/${section.companies.length}</div>
+      <div class="day-caret">▾</div>
+    </div>`;
+  const body = document.createElement('div');
+  body.className = 'day-body';
+  const table = document.createElement('table');
+  table.className = 'company-table';
+  table.innerHTML = `<thead><tr>
+      <th style="width:34px">✓</th><th>ชื่อสถานประกอบการ</th><th style="width:90px">ตำบล</th>
+      <th style="width:150px">ประเภทกิจการ</th><th style="width:120px">สถานะ</th><th style="width:180px">Feedback</th><th style="width:80px">แผนที่</th>
+    </tr></thead><tbody></tbody>`;
+  const tbody = table.querySelector('tbody');
+  body.appendChild(table);
+
+  head.addEventListener('click', ()=>{
+    const isOpen = body.classList.toggle('open');
+    head.querySelector('.day-caret').classList.toggle('open', isOpen);
+  });
+
+  card.appendChild(head);
+  card.appendChild(body);
+
+  for (const c of section.companies){
+    const row = await renderCompanyRow(c, dist);
+    tbody.appendChild(row);
+  }
+  updateDayProgress(card);
+  return card;
+}
+
+
+async function buildDistrictBlock(dist, data, num){
+  const distId = 'd'+num;
+  const block = document.createElement('div');
+  block.className = 'district-block';
+
+  const head = document.createElement('div');
+  head.className = 'district-head';
+  head.innerHTML = `
+    <div class="district-num">0${num}</div>
+    <div>
+      <div class="district-title" contenteditable="true">อำเภอ${dist}</div>
+      <div class="district-meta">${data.total_companies} บริษัทเป้าหมาย &nbsp;·&nbsp; ${data.sections.length} ตำบล</div>
+    </div>
+    <div class="collapse-arrow open">▾</div>`;
+
+  const roadWrap = document.createElement('div');
+  roadWrap.className = 'road-wrap';
+  roadWrap.innerHTML = buildRoadSvg(data, distId);
+
+  const legend = document.createElement('div');
+  legend.className = 'legend-row';
+  legend.innerHTML = `
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>ติดต่อแล้ว (ติ๊กในตาราง)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>หมุด = จุดพื้นที่ตามลำดับเส้นทาง</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.3)"></div>แถวเทา = เคยเข้าพบแล้วก่อนหน้า</div>`;
+
+  const dayList = document.createElement('div');
+  dayList.className = 'day-list';
+
+  const contentWrap = document.createElement('div');
+  contentWrap.appendChild(roadWrap);
+  contentWrap.appendChild(legend);
+  contentWrap.appendChild(dayList);
+
+  head.addEventListener('click', (e)=>{
+    if (e.target.isContentEditable) return;
+    const isOpen = contentWrap.style.display !== 'none';
+    contentWrap.style.display = isOpen ? 'none' : '';
+    head.querySelector('.collapse-arrow').classList.toggle('open', !isOpen);
+  });
+
+  block.appendChild(head);
+  block.appendChild(contentWrap);
+
+  let tIndexMap = {};
+  data.chain.forEach((t,i)=>{ tIndexMap[t] = i; });
+
+  for (let i=0; i<data.sections.length; i++){
+    const section = data.sections[i];
+    const idx = tIndexMap[section.tambon] ?? i;
+    const card = await buildTambonSection(dist, section, distId, idx);
+    dayList.appendChild(card);
+  }
+
+  // clicking a pin scrolls to the matching tambon section
+  roadWrap.querySelectorAll('[data-day-anchor]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const parts = el.dataset.dayAnchor.split('-tambon-');
+      const idx = parseInt(parts[1]);
+      const target = document.getElementById(`${distId}-tambon-${idx}`);
+      if (target){
+        target.scrollIntoView({behavior:'smooth', block:'center'});
+        const body = target.querySelector('.day-body');
+        if(!body.classList.contains('open')){
+          body.classList.add('open');
+          target.querySelector('.day-caret').classList.add('open');
+        }
+        target.style.boxShadow = '0 0 0 2px var(--gold)';
+        setTimeout(()=>{ target.style.boxShadow=''; }, 1500);
+      }
+    });
+  });
+
+  return block;
+}
+
+async function init(){
+  const totalCompanies = Object.values(SITE_DATA).reduce((s,d)=>s+d.total_companies,0);
+  const totalTambons = Object.values(SITE_DATA).reduce((s,d)=>s+d.sections.length,0);
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="l">บริษัทเป้าหมายทั้งหมด</div><div class="v">${totalCompanies}</div></div>
+    <div class="kpi"><div class="l">อำเภอ</div><div class="v">${Object.keys(SITE_DATA).length}</div></div>
+    <div class="kpi"><div class="l">ตำบล</div><div class="v">${totalTambons}</div></div>
+    <div class="kpi"><div class="l">สถานะข้อมูล</div><div class="v" style="font-size:16px">พร้อมกรอกแผน</div></div>
+  `;
+
+  const container = document.getElementById('districtContainer');
+  let num = 1;
+  for (const [dist, data] of Object.entries(SITE_DATA)) {
+    const block = await buildDistrictBlock(dist, data, num);
+    container.appendChild(block);
+    num++;
+  }
+
+  // search & filter
+  const searchInput = document.getElementById('searchInput');
+  const filterRelation = document.getElementById('filterRelation');
+  const filterContacted = document.getElementById('filterContacted');
+
+  function applyFilters(){
+    const q = searchInput.value.trim().toLowerCase();
+    const rel = filterRelation.value;
+    const cont = filterContacted.value;
+    document.querySelectorAll('table.company-table tbody tr').forEach(tr=>{
+      let show = true;
+      if (q && !(tr.dataset.name.includes(q) || tr.dataset.tambon.includes(q))) show = false;
+      if (rel && tr.dataset.relation !== rel) show = false;
+      if (rel === '' && filterRelation.value === '' && filterRelation.selectedIndex===2 && tr.dataset.relation) show = false;
+      if (cont === 'yes' && tr.dataset.contacted !== 'yes') show = false;
+      if (cont === 'no' && tr.dataset.contacted !== 'no') show = false;
+      tr.style.display = show ? '' : 'none';
+    });
+    // auto-expand day cards with visible matches when searching
+    if (q || rel || cont){
+      document.querySelectorAll('.day-card').forEach(dc=>{
+        const anyVisible = [...dc.querySelectorAll('tbody tr')].some(tr=>tr.style.display!=='none');
+        const body = dc.querySelector('.day-body');
+        const caret = dc.querySelector('.day-caret');
+        if (anyVisible && q){
+          body.classList.add('open'); caret.classList.add('open');
+        }
+      });
+    }
+  }
+  searchInput.addEventListener('input', applyFilters);
+  filterRelation.addEventListener('change', applyFilters);
+  filterContacted.addEventListener('change', applyFilters);
+
+  // export / import feedback data as JSON (for backup or moving between devices)
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const dump = {};
+    for (const key in localStorage){
+      if (key.startsWith('feedback:') || key === 'dailyReports') dump[key] = JSON.parse(localStorage.getItem(key));
+    }
+    const blob = new Blob([JSON.stringify(dump, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0,10);
+    a.href = url; a.download = `feedback-backup-${dateStr}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('importBtn').addEventListener('click', ()=>{
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const dump = JSON.parse(ev.target.result);
+        let count = 0;
+        for (const key in dump){
+          if (key.startsWith('feedback:') || key === 'dailyReports'){
+            localStorage.setItem(key, JSON.stringify(dump[key]));
+            count++;
+          }
+        }
+        alert(`นำเข้าข้อมูลสำเร็จ ${count} รายการ กำลังโหลดหน้าใหม่...`);
+        location.reload();
+      }catch(err){
+        alert('ไฟล์ไม่ถูกต้อง ไม่สามารถนำเข้าได้');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // ---- page tab switching ----
+  const page1 = document.getElementById('page1');
+  const page2 = document.getElementById('page2');
+  const tabInfo = document.getElementById('tabInfo');
+  const tabReport = document.getElementById('tabReport');
+  tabInfo.addEventListener('click', ()=>{
+    page1.style.display = ''; page2.style.display = 'none';
+    tabInfo.classList.add('active'); tabReport.classList.remove('active');
+  });
+  tabReport.addEventListener('click', ()=>{
+    page1.style.display = 'none'; page2.style.display = '';
+    tabReport.classList.add('active'); tabInfo.classList.remove('active');
+  });
+
+  // ---- populate company autocomplete list ----
+  const companyListEl = document.getElementById('companyList');
+  const allNames = [];
+  Object.values(SITE_DATA).forEach(d=>{
+    d.sections.forEach(s=>{ s.companies.forEach(c=>allNames.push(c.name.trim())); });
+  });
+  companyListEl.innerHTML = allNames.map(n=>`<option value="${n}"></option>`).join('');
+
+  // ---- Daily Report: storage helpers ----
+  function loadReports(){
+    try{ return JSON.parse(localStorage.getItem('dailyReports') || '[]'); }
+    catch(e){ return []; }
+  }
+  function saveReports(list){
+    localStorage.setItem('dailyReports', JSON.stringify(list));
+  }
+
+  const rfDate = document.getElementById('rfDate');
+  const rfTime = document.getElementById('rfTime');
+  const rfPerson = document.getElementById('rfPerson');
+  const rfCompany = document.getElementById('rfCompany');
+  const rfFeedback = document.getElementById('rfFeedback');
+  const rfSubmit = document.getElementById('rfSubmit');
+
+  function nowHHMM(){
+    const d = new Date();
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  // default date/time = right now (real-time)
+  rfDate.value = new Date().toISOString().slice(0,10);
+  rfTime.value = nowHHMM();
+
+  function renderReportList(){
+    const list = loadReports();
+    const reportListEl = document.getElementById('reportList');
+    if (list.length === 0){
+      reportListEl.innerHTML = `<div class="report-empty">ยังไม่มีบันทึกการเข้าพบ — กรอกแบบฟอร์มด้านบนเพื่อเริ่มบันทึก</div>`;
+      return;
+    }
+    // group by date, newest first
+    const byDate = {};
+    list.forEach(e=>{ (byDate[e.date] = byDate[e.date] || []).push(e); });
+    const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
+
+    reportListEl.innerHTML = dates.map(date=>{
+      const entries = byDate[date].slice().sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+      const visits = entries.length;
+      const quotes = entries.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
+      const closed = entries.filter(e=>e.activities.includes('ปิดการขาย')).length;
+      const dObj = new Date(date+'T00:00:00');
+      const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+      const entriesHtml = entries.map(e=>{
+        const tagsHtml = e.activities.map(a=>`<span class="re-activity-tag">${a}</span>`).join('');
+        return `<div class="report-entry" data-id="${e.id}">
+          <div class="re-time">${e.time || '--:--'}</div>
+          <div class="re-main">
+            <div class="re-company">${e.company || '—'}</div>
+            <div class="re-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
+            <div class="re-activities">${tagsHtml}</div>
+            ${e.feedback ? `<div class="re-feedback">${e.feedback}</div>` : ''}
+          </div>
+          <button class="re-delete" data-id="${e.id}">ลบ</button>
+        </div>`;
+      }).join('');
+      return `<div class="report-date-group" data-date="${date}">
+        <div class="report-date-head">
+          <div class="report-date-title">${dLabel}</div>
+          <div class="report-date-stats">
+            <div class="rstat">เข้าพบ <b>${visits}</b> ราย</div>
+            <div class="rstat">ใบเสนอราคา <b>${quotes}</b> ใบ</div>
+            <div class="rstat">ปิดการขาย <b>${closed}</b> งาน</div>
+          </div>
+          <div class="report-date-actions">
+            <button class="btn-report btn-compile" data-date="${date}">สร้างรายงานทั้งวัน</button>
+          </div>
+        </div>
+        <div class="report-entries">${entriesHtml}</div>
+      </div>`;
+    }).join('');
+
+    reportListEl.querySelectorAll('.btn-compile').forEach(btn=>{
+      btn.addEventListener('click', ()=> openDayReport(btn.dataset.date));
+    });
+
+    reportListEl.querySelectorAll('.re-delete').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(!confirm('ต้องการลบบันทึกนี้ใช่หรือไม่?')) return;
+        const id = btn.dataset.id;
+        const list2 = loadReports().filter(e=>e.id!==id);
+        saveReports(list2);
+        renderReportList();
+      });
+    });
+  }
+
+  rfSubmit.addEventListener('click', ()=>{
+    const date = rfDate.value || new Date().toISOString().slice(0,10);
+    const time = rfTime.value || nowHHMM();
+    const person = rfPerson.value.trim();
+    const company = rfCompany.value.trim();
+    const activities = [...document.querySelectorAll('#activityChips input:checked')].map(c=>c.value);
+    const feedback = rfFeedback.value.trim();
+
+    if (!company){ alert('กรุณาระบุชื่อบริษัทที่เข้าพบ'); return; }
+    if (activities.length === 0){ alert('กรุณาเลือกกิจกรรมที่ทำอย่างน้อย 1 รายการ'); return; }
+
+    const entry = {
+      id: 'r'+Date.now()+Math.floor(Math.random()*1000),
+      date, time, person, company, activities, feedback,
+      createdAt: new Date().toISOString(),
+    };
+    const list = loadReports();
+    list.push(entry);
+    saveReports(list);
+
+    // reset only company/customer/activities/feedback — keep date so you can log
+    // another activity for the same day quickly; time refreshes to "now"
+    rfCompany.value = '';
+    rfPerson.value = '';
+    rfFeedback.value = '';
+    rfTime.value = nowHHMM();
+    document.querySelectorAll('#activityChips input:checked').forEach(c=>c.checked=false);
+
+    renderReportList();
+  });
+
+  function buildDayReportText(date){
+    const list = loadReports().filter(e=>e.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const dObj = new Date(date+'T00:00:00');
+    const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
+    const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
+
+    let txt = `รายงานประจำวัน — ${dLabel}\n`;
+    txt += `จำนวนเข้าพบทั้งหมด: ${list.length} ราย   |   ใบเสนอราคา: ${quotes} ใบ   |   ปิดการขาย: ${closed} งาน\n`;
+    txt += `${'='.repeat(48)}\n\n`;
+
+    list.forEach((e,i)=>{
+      txt += `${e.time || '--:--'}  ${e.company || '—'}\n`;
+      txt += `  ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}\n`;
+      txt += `  กิจกรรม: ${e.activities.length ? e.activities.join(', ') : '—'}\n`;
+      if (e.feedback) txt += `  Feedback: ${e.feedback}\n`;
+      txt += `\n`;
+    });
+
+    return txt;
+  }
+
+  function buildDayReportHtml(date){
+    const list = loadReports().filter(e=>e.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const dObj = new Date(date+'T00:00:00');
+    const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
+    const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
+
+    const itemsHtml = list.map(e=>{
+      const tagsHtml = e.activities.map(a=>`<span class="rd-tag">${a}</span>`).join('');
+      return `<div class="rd-item">
+        <div class="rd-item-head">
+          <span class="rd-time">${e.time || '--:--'}</span>
+          <span class="rd-company">${e.company || '—'}</span>
+        </div>
+        <div class="rd-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
+        <div class="rd-tags">${tagsHtml}</div>
+        ${e.feedback ? `<div class="rd-feedback">${e.feedback}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    return `
+      <div class="rd-header">
+        <div>
+          <div class="rd-brand">
+            <svg viewBox="0 0 24 24" stroke-width="2"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
+            <span class="rd-brand-text">Rayong Sales Territory · Daily Report</span>
+          </div>
+          <div class="rd-title">รายงานประจำวัน</div>
+          <div class="rd-sub">${dLabel}</div>
+        </div>
+        <div class="rd-kpis">
+          <div class="rd-kpi"><div class="n">${list.length}</div><div class="l">เข้าพบ</div></div>
+          <div class="rd-kpi"><div class="n">${quotes}</div><div class="l">ใบเสนอราคา</div></div>
+          <div class="rd-kpi"><div class="n">${closed}</div><div class="l">ปิดการขาย</div></div>
+        </div>
+      </div>
+      <div class="rd-timeline">${itemsHtml || '<div style="color:var(--muted); font-size:12px;">ไม่มีบันทึกในวันนี้</div>'}</div>
+      <div class="rd-footer">
+        <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
+        <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
+      </div>
+    `;
+  }
+
+  const reportModal = document.getElementById('reportModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const reportDoc = document.getElementById('reportDoc');
+  const modalClose = document.getElementById('modalClose');
+  const modalCopy = document.getElementById('modalCopy');
+  const modalPrint = document.getElementById('modalPrint');
+  const modalDownload = document.getElementById('modalDownload');
+  let currentReportDate = null;
+
+  function openDayReport(date){
+    currentReportDate = date;
+    const dObj = new Date(date+'T00:00:00');
+    modalTitle.textContent = 'รายงานประจำวัน — ' + dObj.toLocaleDateString('th-TH', {year:'numeric', month:'long', day:'numeric'});
+    reportDoc.innerHTML = buildDayReportHtml(date);
+    reportModal.classList.add('open');
+  }
+  modalClose.addEventListener('click', ()=> reportModal.classList.remove('open'));
+  reportModal.addEventListener('click', (e)=>{ if(e.target===reportModal) reportModal.classList.remove('open'); });
+  modalCopy.addEventListener('click', ()=>{
+    const txt = buildDayReportText(currentReportDate);
+    navigator.clipboard.writeText(txt).then(()=>{
+      modalCopy.textContent = 'คัดลอกแล้ว ✓';
+      setTimeout(()=>{ modalCopy.textContent = 'คัดลอกรายงาน (ข้อความ)'; }, 1500);
+    }).catch(()=>{
+      const ta = document.createElement('textarea');
+      ta.value = txt; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    });
+  });
+  modalPrint.addEventListener('click', ()=>{ window.print(); });
+  modalDownload.addEventListener('click', ()=>{
+    const txt = buildDayReportText(currentReportDate);
+    const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `รายงานประจำวัน-${currentReportDate}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  renderReportList();
+}
+
+init();
+})();
+</script>
+</body>
+</html>
