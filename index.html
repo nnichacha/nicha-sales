@@ -155,7 +155,7 @@ var STATE = {
   syncTimer: null,
   googleClientId: "",
   gisReady: false,
-  auth: { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0 },
+  auth: { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null },
   authError: null,
   projectsUI: { q: "", status: "", workType: "", sortKey: "id", sortDir: "desc", page: 1 },
   customersUI: { q: "", sortKey: "won", sortDir: "desc" }
@@ -208,6 +208,7 @@ function scheduleCloudPush() {
 function pushToCloud() {
   if (!STATE.cloudUrl) return;
   if (STATE.googleClientId && !isTokenValid()) { STATE.syncStatus = "error"; renderSidebarFooter(); return; }
+  if (STATE.googleClientId && STATE.auth.role && STATE.auth.role !== "editor") { return; } // viewers never write
   STATE.syncStatus = "syncing";
   renderSidebarFooter();
   var payload = JSON.stringify({
@@ -221,6 +222,7 @@ function pushToCloud() {
   }).then(function (res) { return res.json(); })
     .then(function (res) {
       if (res && res.unauthorized) { handleUnauthorized(res.error); return; }
+      if (res && res.role) { STATE.auth.role = res.role; saveAuthSession(); }
       STATE.syncStatus = res && res.ok ? "synced" : "error";
       STATE.lastSyncedAt = new Date();
       renderSidebarFooter();
@@ -241,6 +243,7 @@ function pullFromCloud(showToastOnDone) {
     .then(function (res) { return res.json(); })
     .then(function (data) {
       if (data && data.unauthorized) { handleUnauthorized(data.error); return; }
+      if (data && data.role) { STATE.auth.role = data.role; saveAuthSession(); }
       if (data && Array.isArray(data.projects) && data.projects.length > 0) {
         STATE.projects = data.projects.map(normalizeCloudProject);
         if (Array.isArray(data.statuses) && data.statuses.length) STATE.statuses = data.statuses;
@@ -253,7 +256,7 @@ function pullFromCloud(showToastOnDone) {
       } else {
         STATE.syncStatus = "synced";
         renderSidebarFooter();
-        pushToCloud();
+        if (!STATE.googleClientId || STATE.auth.role === "editor") pushToCloud();
         if (showToastOnDone) showToast("คลาวด์ยังไม่มีข้อมูล — อัปโหลดข้อมูลปัจจุบันขึ้นไปให้แล้ว");
       }
     })
@@ -275,11 +278,11 @@ function handleUnauthorized(errCode) {
   STATE.syncStatus = "error";
   if (String(errCode || "").indexOf("not_authorized") === 0) {
     STATE.authError = "บัญชี " + (STATE.auth.email || "") + " ยังไม่ได้รับอนุญาต — แจ้งผู้ดูแลให้เพิ่มอีเมลนี้ในชีต AllowedUsers";
-    STATE.auth = { signedIn: false, email: STATE.auth.email, name: null, picture: null, idToken: null, exp: 0 };
+    STATE.auth = { signedIn: false, email: STATE.auth.email, name: null, picture: null, idToken: null, exp: 0, role: null };
     LocalStore.set(AUTH_KEY, "");
   } else {
     STATE.authError = "เข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่";
-    STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0 };
+    STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null };
     LocalStore.set(AUTH_KEY, "");
   }
   renderApp();
@@ -318,6 +321,11 @@ function needsLoginGate() {
   return !!STATE.googleClientId && !isTokenValid();
 }
 
+function canEdit() {
+  if (!STATE.googleClientId) return true; // no login configured = single-user local mode
+  return STATE.auth.role === "editor";
+}
+
 function saveAuthSession() {
   LocalStore.set(AUTH_KEY, JSON.stringify(STATE.auth));
 }
@@ -327,7 +335,7 @@ function handleGoogleCredential(response) {
   if (!claims) { STATE.authError = "อ่านข้อมูลบัญชีไม่สำเร็จ"; renderApp(); return; }
   STATE.auth = {
     signedIn: true, email: claims.email, name: claims.name, picture: claims.picture,
-    idToken: response.credential, exp: claims.exp * 1000
+    idToken: response.credential, exp: claims.exp * 1000, role: null
   };
   STATE.authError = null;
   saveAuthSession();
@@ -336,7 +344,7 @@ function handleGoogleCredential(response) {
 }
 
 function signOut() {
-  STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0 };
+  STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null };
   LocalStore.set(AUTH_KEY, "");
   try { if (window.google && window.google.accounts) window.google.accounts.id.disableAutoSelect(); } catch (e) {}
   renderApp();
@@ -348,7 +356,7 @@ function changeGoogleClientId() {
   next = next.trim();
   STATE.googleClientId = next;
   LocalStore.set(GOOGLE_CLIENT_ID_KEY, next);
-  if (!next) { STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0 }; LocalStore.set(AUTH_KEY, ""); }
+  if (!next) { STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null }; LocalStore.set(AUTH_KEY, ""); }
   renderApp();
 }
 
@@ -371,6 +379,7 @@ function initGoogleSignInWidget() {
 
 /* ============================== MUTATIONS ============================== */
 function addProject(data) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถแก้ไขได้"); return; }
   var nextId = STATE.projects.length ? Math.max.apply(null, STATE.projects.map(function (p) { return p.id; })) + 1 : 1;
   var rec = Object.assign({ id: nextId }, data);
   STATE.projects = [rec].concat(STATE.projects);
@@ -378,17 +387,20 @@ function addProject(data) {
   showToast("บันทึกงานใหม่แล้ว");
 }
 function updateProject(id, data) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถแก้ไขได้"); return; }
   STATE.projects = STATE.projects.map(function (p) { return p.id === id ? Object.assign({}, p, data) : p; });
   persistProjects();
   showToast("บันทึกการแก้ไขแล้ว");
 }
 function deleteProject(id) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถแก้ไขได้"); STATE.confirmDeleteId = null; return; }
   STATE.projects = STATE.projects.filter(function (p) { return p.id !== id; });
   persistProjects();
   STATE.confirmDeleteId = null;
   showToast("ลบรายการแล้ว");
 }
 function resetToSeed() {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถรีเซ็ตข้อมูลได้"); return; }
   STATE.projects = SEED_DATA.slice();
   STATE.statuses = DEFAULT_STATUSES.slice();
   persistProjects();
@@ -398,11 +410,13 @@ function resetToSeed() {
   renderApp();
 }
 function addStatus(s) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถแก้ไขสถานะได้"); return; }
   STATE.statuses = STATE.statuses.concat([s]);
   persistStatuses();
   showToast('เพิ่มสถานะ "' + s.name + '" แล้ว');
 }
 function updateStatusEntry(oldName, patch) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถแก้ไขสถานะได้"); return; }
   STATE.statuses = STATE.statuses.map(function (s) { return s.name === oldName ? Object.assign({}, s, patch) : s; });
   persistStatuses();
   if (patch.name && patch.name !== oldName) {
@@ -412,6 +426,7 @@ function updateStatusEntry(oldName, patch) {
   showToast("อัปเดตสถานะแล้ว");
 }
 function deleteStatusEntry(name) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถแก้ไขสถานะได้"); return; }
   STATE.statuses = STATE.statuses.filter(function (s) { return s.name !== name; });
   persistStatuses();
   showToast('ลบสถานะ "' + name + '" แล้ว');
@@ -759,7 +774,7 @@ function renderApp() {
     '<div style="display:flex;align-items:center;gap:10px;padding:0 4px 20px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
     '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#2E5395,#5B9BD5);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px" class="disp">EMT</div>' +
     '<div><div class="disp" style="font-size:14.5px;line-height:1.2">Sales Pipeline</div><div style="font-size:11px;color:#8FA3BD;margin-top:1px">Personal Tracker</div></div></div>' +
-    '<button class="btn-primary" style="margin-top:18px;width:100%;justify-content:center" onclick="openNewProjectForm()">' + icon("plus", 16) + ' งานใหม่</button>' +
+    (canEdit() ? '<button class="btn-primary" style="margin-top:18px;width:100%;justify-content:center" onclick="openNewProjectForm()">' + icon("plus", 16) + ' งานใหม่</button>' : '<div style="margin-top:18px;padding:9px 12px;background:rgba(255,255,255,0.06);border-radius:8px;font-size:11px;color:#B7C4D6;text-align:center">โหมดดูอย่างเดียว</div>') +
     '<nav style="margin-top:18px">' + navHtml + '</nav>' +
     '<div id="sidebar-footer" style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1)"></div>' +
     '</aside>' +
@@ -804,10 +819,10 @@ function renderSidebarFooter() {
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeGoogleClientId()">' + (STATE.googleClientId ? "ตั้งค่าระบบ Login" : "เปิดใช้ระบบ Login…") + '</button>' +
     '<button class="icon-btn" style="margin-top:10px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#fff;font-size:11px;border-radius:6px;padding:7px 8px;background:rgba(91,155,213,0.14)" onclick="exportBackup()">' +
     icon("download", 12) + ' ดาวน์โหลดข้อมูลสำรอง</button>' +
-    '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="triggerImportFile()">' +
-    icon("upload", 12) + ' นำเข้าข้อมูลสำรอง</button>' +
-    '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="resetToSeed()">' +
-    icon("reset", 12) + ' รีเซ็ตข้อมูลตัวอย่าง</button>' +
+    (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="triggerImportFile()">' +
+    icon("upload", 12) + ' นำเข้าข้อมูลสำรอง</button>' : '') +
+    (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="resetToSeed()">' +
+    icon("reset", 12) + ' รีเซ็ตข้อมูลตัวอย่าง</button>' : '') +
     '<div style="margin-top:10px;font-size:9.5px;color:#6E82A0;line-height:1.4">' +
     (STATE.cloudUrl ? 'ข้อมูลซิงก์ขึ้น Google Sheets อัตโนมัติ + สำรองไว้ในเบราว์เซอร์นี้ด้วย' : 'ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (localStorage) — ไม่ซิงก์ข้ามเครื่อง') + '</div>';
 }
@@ -921,7 +936,7 @@ function renderProjectsShell(d) {
     '<option value=""' + (ui.workType === "" ? " selected" : "") + '>Machine + Fabrication</option>' +
     '<option value="M"' + (ui.workType === "M" ? " selected" : "") + '>Machine (M)</option>' +
     '<option value="F"' + (ui.workType === "F" ? " selected" : "") + '>Fabrication (F)</option></select>' +
-    '<button class="btn-primary" style="margin-left:auto" onclick="openNewProjectForm()">' + icon("plus", 15) + ' เพิ่มงานใหม่</button>' +
+    (canEdit() ? '<button class="btn-primary" style="margin-left:auto" onclick="openNewProjectForm()">' + icon("plus", 15) + ' เพิ่มงานใหม่</button>' : '<span style="margin-left:auto;font-size:11px;color:' + COLORS.muted + ';display:flex;align-items:center;gap:5px">' + icon("cloud", 13) + ' โหมดดูอย่างเดียว</span>') +
     '</div>';
   return header + toolbar + '<div id="projects-table-wrap"></div>';
 }
@@ -947,37 +962,61 @@ function refreshProjectsTable(d) {
   if (headerHtml) headerHtml.querySelector(".mono").textContent = filtered.length + " / " + d.withCat.length + " งาน";
 
   var statusOpts = d.byStatus.map(function (s) { return { name: s.status, color: d.statusColorMap[s.status] }; });
+  var editable = canEdit();
 
   var rowsHtml = pageRows.map(function (p, i) {
     var bg = i % 2 ? COLORS.canvas : "#fff";
-    var segOpts = SEGMENTS.map(function (s) { return '<option value="' + attr(s) + '"' + (p.segment === s ? " selected" : "") + '>' + esc(s) + '</option>'; }).join("");
-    var typeOpts = TYPES.map(function (t) { return '<option value="' + attr(t) + '"' + (p.type === t ? " selected" : "") + '>' + esc(t) + '</option>'; }).join("");
-    var wtOpts = '<option value="M"' + (p.workType === "M" ? " selected" : "") + '>Machine (M)</option><option value="F"' + (p.workType === "F" ? " selected" : "") + '>Fabrication (F)</option>';
     var statusChipColor = d.statusColorMap[p.status] || COLORS.muted;
-    var stOpts = statusOpts.map(function (s) { return '<option value="' + attr(s.name) + '"' + (p.status === s.name ? " selected" : "") + '>' + esc(s.name) + '</option>'; }).join("");
+    var customerCell, segTypeCell, workTypeCell, statusCell, saleCell, actionsCell, noteCell, invoiceCell;
+
+    if (editable) {
+      var segOpts = SEGMENTS.map(function (s) { return '<option value="' + attr(s) + '"' + (p.segment === s ? " selected" : "") + '>' + esc(s) + '</option>'; }).join("");
+      var typeOpts = TYPES.map(function (t) { return '<option value="' + attr(t) + '"' + (p.type === t ? " selected" : "") + '>' + esc(t) + '</option>'; }).join("");
+      var wtOpts = '<option value="M"' + (p.workType === "M" ? " selected" : "") + '>Machine (M)</option><option value="F"' + (p.workType === "F" ? " selected" : "") + '>Fabrication (F)</option>';
+      var stOpts = statusOpts.map(function (s) { return '<option value="' + attr(s.name) + '"' + (p.status === s.name ? " selected" : "") + '>' + esc(s.name) + '</option>'; }).join("");
+      customerCell = '<input class="cell-input" style="font-weight:600;font-size:12.5px" value="' + attr(p.customer) + '" onchange="quickUpdate(' + p.id + ",{customer:this.value})\"/>";
+      segTypeCell = '<select class="cell-input" style="font-size:12px;margin-bottom:2px" onchange="quickUpdate(' + p.id + ',{segment:this.value})">' + segOpts + '</select>' +
+        '<select class="cell-input" style="font-size:11px;color:' + COLORS.muted + '" onchange="quickUpdate(' + p.id + ',{type:this.value})">' + typeOpts + '</select>';
+      workTypeCell = '<select class="cell-input" style="background:' + (p.workType === "M" ? "#E5EEFB" : "#FBF1DF") + ';color:' + (p.workType === "M" ? COLORS.blue : "#8A5A00") + ';font-weight:600;font-size:11.5px;border-radius:999px" onchange="quickUpdate(' + p.id + ',{workType:this.value})">' + wtOpts + '</select>';
+      statusCell = '<select class="cell-input" style="background:' + statusChipColor + '1E;color:' + statusChipColor + ';font-weight:600;font-size:11.5px;border-radius:999px" onchange="quickUpdate(' + p.id + ',{status:this.value})">' + stOpts + '</select>';
+      saleCell = '<input class="cell-input mono" type="number" style="text-align:right" value="' + (p.sale || 0) + '" onchange="quickUpdate(' + p.id + ',{sale:Number(this.value)})"/>';
+      noteCell = '<input class="cell-input mono" style="font-size:11.5px" value="' + attr(p.note || "") + '" placeholder="J0000" onchange="quickUpdate(' + p.id + ',{note:this.value})"/>';
+      invoiceCell = '<input class="cell-input mono" style="font-size:11.5px" value="' + attr(p.invoice || "") + '" placeholder="IV-000000000" onchange="quickUpdate(' + p.id + ',{invoice:this.value})"/>';
+      actionsCell = '<div style="display:flex;gap:4px">' +
+        '<button class="icon-btn" title="แก้ไขแบบละเอียด" onclick="openEditProjectForm(' + p.id + ')">' + icon("edit", 13) + '</button>' +
+        '<button class="icon-btn" title="ลบ" style="color:' + COLORS.red + '" onclick="askDeleteProject(' + p.id + ')">' + icon("trash", 13) + '</button>' +
+        '</div>';
+    } else {
+      customerCell = '<strong style="font-size:12.5px">' + esc(p.customer) + '</strong>';
+      segTypeCell = '<div style="font-size:12px">' + esc(p.segment) + '</div><div style="font-size:11px;color:' + COLORS.muted + '">' + esc(p.type) + '</div>';
+      workTypeCell = workTypeBadgeHtml(p.workType);
+      statusCell = statusChipHtml(p.status, statusChipColor);
+      saleCell = '<span class="mono">' + fmtTHB(p.sale) + '</span>';
+      noteCell = '<span class="mono" style="font-size:11.5px">' + esc(p.note || "-") + '</span>';
+      invoiceCell = '<span class="mono" style="font-size:11.5px">' + esc(p.invoice || "-") + '</span>';
+      actionsCell = "";
+    }
+
     return '<tr class="row-hover" style="background:' + bg + '">' +
-      '<td class="td-cell"><input class="cell-input" style="font-weight:600;font-size:12.5px" value="' + attr(p.customer) + '" onchange="quickUpdate(' + p.id + ",{customer:this.value})\"/></td>" +
-      '<td class="td-cell">' +
-      '<select class="cell-input" style="font-size:12px;margin-bottom:2px" onchange="quickUpdate(' + p.id + ',{segment:this.value})">' + segOpts + '</select>' +
-      '<select class="cell-input" style="font-size:11px;color:' + COLORS.muted + '" onchange="quickUpdate(' + p.id + ',{type:this.value})">' + typeOpts + '</select></td>' +
-      '<td class="td-cell" style="max-width:320px"><div style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</div>' +
-      (p.invoice ? '<div class="mono" style="font-size:10.5px;color:' + COLORS.muted + ';margin-top:2px">' + esc(p.invoice) + '</div>' : '') + '</td>' +
-      '<td class="td-cell"><select class="cell-input" style="background:' + (p.workType === "M" ? "#E5EEFB" : "#FBF1DF") + ';color:' + (p.workType === "M" ? COLORS.blue : "#8A5A00") + ';font-weight:600;font-size:11.5px;border-radius:999px" onchange="quickUpdate(' + p.id + ',{workType:this.value})">' + wtOpts + '</select></td>' +
-      '<td class="td-cell"><select class="cell-input" style="background:' + statusChipColor + '1E;color:' + statusChipColor + ';font-weight:600;font-size:11.5px;border-radius:999px" onchange="quickUpdate(' + p.id + ',{status:this.value})">' + stOpts + '</select></td>' +
-      '<td class="td-cell" style="text-align:right"><input class="cell-input mono" type="number" style="text-align:right" value="' + (p.sale || 0) + '" onchange="quickUpdate(' + p.id + ',{sale:Number(this.value)})"/></td>' +
+      '<td class="td-cell">' + customerCell + '</td>' +
+      '<td class="td-cell">' + segTypeCell + '</td>' +
+      '<td class="td-cell" style="max-width:280px"><div style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</div></td>' +
+      '<td class="td-cell">' + noteCell + '</td>' +
+      '<td class="td-cell">' + invoiceCell + '</td>' +
+      '<td class="td-cell">' + workTypeCell + '</td>' +
+      '<td class="td-cell">' + statusCell + '</td>' +
+      '<td class="td-cell" style="text-align:right">' + saleCell + '</td>' +
       '<td class="td-cell" style="font-size:11.5px;color:' + COLORS.muted + '">' + fmtDate(p.requestedDate) + '</td>' +
-      '<td class="td-cell"><div style="display:flex;gap:4px">' +
-      '<button class="icon-btn" title="แก้ไขแบบละเอียด" onclick="openEditProjectForm(' + p.id + ')">' + icon("edit", 13) + '</button>' +
-      '<button class="icon-btn" title="ลบ" style="color:' + COLORS.red + '" onclick="askDeleteProject(' + p.id + ')">' + icon("trash", 13) + '</button>' +
-      '</div></td></tr>';
+      '<td class="td-cell">' + actionsCell + '</td></tr>';
   }).join("");
 
   if (pageRows.length === 0) {
-    rowsHtml = '<tr><td class="td-cell" colspan="8" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>';
+    rowsHtml = '<tr><td class="td-cell" colspan="10" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>';
   }
 
   wrap.innerHTML = '<div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto"><table><thead><tr>' +
     th("ลูกค้า", "customer", 130) + '<th class="th-cell">Segment / Type</th>' + th("รายละเอียดงาน", "description") +
+    th("เลขที่ใบเสนอราคา", "note", 120) + th("Invoice", "invoice", 130) +
     '<th class="th-cell">ประเภทงาน</th>' + th("Status", "status", 140) + th("Sale (THB)", "sale", 110) + th("Requested", "requestedDate", 100) +
     '<th class="th-cell" style="width:76px"></th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>' +
     '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid ' + COLORS.line + '">' +
@@ -1176,15 +1215,17 @@ function renderCommission(d) {
     return '<tr class="row-hover" style="background:' + bg + '">' +
       '<td class="td-cell"><strong style="font-size:12.5px">' + esc(p.customer) + '</strong></td>' +
       '<td class="td-cell">' + workTypeBadgeHtml(p.workType) + '</td>' +
-      '<td class="td-cell" style="max-width:320px"><div style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</div></td>' +
+      '<td class="td-cell" style="max-width:280px"><div style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</div></td>' +
       '<td class="td-cell">' + statusChipHtml(p.status, d.statusColorMap[p.status]) + '</td>' +
+      '<td class="td-cell mono" style="font-size:11px;color:' + COLORS.muted + '">' + esc(p.note || "-") + '</td>' +
       '<td class="td-cell mono" style="font-size:11px;color:' + COLORS.muted + '">' + esc(p.invoice || "-") + '</td>' +
       '<td class="td-cell num-td" style="font-weight:600">' + fmtTHB(p.sale) + '</td></tr>';
-  }).join("") || '<tr><td class="td-cell" colspan="6" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ยังไม่มีงานที่ปิดแล้ว</td></tr>';
+  }).join("") || '<tr><td class="td-cell" colspan="7" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ยังไม่มีงานที่ปิดแล้ว</td></tr>';
 
   var table = '<div class="card" style="padding:0;overflow:hidden"><div style="max-height:520px;overflow-y:auto"><table><thead><tr>' +
     '<th class="th-cell" style="position:sticky;top:0">ลูกค้า</th><th class="th-cell" style="position:sticky;top:0">ประเภทงาน</th>' +
     '<th class="th-cell" style="position:sticky;top:0">รายละเอียดงาน</th><th class="th-cell" style="position:sticky;top:0">Status</th>' +
+    '<th class="th-cell" style="position:sticky;top:0">เลขที่ใบเสนอราคา</th>' +
     '<th class="th-cell" style="position:sticky;top:0">Invoice</th><th class="th-cell" style="position:sticky;top:0;text-align:right">Sale (THB)</th>' +
     '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div></div>';
 
@@ -1314,7 +1355,14 @@ function renderConfirmModal() {
 
 /* ============================== STATUS MANAGER MODAL ============================== */
 function renderStatusManagerModal() {
+  var editable = canEdit();
   var rows = STATE.statuses.map(function (s) {
+    if (!editable) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid ' + COLORS.line + '">' +
+        '<span style="width:14px;height:14px;border-radius:4px;background:' + attr(s.color) + ';flex-shrink:0"></span>' +
+        '<span style="flex:1;font-size:12.5px">' + esc(s.name) + '</span>' +
+        '<span style="font-size:11px;color:' + COLORS.muted + '">' + esc(s.category) + '</span></div>';
+    }
     var catOpts = CATEGORY_OPTIONS.map(function (c) { return '<option value="' + c + '"' + (s.category === c ? " selected" : "") + '>' + c + '</option>'; }).join("");
     return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid ' + COLORS.line + '">' +
       '<input type="color" value="' + attr(s.color) + '" style="width:26px;height:26px;border:none;padding:0;background:none;cursor:pointer;flex-shrink:0" onchange="statusColorChanged(\'' + attr(s.name).replace(/'/g, "\\'") + '\', this.value)"/>' +
@@ -1323,6 +1371,16 @@ function renderStatusManagerModal() {
       '<button class="icon-btn" style="color:' + COLORS.red + '" title="ลบสถานะนี้" onclick="statusDeleteClicked(\'' + attr(s.name).replace(/'/g, "\\'") + '\')">' + icon("trash", 14) + '</button></div>';
   }).join("") || '<div style="font-size:12.5px;color:' + COLORS.muted + ';padding:10px 0">ยังไม่มีสถานะในระบบ</div>';
 
+  var addForm = editable ? (
+    '<div style="font-size:11px;color:' + COLORS.muted + ';margin-bottom:8px">หมวดหมู่กำหนดว่างานจะถูกนับเป็น Won / Lost / Pending ในทุกหน้ารายงาน — สำหรับสถานะรูปแบบ "Done Q&lt;เลข&gt;" ระบบจะตรวจจับไตรมาสปัจจุบันให้เองในหน้าคอมมิชชั่น</div>' +
+    '<form onsubmit="return submitNewStatus(event)" style="display:flex;gap:8px;align-items:center;background:' + COLORS.canvas + ';padding:12px;border-radius:10px">' +
+    '<input type="color" name="color" value="' + COLORS.sky + '" style="width:26px;height:26px;border:none;padding:0;background:none;cursor:pointer;flex-shrink:0"/>' +
+    '<input name="name" class="field-input" style="flex:1;font-size:12.5px;background:#fff" placeholder="เช่น &quot;Done Q4&quot;"/>' +
+    '<select name="category" class="field-input" style="width:110px;font-size:12px;background:#fff">' + CATEGORY_OPTIONS.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join("") + '</select>' +
+    '<button type="submit" class="btn-primary">' + icon("plus", 14) + ' เพิ่ม</button></form>' +
+    '<div id="status-form-error" style="color:' + COLORS.red + ';font-size:12px;margin-top:6px;display:none"></div>'
+  ) : '<div style="font-size:11.5px;color:' + COLORS.muted + '">คุณมีสิทธิ์ดูอย่างเดียว — ไม่สามารถเพิ่ม/แก้ไขสถานะได้</div>';
+
   return '<div class="modal-overlay" onmousedown="if(event.target===this) closeStatusManager()">' +
     '<div class="modal-panel" style="width:560px">' +
     '<div class="modal-header"><div><div class="disp" style="font-size:17px">จัดการสถานะ</div>' +
@@ -1330,13 +1388,7 @@ function renderStatusManagerModal() {
     '<button type="button" class="icon-btn" onclick="closeStatusManager()">' + icon("x", 17) + '</button></div>' +
     '<div style="padding:18px 22px;overflow-y:auto;flex:1">' +
     '<div style="margin-bottom:18px">' + rows + '</div>' +
-    '<div style="font-size:11px;color:' + COLORS.muted + ';margin-bottom:8px">หมวดหมู่กำหนดว่างานจะถูกนับเป็น Won / Lost / Pending ในทุกหน้ารายงาน — สำหรับสถานะรูปแบบ "Done Q&lt;เลข&gt;" ระบบจะตรวจจับไตรมาสปัจจุบันให้เองในหน้าคอมมิชชั่น</div>' +
-    '<form onsubmit="return submitNewStatus(event)" style="display:flex;gap:8px;align-items:center;background:' + COLORS.canvas + ';padding:12px;border-radius:10px">' +
-    '<input type="color" name="color" value="' + COLORS.sky + '" style="width:26px;height:26px;border:none;padding:0;background:none;cursor:pointer;flex-shrink:0"/>' +
-    '<input name="name" class="field-input" style="flex:1;font-size:12.5px;background:#fff" placeholder="เช่น &quot;Done Q4&quot;"/>' +
-    '<select name="category" class="field-input" style="width:110px;font-size:12px;background:#fff">' + CATEGORY_OPTIONS.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join("") + '</select>' +
-    '<button type="submit" class="btn-primary">' + icon("plus", 14) + ' เพิ่ม</button></form>' +
-    '<div id="status-form-error" style="color:' + COLORS.red + ';font-size:12px;margin-top:6px;display:none"></div>' +
+    addForm +
     '</div><div class="modal-footer"><button type="button" class="btn-primary" onclick="closeStatusManager()">เสร็จสิ้น</button></div></div></div>';
 }
 
@@ -1410,12 +1462,14 @@ function handleImportFile(input) {
 
 function cancelImport() { STATE.importPending = null; renderModals(); }
 function confirmImport() {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถนำเข้าข้อมูลได้"); STATE.importPending = null; renderModals(); return; }
   var payload = STATE.importPending;
   STATE.projects = payload.projects;
   STATE.statuses = (Array.isArray(payload.statuses) && payload.statuses.length) ? payload.statuses : DEFAULT_STATUSES.slice();
   LocalStore.set(STORAGE_KEY, JSON.stringify(STATE.projects));
   LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
   STATE.importPending = null;
+  scheduleCloudPush();
   window.setTimeout(function () {
     renderModals();
     renderApp();
