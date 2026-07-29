@@ -175,6 +175,7 @@
     font-family:'Kanit',sans-serif; font-weight:700; font-size:13.5px; cursor:pointer;
   }
   .btn-primary:hover{ background:#DFC24E; }
+  .rf-actions{ display:flex; gap:10px; align-items:center; }
 
   .archive-bar{ display:flex; justify-content:space-between; align-items:center; margin-top:30px; flex-wrap:wrap; gap:14px; }
   .archive-stats{ display:flex; gap:18px; flex-wrap:wrap; }
@@ -188,6 +189,12 @@
   .report-list{ margin-top:14px; display:flex; flex-direction:column; gap:22px; }
 
   .report-date-group{ background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .day-road-wrap{ background:linear-gradient(180deg,#0E1522,#0B1220); padding:8px 4px 2px; border-bottom:1px solid var(--line); }
+  .day-road-wrap svg{ width:100%; height:auto; display:block; }
+  .activity-legend{ display:flex; gap:14px; flex-wrap:wrap; margin-top:24px; padding:12px 16px; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  .legend-chip{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); }
+  .legend-chip .dot{ width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1.5px solid #0B1220; }
+  .legend-chip .dot svg{ width:10px; height:10px; }
   .report-date-head{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--panel2); flex-wrap:wrap; gap:10px; }
   .report-date-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; }
   .report-date-stats{ display:flex; gap:14px; flex-wrap:wrap; }
@@ -215,6 +222,8 @@
 
   .re-delete{ background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:6px; padding:6px 12px; font-size:11px; cursor:pointer; font-family:'Sarabun',sans-serif; }
   .re-delete:hover{ border-color:var(--red); color:var(--red); }
+  .re-actions-col{ display:flex; flex-direction:column; gap:6px; align-self:flex-start; }
+  .re-edit{ font-size:11px !important; padding:5px 12px !important; }
   .report-empty{ padding:40px 20px; text-align:center; color:var(--muted); font-size:13px; }
   .re-activity-tag, .rd-tag, .act-badge{ font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:3px 10px; border-radius:9px; display:inline-flex; align-items:center; gap:4px; }
 
@@ -344,7 +353,7 @@
 
   <div id="page2" style="display:none;">
     <div class="report-form-wrap">
-      <div class="report-form-title">บันทึกการเข้าพบวันนี้</div>
+      <div class="report-form-title" id="reportFormTitle">บันทึกการเข้าพบวันนี้</div>
       <div class="report-form-grid">
         <div class="field">
           <label>วันที่เข้าพบ</label>
@@ -379,8 +388,13 @@
         <label>Feedback จากลูกค้า / รายละเอียดเพิ่มเติม</label>
         <textarea id="rfFeedback" placeholder="บันทึกรายละเอียดการเข้าพบ..." style="min-height:60px;"></textarea>
       </div>
-      <button class="btn-primary" id="rfSubmit">บันทึกรายการ</button>
+      <div class="rf-actions">
+        <button class="btn-primary" id="rfSubmit">บันทึกรายการ</button>
+        <button class="filter-select" id="rfCancelEdit" style="cursor:pointer; display:none;">ยกเลิกการแก้ไข</button>
+      </div>
     </div>
+
+    <div class="activity-legend" id="activityLegend"></div>
 
     <div class="archive-bar">
       <div class="archive-stats" id="archiveStats"></div>
@@ -579,6 +593,14 @@ async function removeReportEntry(id){
   }
 }
 
+async function updateReportEntry(id, updatedFields){
+  reportsCache = loadReports().map(e=> e.id===id ? {...e, ...updatedFields, editedAt:new Date().toISOString()} : e);
+  localStorage.setItem('dailyReports', JSON.stringify(reportsCache));
+  if (syncConnected){
+    try{ await fbDb.ref('dailyReports/'+id).update({...updatedFields, editedAt:new Date().toISOString()}); }catch(e){ console.error(e); }
+  }
+}
+
 async function loadFeedback(id){
   if (feedbackCache[id] !== undefined) return feedbackCache[id];
   let val = {contacted:false, status:'', note:''};
@@ -688,6 +710,76 @@ function buildRoadSvg(data, distId){
           <mpath href="#roadpath-${distId}"/>
         </animateMotion>
         <g transform="translate(-13,-8)">
+          <rect x="0" y="4" width="26" height="9" rx="3" fill="#C9A227"/>
+          <rect x="5" y="0" width="14" height="7" rx="2.5" fill="#F5E6B8"/>
+          <circle cx="6" cy="14" r="3" fill="#0B1220"/>
+          <circle cx="20" cy="14" r="3" fill="#0B1220"/>
+          <circle cx="6" cy="14" r="1.2" fill="#5B6472"/>
+          <circle cx="20" cy="14" r="1.2" fill="#5B6472"/>
+        </g>
+      </g>
+    </g>`;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function buildDayRoadSvg(entries, roadId){
+  const n = entries.length;
+  if (n === 0) return '';
+  const segW = n <= 4 ? 150 : (n <= 8 ? 118 : 92);
+  const W = Math.max(500, (n-1)*segW + 120);
+  const H = 130;
+  const midY = 78;
+  const amp = 20;
+  const pts = [];
+  for (let i=0;i<n;i++){
+    const x = 55 + i*segW;
+    const y = midY + (i % 2 === 0 ? -amp : amp*0.7);
+    pts.push([x,y]);
+  }
+  function smoothPath(p){
+    if (p.length === 1) return `M ${p[0][0]-30},${p[0][1]} L ${p[0][0]+30},${p[0][1]}`;
+    let d = `M ${p[0][0]},${p[0][1]} `;
+    for (let i=0;i<p.length-1;i++){
+      const p0 = p[i===0?0:i-1], p1 = p[i], p2 = p[i+1], p3 = p[i+2===p.length?i+1:i+2];
+      const c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+      const c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+      d += `C ${c1x},${c1y} ${c2x},${c2y} ${p2[0]},${p2[1]} `;
+    }
+    return d;
+  }
+  const roadPath = smoothPath(pts);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<defs><path id="dayroad-${roadId}" d="${roadPath}" /></defs>`;
+  svg += `<path d="${roadPath}" fill="none" stroke="#000" stroke-opacity="0.3" stroke-width="24" stroke-linecap="round"/>`;
+  svg += `<path d="${roadPath}" fill="none" stroke="#3B4453" stroke-width="20" stroke-linecap="round"/>`;
+  svg += `<path d="${roadPath}" fill="none" stroke="#F5E6B8" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="7 7" opacity="0.8"/>`;
+
+  pts.forEach((p,i)=>{
+    const [x,y] = p;
+    const e = entries[i];
+    const primaryActivity = e.activities[0] || 'อื่นๆ';
+    const meta = ACTIVITY_META[primaryActivity] || ACTIVITY_META['อื่นๆ'];
+    const labelAbove = y < midY;
+    const labelY = labelAbove ? y - 22 : y + 30;
+    const shortName = (e.company||'—').replace('บริษัท ','').substring(0,14);
+    svg += `
+      <g>
+        <circle cx="${x}" cy="${y}" r="13" fill="${meta.color}" stroke="#0B1220" stroke-width="2"/>
+        <svg x="${x-7}" y="${y-7}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>
+        <text x="${x}" y="${labelY}" text-anchor="middle" font-family="Kanit" font-weight="700" font-size="9.5" fill="${meta.color}">${e.time||''}</text>
+        <text x="${x}" y="${labelY + (labelAbove?12:12)}" text-anchor="middle" font-family="Sarabun" font-size="9" fill="#B7C0CC">${shortName}</text>
+      </g>`;
+  });
+
+  svg += `
+    <g class="car-icon">
+      <g>
+        <animateMotion dur="${4+n*1.6}s" repeatCount="indefinite" rotate="auto">
+          <mpath href="#dayroad-${roadId}"/>
+        </animateMotion>
+        <g transform="translate(-11,-7) scale(0.85)">
           <rect x="0" y="4" width="26" height="9" rx="3" fill="#C9A227"/>
           <rect x="5" y="0" width="14" height="7" rx="2.5" fill="#F5E6B8"/>
           <circle cx="6" cy="14" r="3" fill="#0B1220"/>
@@ -1221,9 +1313,13 @@ async function init(){
             <div class="re-activities">${tagsHtml}</div>
             ${e.feedback ? `<div class="re-feedback">${e.feedback}</div>` : ''}
           </div>
-          <button class="re-delete" data-id="${e.id}">ลบ</button>
+          <div class="re-actions-col">
+            <button class="btn-report re-edit" data-id="${e.id}">แก้ไข</button>
+            <button class="re-delete" data-id="${e.id}">ลบ</button>
+          </div>
         </div>`;
       }).join('');
+      const roadSvg = buildDayRoadSvg(entries, date.replace(/-/g,''));
       return `<div class="report-date-group" data-date="${date}">
         <div class="report-date-head">
           <div class="report-date-title">${dLabel}</div>
@@ -1236,6 +1332,7 @@ async function init(){
             <button class="btn-report btn-compile" data-date="${date}">สร้างรายงานทั้งวัน</button>
           </div>
         </div>
+        <div class="day-road-wrap">${roadSvg}</div>
         <div class="report-entries">${entriesHtml}</div>
       </div>`;
     }).join('');
@@ -1248,11 +1345,51 @@ async function init(){
       btn.addEventListener('click', async ()=>{
         if(!confirm('ต้องการลบบันทึกนี้ใช่หรือไม่?')) return;
         const id = btn.dataset.id;
+        if (editingEntryId === id) exitEditMode();
         await removeReportEntry(id);
         renderReportList();
       });
     });
+
+    reportListEl.querySelectorAll('.re-edit').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.dataset.id;
+        const entry = loadReports().find(e=>e.id===id);
+        if (!entry) return;
+        enterEditMode(entry);
+      });
+    });
   }
+
+  let editingEntryId = null;
+
+  function enterEditMode(entry){
+    editingEntryId = entry.id;
+    rfDate.value = entry.date;
+    rfTime.value = entry.time || nowHHMM();
+    rfPerson.value = entry.person || '';
+    rfCompany.value = entry.company || '';
+    rfFeedback.value = entry.feedback || '';
+    document.querySelectorAll('#activityChips input').forEach(c=>{ c.checked = entry.activities.includes(c.value); });
+    document.getElementById('reportFormTitle').textContent = 'แก้ไขบันทึกการเข้าพบ';
+    rfSubmit.textContent = 'บันทึกการแก้ไข';
+    document.getElementById('rfCancelEdit').style.display = '';
+    document.querySelector('.report-form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function exitEditMode(){
+    editingEntryId = null;
+    document.getElementById('reportFormTitle').textContent = 'บันทึกการเข้าพบวันนี้';
+    rfSubmit.textContent = 'บันทึกรายการ';
+    document.getElementById('rfCancelEdit').style.display = 'none';
+    rfCompany.value = '';
+    rfPerson.value = '';
+    rfFeedback.value = '';
+    rfTime.value = nowHHMM();
+    document.querySelectorAll('#activityChips input:checked').forEach(c=>c.checked=false);
+  }
+
+  document.getElementById('rfCancelEdit').addEventListener('click', exitEditMode);
 
   rfSubmit.addEventListener('click', async ()=>{
     const date = rfDate.value || new Date().toISOString().slice(0,10);
@@ -1264,6 +1401,13 @@ async function init(){
 
     if (!company){ alert('กรุณาระบุชื่อบริษัทที่เข้าพบ'); return; }
     if (activities.length === 0){ alert('กรุณาเลือกกิจกรรมที่ทำอย่างน้อย 1 รายการ'); return; }
+
+    if (editingEntryId){
+      await updateReportEntry(editingEntryId, {date, time, person, company, activities, feedback});
+      exitEditMode();
+      renderReportList();
+      return;
+    }
 
     const entry = {
       id: 'r'+Date.now()+Math.floor(Math.random()*1000),
@@ -1391,6 +1535,14 @@ async function init(){
     URL.revokeObjectURL(url);
   });
 
+  const activityLegend = document.getElementById('activityLegend');
+  if (activityLegend){
+    activityLegend.innerHTML = '<div style="font-size:11px; color:var(--muted); font-family:\'Kanit\',sans-serif; font-weight:600; align-self:center; margin-right:4px;">สัญลักษณ์กิจกรรม:</div>' +
+      Object.entries(ACTIVITY_META).map(([name, meta])=>
+        `<div class="legend-chip"><span class="dot" style="background:${meta.color}"><svg viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg></span>${name}</div>`
+      ).join('');
+  }
+
   renderReportList();
 
   const rfSearchDate = document.getElementById('rfSearchDate');
@@ -1469,9 +1621,8 @@ init();
         }
     </style>
 </head>
-<body>   
+<body>
     <!-- ย้ายมาอยู่ตรงนี้ ปุ่มจะลอยไปที่มุมบนขวาอัตโนมัติ -->
     <a href="index.html" class="btn-yellow">กลับหน้าแรก</a>
 </body>
 </html>
-
