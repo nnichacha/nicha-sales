@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <style>
   :root{
     --ink:#0B1220; --panel:#111827; --panel2:#1F2937; --panel3:#151E2E; --line:#2A3441;
@@ -58,6 +59,42 @@
     color:var(--text); font-family:monospace; font-size:11.5px; padding:12px; line-height:1.6;
   }
   .sync-panel-actions{ display:flex; gap:10px; margin-top:12px; }
+  .login-widget{ display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:6px 12px; }
+  .login-fields{ display:flex; gap:10px; flex-wrap:wrap; }
+  .login-fields input{
+    flex:1; min-width:180px; background:var(--panel2); border:1px solid var(--line); border-radius:8px; color:var(--text);
+    padding:9px 12px; font-family:'Sarabun',sans-serif; font-size:13px;
+  }
+  .login-error{ color:var(--red); font-size:12px; margin-top:8px; min-height:16px; }
+
+  /* ---- read-only mode: hide/disable all edit affordances until signed in ---- */
+  body:not(.can-edit) .chk,
+  body:not(.can-edit) .status-select,
+  body:not(.can-edit) .feedback-note,
+  body:not(.can-edit) .company-name[contenteditable],
+  body:not(.can-edit) .editable-type[contenteditable],
+  body:not(.can-edit) [data-editkey]{
+    pointer-events:none; opacity:0.72; cursor:default;
+  }
+  body:not(.can-edit) .company-name[contenteditable]:hover,
+  body:not(.can-edit) .editable-type[contenteditable]:hover,
+  body:not(.can-edit) [data-editkey]:hover{ background:none; box-shadow:none; }
+  body:not(.can-edit) .re-delete,
+  body:not(.can-edit) .re-edit,
+  body:not(.can-edit) .row-delete,
+  body:not(.can-edit) .add-company-btn,
+  body:not(.can-edit) #rfSubmit,
+  body:not(.can-edit) #rfCancelEdit,
+  body:not(.can-edit) .report-form-wrap input,
+  body:not(.can-edit) .report-form-wrap textarea,
+  body:not(.can-edit) .activity-chips,
+  body:not(.can-edit) .visit-toggle{
+    display:none !important;
+  }
+  body:not(.can-edit) .report-form-wrap::after{
+    content:"ต้องเข้าสู่ระบบก่อนจึงจะบันทึกรายการได้ — กด \\201C เข้าสู่ระบบเพื่อแก้ไข \\201D มุมขวาบน";
+    display:block; color:var(--muted); font-size:12px; padding:8px 0 0;
+  }
   .override-banner{
     display:flex; justify-content:space-between; align-items:center; gap:14px; background:var(--amber-dim);
     border:1px solid var(--amber); border-radius:8px; padding:10px 16px; margin-top:18px; font-size:12.5px; color:#FDE68A;
@@ -130,6 +167,9 @@
   select.status-select.st-goon{ color:var(--green); }
   select.status-select.st-no{ color:var(--red); }
   select.status-select.st-wait{ color:var(--amber); }
+  select.status-select.st-askprice{ color:#38BDF8; }
+  select.status-select.st-rejected{ color:#F87171; }
+  select.status-select.st-pending{ color:#A78BFA; }
   select.status-select.st-closed{ color:var(--gold); }
   textarea.feedback-note{
     width:100%; min-width:180px; background:var(--panel2); border:1px solid var(--line); border-radius:6px;
@@ -170,6 +210,8 @@
   }
   .chip input{ accent-color:var(--gold); cursor:pointer; }
   .chip:has(input:checked){ border-color:var(--gold); background:var(--gold-dim); color:var(--gold-lt); }
+  .visit-toggle{ display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--text); cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:10px 14px; }
+  .visit-toggle input{ width:17px; height:17px; accent-color:var(--green); cursor:pointer; flex-shrink:0; }
   .btn-primary{
     margin-top:16px; background:var(--gold); color:#0B1220; border:none; border-radius:8px; padding:10px 22px;
     font-family:'Kanit',sans-serif; font-weight:700; font-size:13.5px; cursor:pointer;
@@ -218,7 +260,7 @@
   .report-entry .re-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; }
   .report-entry .re-person{ font-size:12px; color:#B7C0CC; margin-top:3px; }
   .report-entry .re-activities{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-  .report-entry .re-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.65; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; }
+  .report-entry .re-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.65; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; white-space:pre-wrap; }
 
   .re-delete{ background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:6px; padding:6px 12px; font-size:11px; cursor:pointer; font-family:'Sarabun',sans-serif; }
   .re-delete:hover{ border-color:var(--red); color:var(--red); }
@@ -245,6 +287,8 @@
 
   /* ---- printable industrial report doc ---- */
   #reportDoc{ padding:30px 34px 40px; }
+  .rd-road-wrap{ background:linear-gradient(180deg,#0E1522,#0B1220); border:1px solid var(--line); border-radius:10px; padding:8px 4px 2px; margin-bottom:20px; }
+  .rd-road-wrap svg{ width:100%; height:auto; display:block; }
   .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--gold); padding-bottom:16px; margin-bottom:22px; flex-wrap:wrap; gap:14px; }
   .rd-header .rd-brand{ display:flex; align-items:center; gap:10px; }
   .rd-header .rd-brand svg{ width:26px; height:26px; stroke:var(--gold); fill:none; }
@@ -271,7 +315,7 @@
   .rd-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
   .rd-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
   .rd-tag{ font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:3px 10px; border-radius:9px; display:inline-flex; align-items:center; gap:4px; }
-  .rd-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.7; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; }
+  .rd-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.7; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; white-space:pre-wrap; }
   .rd-footer{ margin-top:26px; padding-top:14px; border-top:1px dashed var(--line); font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between; }
 
   @media print{
@@ -315,10 +359,31 @@
       <div class="sync-badge" id="syncBadge">
         <span class="sync-dot" id="syncDot"></span><span id="syncText">ยังไม่เชื่อมต่อทีม (โหมดเครื่องเดียว)</span>
       </div>
+      <div class="login-widget" id="loginWidget">
+        <span id="loginStatusText">โหมดดูอย่างเดียว</span>
+        <button class="filter-select" id="loginBtn" style="cursor:pointer;">เข้าสู่ระบบเพื่อแก้ไข</button>
+        <button class="filter-select" id="logoutBtn" style="cursor:pointer; display:none;">ออกจากระบบ</button>
+      </div>
       <button class="filter-select" id="syncSettingsBtn" style="cursor:pointer;">ตั้งค่าซิงค์ทีม</button>
       <button class="filter-select" id="exportBtn" style="cursor:pointer;">ส่งออกข้อมูล (.json)</button>
       <button class="filter-select" id="importBtn" style="cursor:pointer;">นำเข้าข้อมูล</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </div>
+
+    <div class="sync-panel" id="loginPanel">
+      <div class="sync-panel-title">เข้าสู่ระบบเพื่อแก้ไขข้อมูล</div>
+      <div class="sync-panel-desc">
+        เฉพาะบัญชีที่สร้างไว้ใน Firebase Authentication เท่านั้นที่แก้ไข/บันทึกข้อมูลได้ — คนอื่นที่ไม่ได้ล็อกอินยังดูข้อมูลได้ปกติ แต่แก้ไขไม่ได้
+      </div>
+      <div class="login-fields">
+        <input type="email" id="loginEmail" placeholder="อีเมล">
+        <input type="password" id="loginPassword" placeholder="รหัสผ่าน">
+      </div>
+      <div id="loginError" class="login-error"></div>
+      <div class="sync-panel-actions">
+        <button class="btn-primary" id="loginSubmitBtn" style="margin-top:0;">เข้าสู่ระบบ</button>
+        <button class="filter-select" id="loginCancelBtn" style="cursor:pointer;">ยกเลิก</button>
+      </div>
     </div>
 
     <div class="sync-panel" id="syncPanel">
@@ -372,6 +437,12 @@
           <input type="text" id="rfCompany" list="companyList" placeholder="พิมพ์หรือเลือกชื่อบริษัท">
           <datalist id="companyList"></datalist>
         </div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label class="visit-toggle">
+          <input type="checkbox" id="rfVisit" checked>
+          <span>Visit — เข้าพบลูกค้าจริง (ถ้าไม่ติ๊ก จะนับเป็นกิจกรรม ไม่นับรวมในยอด "เข้าพบ")</span>
+        </label>
       </div>
       <div class="field" style="margin-top:10px;">
         <label>กิจกรรมที่ทำวันนี้ (เลือกได้หลายข้อ)</label>
@@ -484,10 +555,38 @@ function initFirebaseSync(config){
     syncConnected = true;
     updateSyncBadge('connected');
     attachRealtimeListeners();
+    setupAuthGate();
   }catch(e){
     console.error('Firebase init failed', e);
     syncConnected = false;
     updateSyncBadge('error');
+    // no team sync configured — treat as personal single-device mode, fully editable
+    document.body.classList.add('can-edit');
+  }
+}
+
+function setupAuthGate(){
+  try{
+    firebase.auth().onAuthStateChanged(user=>{
+      document.body.classList.toggle('can-edit', !!user);
+      const statusText = document.getElementById('loginStatusText');
+      const loginBtn = document.getElementById('loginBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (user){
+        statusText.textContent = user.email || 'เข้าสู่ระบบแล้ว';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = '';
+      } else {
+        statusText.textContent = 'โหมดดูอย่างเดียว';
+        loginBtn.style.display = '';
+        logoutBtn.style.display = 'none';
+      }
+    });
+  }catch(e){
+    console.error('Auth setup failed', e);
+    // if Authentication isn't enabled in the Firebase project, fail open to editable
+    // so the site doesn't lock everyone out silently
+    document.body.classList.add('can-edit');
   }
 }
 
@@ -563,6 +662,9 @@ const STATUS_OPTIONS = [
   {v:'goon', label:'ไปต่อ', cls:'st-goon'},
   {v:'no', label:'ไม่เกี่ยวข้อง', cls:'st-no'},
   {v:'wait', label:'รอติดตาม', cls:'st-wait'},
+  {v:'askprice', label:'ลูกค้าขอราคา', cls:'st-askprice'},
+  {v:'rejected', label:'ปฏิเสธงาน', cls:'st-rejected'},
+  {v:'pending_price', label:'รับงานและรอราคา', cls:'st-pending'},
   {v:'closed', label:'ปิดการขาย', cls:'st-closed'},
 ];
 
@@ -769,7 +871,7 @@ function buildDayRoadSvg(entries, roadId){
         <circle cx="${x}" cy="${y}" r="13" fill="${meta.color}" stroke="#0B1220" stroke-width="2"/>
         <svg x="${x-7}" y="${y-7}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B1220" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>
         <text x="${x}" y="${labelY}" text-anchor="middle" font-family="Kanit" font-weight="700" font-size="9.5" fill="${meta.color}">${e.time||''}</text>
-        <text x="${x}" y="${labelY + (labelAbove?12:12)}" text-anchor="middle" font-family="Sarabun" font-size="9" fill="#B7C0CC">${shortName}</text>
+        <text x="${x}" y="${labelY + (labelAbove?12:12)}" text-anchor="middle" font-family="Sarabun" font-size="4.5" fill="#B7C0CC">${shortName}</text>
       </g>`;
   });
 
@@ -1130,6 +1232,10 @@ async function init(){
   if (storedConfig){
     initFirebaseSync(storedConfig);
     await fetchRemoteOverrides();
+  } else {
+    // no team sync configured at all — personal single-device mode, fully editable
+    document.body.classList.add('can-edit');
+    document.getElementById('loginWidget').style.display = 'none';
   }
   applyCompanyOverrides();
   await bindEditableTexts(document.querySelector('.masthead'));
@@ -1254,6 +1360,7 @@ async function init(){
   const rfTime = document.getElementById('rfTime');
   const rfPerson = document.getElementById('rfPerson');
   const rfCompany = document.getElementById('rfCompany');
+  const rfVisit = document.getElementById('rfVisit');
   const rfFeedback = document.getElementById('rfFeedback');
   const rfSubmit = document.getElementById('rfSubmit');
 
@@ -1270,11 +1377,13 @@ async function init(){
   function renderArchiveStats(){
     const list = loadReports();
     const uniqueDates = new Set(list.map(e=>e.date));
+    const visitCount = list.filter(e=>e.visit !== false).length;
     const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
     const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
     document.getElementById('archiveStats').innerHTML = `
       <div class="astat">บันทึกทั้งหมด <b>${uniqueDates.size}</b> วัน</div>
-      <div class="astat">เข้าพบสะสม <b>${list.length}</b> ครั้ง</div>
+      <div class="astat">เข้าพบสะสม (Visit) <b>${visitCount}</b> ครั้ง</div>
+      <div class="astat">กิจกรรมทั้งหมดสะสม <b>${list.length}</b> รายการ</div>
       <div class="astat">ใบเสนอราคาสะสม <b>${quotes}</b> ใบ</div>
       <div class="astat">ปิดการขายสะสม <b>${closed}</b> งาน</div>
     `;
@@ -1298,17 +1407,18 @@ async function init(){
 
     reportListEl.innerHTML = dates.map(date=>{
       const entries = byDate[date].slice().sort((a,b)=> (a.time||'').localeCompare(b.time||''));
-      const visits = entries.length;
+      const visits = entries.filter(e=>e.visit !== false).length;
       const quotes = entries.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
       const closed = entries.filter(e=>e.activities.includes('ปิดการขาย')).length;
       const dObj = new Date(date+'T00:00:00');
       const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
       const entriesHtml = entries.map(e=>{
         const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
+        const visitTag = e.visit === false ? '<span class="tag" style="background:rgba(148,163,184,0.15); color:var(--muted);">ไม่ได้เข้าพบ (กิจกรรมเท่านั้น)</span>' : '<span class="tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
         return `<div class="report-entry" data-id="${e.id}">
           <div class="re-time">${e.time || '--:--'}</div>
           <div class="re-main">
-            <div class="re-company">${e.company || '—'}</div>
+            <div class="re-company">${e.company || '—'} ${visitTag}</div>
             <div class="re-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
             <div class="re-activities">${tagsHtml}</div>
             ${e.feedback ? `<div class="re-feedback">${e.feedback}</div>` : ''}
@@ -1324,7 +1434,8 @@ async function init(){
         <div class="report-date-head">
           <div class="report-date-title">${dLabel}</div>
           <div class="report-date-stats">
-            <div class="rstat">เข้าพบ <b>${visits}</b> ราย</div>
+            <div class="rstat">เข้าพบ (Visit) <b>${visits}</b> ราย</div>
+            <div class="rstat">กิจกรรมทั้งหมด <b>${entries.length}</b> รายการ</div>
             <div class="rstat">ใบเสนอราคา <b>${quotes}</b> ใบ</div>
             <div class="rstat">ปิดการขาย <b>${closed}</b> งาน</div>
           </div>
@@ -1369,6 +1480,7 @@ async function init(){
     rfTime.value = entry.time || nowHHMM();
     rfPerson.value = entry.person || '';
     rfCompany.value = entry.company || '';
+    rfVisit.checked = entry.visit !== false;
     rfFeedback.value = entry.feedback || '';
     document.querySelectorAll('#activityChips input').forEach(c=>{ c.checked = entry.activities.includes(c.value); });
     document.getElementById('reportFormTitle').textContent = 'แก้ไขบันทึกการเข้าพบ';
@@ -1384,6 +1496,7 @@ async function init(){
     document.getElementById('rfCancelEdit').style.display = 'none';
     rfCompany.value = '';
     rfPerson.value = '';
+    rfVisit.checked = true;
     rfFeedback.value = '';
     rfTime.value = nowHHMM();
     document.querySelectorAll('#activityChips input:checked').forEach(c=>c.checked=false);
@@ -1396,6 +1509,7 @@ async function init(){
     const time = rfTime.value || nowHHMM();
     const person = rfPerson.value.trim();
     const company = rfCompany.value.trim();
+    const visit = rfVisit.checked;
     const activities = [...document.querySelectorAll('#activityChips input:checked')].map(c=>c.value);
     const feedback = rfFeedback.value.trim();
 
@@ -1403,7 +1517,7 @@ async function init(){
     if (activities.length === 0){ alert('กรุณาเลือกกิจกรรมที่ทำอย่างน้อย 1 รายการ'); return; }
 
     if (editingEntryId){
-      await updateReportEntry(editingEntryId, {date, time, person, company, activities, feedback});
+      await updateReportEntry(editingEntryId, {date, time, person, company, visit, activities, feedback});
       exitEditMode();
       renderReportList();
       return;
@@ -1411,7 +1525,7 @@ async function init(){
 
     const entry = {
       id: 'r'+Date.now()+Math.floor(Math.random()*1000),
-      date, time, person, company, activities, feedback,
+      date, time, person, company, visit, activities, feedback,
       createdAt: new Date().toISOString(),
     };
     await addReportEntry(entry);
@@ -1422,6 +1536,7 @@ async function init(){
     rfPerson.value = '';
     rfFeedback.value = '';
     rfTime.value = nowHHMM();
+    rfVisit.checked = true;
     document.querySelectorAll('#activityChips input:checked').forEach(c=>c.checked=false);
 
     renderReportList();
@@ -1431,15 +1546,16 @@ async function init(){
     const list = loadReports().filter(e=>e.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     const dObj = new Date(date+'T00:00:00');
     const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const visitCount = list.filter(e=>e.visit !== false).length;
     const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
     const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
 
     let txt = `รายงานประจำวัน — ${dLabel}\n`;
-    txt += `จำนวนเข้าพบทั้งหมด: ${list.length} ราย   |   ใบเสนอราคา: ${quotes} ใบ   |   ปิดการขาย: ${closed} งาน\n`;
+    txt += `จำนวนเข้าพบ (Visit): ${visitCount} ราย   |   กิจกรรมทั้งหมด: ${list.length} รายการ   |   ใบเสนอราคา: ${quotes} ใบ   |   ปิดการขาย: ${closed} งาน\n`;
     txt += `${'='.repeat(48)}\n\n`;
 
     list.forEach((e,i)=>{
-      txt += `${e.time || '--:--'}  ${e.company || '—'}\n`;
+      txt += `${e.time || '--:--'}  ${e.company || '—'}${e.visit === false ? '  [ไม่ได้เข้าพบ - กิจกรรมเท่านั้น]' : '  [Visit]'}\n`;
       txt += `  ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}\n`;
       txt += `  กิจกรรม: ${e.activities.length ? e.activities.join(', ') : '—'}\n`;
       if (e.feedback) txt += `  Feedback: ${e.feedback}\n`;
@@ -1453,16 +1569,22 @@ async function init(){
     const list = loadReports().filter(e=>e.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     const dObj = new Date(date+'T00:00:00');
     const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const visitCount = list.filter(e=>e.visit !== false).length;
     const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
     const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
+    const roadSvg = list.length ? buildDayRoadSvg(list, 'pdf'+date.replace(/-/g,'')) : '';
 
     const itemsHtml = list.map(e=>{
       const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
+      const visitTag = e.visit === false
+        ? '<span class="rd-tag" style="background:rgba(148,163,184,0.15); color:#CBD5E1;">ไม่ได้เข้าพบ</span>'
+        : '<span class="rd-tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
       return `<div class="rd-item">
         <div class="rd-item-inner">
         <div class="rd-item-head">
           <span class="rd-time">${e.time || '--:--'}</span>
           <span class="rd-company">${e.company || '—'}</span>
+          ${visitTag}
         </div>
         <div class="rd-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
         <div class="rd-tags">${tagsHtml}</div>
@@ -1482,11 +1604,12 @@ async function init(){
           <div class="rd-sub">${dLabel}</div>
         </div>
         <div class="rd-kpis">
-          <div class="rd-kpi"><div class="n">${list.length}</div><div class="l">เข้าพบ</div></div>
+          <div class="rd-kpi"><div class="n">${visitCount}</div><div class="l">เข้าพบ</div></div>
           <div class="rd-kpi"><div class="n">${quotes}</div><div class="l">ใบเสนอราคา</div></div>
           <div class="rd-kpi"><div class="n">${closed}</div><div class="l">ปิดการขาย</div></div>
         </div>
       </div>
+      ${roadSvg ? `<div class="rd-road-wrap">${roadSvg}</div>` : ''}
       <div class="rd-timeline">${itemsHtml || '<div style="color:var(--muted); font-size:12px;">ไม่มีบันทึกในวันนี้</div>'}</div>
       <div class="rd-footer">
         <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
@@ -1570,6 +1693,40 @@ async function init(){
 
   syncSettingsBtn.addEventListener('click', ()=>{
     syncPanel.classList.toggle('open');
+    loginPanel.classList.remove('open');
+  });
+
+  // ---- login / logout wiring ----
+  const loginPanel = document.getElementById('loginPanel');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+  const loginCancelBtn = document.getElementById('loginCancelBtn');
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPassword = document.getElementById('loginPassword');
+  const loginError = document.getElementById('loginError');
+
+  loginBtn.addEventListener('click', ()=>{
+    loginPanel.classList.toggle('open');
+    syncPanel.classList.remove('open');
+  });
+  loginCancelBtn.addEventListener('click', ()=>{
+    loginPanel.classList.remove('open');
+    loginError.textContent = '';
+  });
+  loginSubmitBtn.addEventListener('click', async ()=>{
+    loginError.textContent = '';
+    if (!syncConnected){ loginError.textContent = 'ยังไม่ได้เชื่อมต่อทีม กรุณาตั้งค่าซิงค์ทีมก่อน'; return; }
+    try{
+      await firebase.auth().signInWithEmailAndPassword(loginEmail.value.trim(), loginPassword.value);
+      loginPanel.classList.remove('open');
+      loginEmail.value = ''; loginPassword.value = '';
+    }catch(e){
+      loginError.textContent = 'เข้าสู่ระบบไม่สำเร็จ: อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+    }
+  });
+  logoutBtn.addEventListener('click', async ()=>{
+    try{ await firebase.auth().signOut(); }catch(e){ console.error(e); }
   });
 
   syncConnectBtn.addEventListener('click', async ()=>{
