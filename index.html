@@ -46,6 +46,34 @@
   .dash-hero::after { content: ""; position: absolute; top: -40%; right: -8%; width: 55%; height: 220%;
     background: linear-gradient(115deg, transparent 42%, rgba(91,155,213,0.14) 50%, transparent 58%); pointer-events: none; }
   .card { background: #fff; border-radius: 12px; border: 1px solid #DCE3EC; border-top: 3px solid #1B3A5C; padding: 18px; box-shadow: 0 2px 10px rgba(20,48,79,0.06); }
+  /* ---- Daily Report dark gold sub-theme (matches original design) ---- */
+  .dr-scope { --dr-ink:#0B1220; --dr-panel:#111827; --dr-panel2:#1F2937; --dr-panel3:#151E2E; --dr-line:#2A3441;
+    --dr-gold:#C9A227; --dr-gold-lt:#F5E6B8; --dr-gold-dim:rgba(201,162,39,0.15);
+    --dr-text:#E5E7EB; --dr-muted:#94A3B8; --dr-green:#22C55E; --dr-red:#EF4444; }
+  .dr-disp { font-family: Arial, "Segoe UI", "Noto Sans Thai", sans-serif; font-weight: 800; }
+  .dr-hero { background: var(--dr-ink); border-radius: 14px; padding: 24px 26px 20px; margin-bottom: 18px; border-bottom: 2px solid var(--dr-gold); }
+  .dr-eyebrow { font-family: "Consolas", monospace; font-weight: 700; font-size: 11px; letter-spacing: 2px; color: var(--dr-gold); text-transform: uppercase; }
+  .dr-title { font-size: 22px; color: #fff; margin: 8px 0 4px; }
+  .dr-sub { color: var(--dr-muted); font-size: 12.5px; line-height: 1.6; max-width: 640px; }
+  .dr-panel { background: var(--dr-panel); border: 1px solid var(--dr-line); border-radius: 12px; padding: 18px 20px; color: var(--dr-text); }
+  .dr-panel .field-label { color: var(--dr-muted); }
+  .dr-panel .field-input { background: var(--dr-panel2); border: 1px solid var(--dr-line); color: var(--dr-text); }
+  .dr-panel .field-input::placeholder { color: #64748B; }
+  .dr-chip { display:inline-flex; align-items:center; gap:6px; background:var(--dr-panel2); border:1px solid var(--dr-line); border-radius:20px; padding:6px 14px; font-size:12px; color:var(--dr-text); cursor:pointer; user-select:none; }
+  .dr-chip input { accent-color: var(--dr-gold); cursor:pointer; }
+  .dr-btn-gold { background: var(--dr-gold); color: var(--dr-ink); border:none; border-radius:8px; padding:10px 20px; font-weight:700; font-size:13px; cursor:pointer; }
+  .dr-btn-gold:hover { background: var(--dr-gold-lt); }
+  .dr-daycard { background: var(--dr-panel); border:1px solid var(--dr-line); border-radius:12px; overflow:hidden; margin-bottom:16px; }
+  .dr-daycard-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:14px 18px; background: var(--dr-panel3); }
+  .dr-daytitle { color:#fff; font-size:14px; font-weight:700; }
+  .dr-rstat { font-size:11.5px; color:var(--dr-muted); }
+  .dr-rstat b { color: var(--dr-gold); font-size: 14px; }
+  .dr-entry-tag { font-size:10px; font-weight:600; background:var(--dr-gold-dim); color:var(--dr-gold-lt); padding:2px 9px; border-radius:10px; }
+  .dr-road-wrap { background: linear-gradient(180deg,#0E1522,#0B1220); border:1px solid var(--dr-line); border-radius:12px; padding:8px 4px 2px; margin: 0 18px 14px; overflow:hidden; }
+  .dr-road-wrap svg { width:100%; height:auto; display:block; }
+  .dr-road-pin-name { font-weight:700; font-size:12.5px; fill:#fff; }
+  .dr-road-pin-time { font-weight:600; font-size:10.5px; fill:var(--dr-gold); }
+  .dr-road-badge-text { font-weight:800; font-size:13px; }
   .th-cell { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7A90;
     font-weight: 700; padding: 10px 12px; border-bottom: 1px solid #DCE3EC; background: #F7FAFD; white-space: nowrap; cursor: pointer; }
   .td-cell { padding: 9px 12px; font-size: 12.5px; border-bottom: 1px solid #DCE3EC; vertical-align: middle; }
@@ -85,6 +113,10 @@ var GOOGLE_CLIENT_ID_KEY = "emt-google-client-id";
 var AUTH_KEY = "emt-auth-session";
 var COMMISSION_PIN = "888999";
 var COMMISSION_UNLOCK_KEY = "emt-commission-unlocked";
+var DAILY_REPORTS_KEY = "emt-daily-reports";
+var ACTIVITY_OPTIONS = ["แนะนำตัว", "ส่งของ", "ใบเสนอราคา", "ปิดการขาย", "ติดตามงาน", "อื่นๆ"];
+var FIREBASE_URL_KEY = "emt-firebase-url";
+var DEFAULT_FIREBASE_URL = "https://sales-nicha-default-rtdb.asia-southeast1.firebasedatabase.app";
 var DEFAULT_CLOUD_URL = "https://script.google.com/macros/s/AKfycbzkGJRpsD0RehUL8y-_i3wCITmTWE7PUDb4V2rsj-tckooQED4NI2NdNQxaEpWvWDm-eg/exec";
 var LocalStore = {
   get: function (key) {
@@ -183,6 +215,13 @@ var STATE = {
   auth: { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null },
   authError: null,
   commissionUnlocked: false,
+  dailyReports: null,
+  dailyReportModalDate: null,
+  dailyReportUI: { formPerson: "", formTime: "" },
+  firebaseUrl: "",
+  firebaseES: null,
+  firebaseStatus: "idle",
+  firebasePushTimer: null,
   projectsUI: { q: "", status: "", workType: "", sortKey: "id", sortDir: "desc", page: 1 },
   customersUI: { q: "", sortKey: "won", sortDir: "desc" }
 };
@@ -196,6 +235,15 @@ function loadAll() {
   var rawS = LocalStore.get(STATUS_KEY);
   if (rawS) { try { STATE.statuses = JSON.parse(rawS); } catch (e) { STATE.statuses = DEFAULT_STATUSES.slice(); } }
   else { STATE.statuses = DEFAULT_STATUSES.slice(); LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses)); }
+
+  var rawD = LocalStore.get(DAILY_REPORTS_KEY);
+  if (rawD) { try { STATE.dailyReports = JSON.parse(rawD); } catch (e) { STATE.dailyReports = []; } }
+  else { STATE.dailyReports = []; }
+}
+function persistDailyReports() {
+  LocalStore.set(DAILY_REPORTS_KEY, JSON.stringify(STATE.dailyReports));
+  scheduleCloudPush();
+  scheduleFirebasePush();
 }
 function persistProjects() {
   STATE.saving = true;
@@ -203,6 +251,7 @@ function persistProjects() {
   window.setTimeout(function () { STATE.saving = false; renderSidebarFooter(); }, 250);
   bumpBackupCounter();
   scheduleCloudPush();
+  scheduleFirebasePush();
 }
 function bumpBackupCounter() {
   var n = parseInt(LocalStore.get(BACKUP_COUNT_KEY) || "0", 10) + 1;
@@ -216,6 +265,7 @@ function bumpBackupCounter() {
 function persistStatuses() {
   LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
   scheduleCloudPush();
+  scheduleFirebasePush();
 }
 function showToast(msg) {
   STATE.toastMsg = msg;
@@ -238,7 +288,7 @@ function pushToCloud() {
   STATE.syncStatus = "syncing";
   renderSidebarFooter();
   var payload = JSON.stringify({
-    projects: STATE.projects, statuses: STATE.statuses,
+    projects: STATE.projects, statuses: STATE.statuses, dailyReports: STATE.dailyReports,
     idToken: STATE.auth.idToken || ""
   });
   fetch(STATE.cloudUrl, {
@@ -273,8 +323,10 @@ function pullFromCloud(showToastOnDone) {
       if (data && Array.isArray(data.projects) && data.projects.length > 0) {
         STATE.projects = data.projects.map(normalizeCloudProject);
         if (Array.isArray(data.statuses) && data.statuses.length) STATE.statuses = data.statuses;
+        if (Array.isArray(data.dailyReports)) STATE.dailyReports = data.dailyReports;
         LocalStore.set(STORAGE_KEY, JSON.stringify(STATE.projects));
         LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
+        LocalStore.set(DAILY_REPORTS_KEY, JSON.stringify(STATE.dailyReports));
         STATE.syncStatus = "synced";
         STATE.lastSyncedAt = new Date();
         renderApp();
@@ -291,6 +343,100 @@ function pullFromCloud(showToastOnDone) {
       renderSidebarFooter();
       if (showToastOnDone) showToast("เชื่อมต่อคลาวด์ไม่สำเร็จ — ใช้ข้อมูลในเครื่องต่อไป");
     });
+}
+
+/* ============================== FIREBASE REALTIME SYNC ============================== */
+function firebaseDataUrl() {
+  var base = STATE.firebaseUrl.replace(/\/$/, "");
+  return base + "/emtData.json";
+}
+
+function scheduleFirebasePush() {
+  if (!STATE.firebaseUrl) return;
+  if (!canEdit()) return;
+  window.clearTimeout(STATE.firebasePushTimer);
+  STATE.firebasePushTimer = window.setTimeout(firebasePush, 700);
+}
+
+function firebasePush() {
+  if (!STATE.firebaseUrl || !canEdit()) return;
+  STATE.firebaseStatus = "syncing";
+  renderSidebarFooter();
+  var payload = JSON.stringify({
+    projects: STATE.projects, statuses: STATE.statuses, dailyReports: STATE.dailyReports,
+    updatedAt: new Date().toISOString(), updatedBy: (STATE.auth && STATE.auth.email) || "local"
+  });
+  fetch(firebaseDataUrl(), { method: "PUT", headers: { "Content-Type": "application/json" }, body: payload })
+    .then(function (res) { return res.json(); })
+    .then(function () { STATE.firebaseStatus = "synced"; renderSidebarFooter(); })
+    .catch(function () { STATE.firebaseStatus = "error"; renderSidebarFooter(); });
+}
+
+function applyRemoteData(data) {
+  if (!data) return;
+  var changed = false;
+  if (Array.isArray(data.projects)) { STATE.projects = data.projects.map(normalizeCloudProject); changed = true; }
+  if (Array.isArray(data.statuses) && data.statuses.length) { STATE.statuses = data.statuses; changed = true; }
+  if (Array.isArray(data.dailyReports)) { STATE.dailyReports = data.dailyReports; changed = true; }
+  if (!changed) return;
+  LocalStore.set(STORAGE_KEY, JSON.stringify(STATE.projects));
+  LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
+  LocalStore.set(DAILY_REPORTS_KEY, JSON.stringify(STATE.dailyReports));
+  var busy = STATE.formOpen || STATE.statusManagerOpen || STATE.confirmDeleteId !== null || STATE.importPending;
+  var typing = document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].indexOf(document.activeElement.tagName) !== -1;
+  if (!busy && !typing) { renderApp(); showToast("อัปเดตข้อมูลแบบเรียลไทม์จากอุปกรณ์อื่น"); }
+}
+
+function firebaseReadOnce() {
+  if (!STATE.firebaseUrl) return;
+  STATE.firebaseStatus = "syncing";
+  renderSidebarFooter();
+  fetch(firebaseDataUrl())
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      STATE.firebaseStatus = "synced";
+      if (data) { applyRemoteData(data); }
+      else { firebasePush(); } // empty DB -> seed it with current local data
+      renderSidebarFooter();
+    })
+    .catch(function () { STATE.firebaseStatus = "error"; renderSidebarFooter(); });
+}
+
+function firebaseStartListening() {
+  if (!STATE.firebaseUrl || typeof window.EventSource === "undefined") return;
+  if (STATE.firebaseES) { try { STATE.firebaseES.close(); } catch (e) {} }
+  try {
+    var es = new EventSource(firebaseDataUrl());
+    es.addEventListener("put", function (e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.path === "/") applyRemoteData(msg.data);
+        else firebaseReadOnce();
+      } catch (err) {}
+    });
+    es.addEventListener("patch", function () { firebaseReadOnce(); });
+    es.onopen = function () { STATE.firebaseStatus = "live"; renderSidebarFooter(); };
+    es.onerror = function () { STATE.firebaseStatus = "error"; renderSidebarFooter(); };
+    STATE.firebaseES = es;
+  } catch (e) { /* EventSource blocked or unsupported */ }
+}
+
+function changeFirebaseUrl() {
+  var next = window.prompt("วาง Firebase Realtime Database URL (เว้นว่างเพื่อปิด):", STATE.firebaseUrl || "");
+  if (next === null) return;
+  next = next.trim().replace(/\/$/, "");
+  STATE.firebaseUrl = next;
+  LocalStore.set(FIREBASE_URL_KEY, next);
+  if (STATE.firebaseES) { try { STATE.firebaseES.close(); } catch (e) {} STATE.firebaseES = null; }
+  if (next) {
+    showToast("ตั้งค่า Firebase แล้ว กำลังซิงก์แบบเรียลไทม์…");
+    firebaseReadOnce();
+    firebaseStartListening();
+  } else {
+    STATE.firebaseStatus = "idle";
+    showToast("ปิดการซิงก์ Firebase แล้ว");
+  }
+  renderSidebarFooter();
 }
 
 function normalizeCloudProject(p) {
@@ -483,6 +629,19 @@ function deleteStatusEntry(name) {
   showToast('ลบสถานะ "' + name + '" แล้ว');
 }
 
+function addDailyReport(entry) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถบันทึกได้"); return; }
+  STATE.dailyReports = [entry].concat(STATE.dailyReports);
+  persistDailyReports();
+  showToast("บันทึกการเข้าพบแล้ว");
+}
+function deleteDailyReport(id) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถลบได้"); return; }
+  STATE.dailyReports = STATE.dailyReports.filter(function (r) { return r.id !== id; });
+  persistDailyReports();
+  showToast("ลบบันทึกแล้ว");
+}
+
 /* ============================== DERIVED ANALYTICS ============================== */
 function computeDerived() {
   var statuses = STATE.statuses;
@@ -654,6 +813,9 @@ function icon(name, size, color, extraStyle) {
     case "download": body = '<path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M4 19h16"/>'; break;
     case "upload": body = '<path d="M12 21V9"/><polyline points="7 14 12 9 17 14"/><path d="M4 19h16"/>'; break;
     case "cloud": body = '<path d="M7 18a4.5 4.5 0 0 1-.7-8.94A5 5 0 0 1 16 8h.5a4 4 0 0 1 0 8H7Z"/>'; break;
+    case "clipboard": body = '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/>'; break;
+    case "printer": body = '<polyline points="6 9 6 3 18 3 18 9"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/>'; break;
+    case "copy": body = '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>'; break;
     default: body = "";
   }
   return '<svg ' + common + '>' + body + '</svg>';
@@ -800,7 +962,8 @@ var NAV_ITEMS = [
   { key: "projects", label: "รายการงาน", icon: "list" },
   { key: "customers", label: "ลูกค้า", icon: "users" },
   { key: "status", label: "สถานะงาน", icon: "pie" },
-  { key: "top10", label: "Top 10", icon: "trophy" }
+  { key: "top10", label: "Top 10", icon: "trophy" },
+  { key: "dailyreport", label: "รายงานประจำวัน", icon: "clipboard" }
 ];
 
 function renderApp() {
@@ -824,7 +987,7 @@ function renderApp() {
 
   app.innerHTML =
     '<div style="display:flex;min-height:100vh;background:' + COLORS.canvas + ';color:' + COLORS.text + '">' +
-    '<aside class="blueprint-grid" style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;border-right:2px solid rgba(201,162,39,0.35)">' +
+    '<aside class="blueprint-grid" style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:2px solid rgba(201,162,39,0.35)">' +
     '<div style="display:flex;align-items:center;gap:10px;padding:0 4px 20px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
     '<div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#2E5395,#5B9BD5);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px" class="disp">EMT</div>' +
     '<div><div class="disp" style="font-size:14.5px;line-height:1.2">Sales Pipeline</div><div style="font-size:11px;color:#8FA3BD;margin-top:1px">Personal Tracker</div></div></div>' +
@@ -864,6 +1027,18 @@ function renderSidebarFooter() {
       '<div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(STATE.auth.name || STATE.auth.email) + '</div>' +
       '<button class="icon-btn" style="padding:0;font-size:10px;color:#8FA3BD" onclick="signOut()">ออกจากระบบ</button></div></div>';
   }
+  var fbBlock;
+  if (!STATE.firebaseUrl) {
+    fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6E82A0;margin-top:4px">' + icon("cloud", 12) + ' ยังไม่ได้เชื่อม Firebase (เรียลไทม์)</div>';
+  } else if (STATE.firebaseStatus === "live") {
+    fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7FD6A6;margin-top:4px">' + icon("cloud", 12) + ' เรียลไทม์ (Firebase) — เชื่อมต่อสด</div>';
+  } else if (STATE.firebaseStatus === "syncing") {
+    fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD;margin-top:4px">' + icon("loader", 12) + ' กำลังซิงก์ Firebase…</div>';
+  } else if (STATE.firebaseStatus === "error") {
+    fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#E8B563;margin-top:4px">' + icon("cloud", 12) + ' Firebase ไม่สำเร็จ</div>';
+  } else {
+    fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7FD6A6;margin-top:4px">' + icon("cloud", 12) + ' เชื่อม Firebase แล้ว</div>';
+  }
   var lastSyncLine = "";
   if (STATE.cloudUrl && STATE.lastSyncedAt) {
     lastSyncLine = '<div style="font-size:10px;color:#6E82A0;margin-top:3px">อัปเดตล่าสุด: ' + fmtDateTime(STATE.lastSyncedAt) + '</div>';
@@ -871,10 +1046,11 @@ function renderSidebarFooter() {
   el.innerHTML = userBlock +
     '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD">' +
     (STATE.saving ? icon("loader", 12) + " กำลังบันทึก…" : icon("check", 12, COLORS.green) + " บันทึกลงเครื่องนี้แล้ว") + '</div>' +
-    cloudBlock + lastSyncLine +
+    cloudBlock + fbBlock + lastSyncLine +
     (STATE.cloudUrl && canEdit() ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
     (STATE.cloudUrl ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="manualSyncNow()">' + icon("cloud", 12) + ' ดึงข้อมูลล่าสุดจากคลาวด์</button>' : '') +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeCloudUrl()">' + (STATE.cloudUrl ? "เปลี่ยน/ปิดการซิงก์คลาวด์" : "เชื่อมต่อ Google Sheets…") + '</button>' +
+    '<button class="icon-btn" style="margin-top:2px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeFirebaseUrl()">' + (STATE.firebaseUrl ? "เปลี่ยน/ปิด Firebase เรียลไทม์" : "เชื่อมต่อ Firebase (เรียลไทม์)…") + '</button>' +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeGoogleClientId()">' + (STATE.googleClientId ? "ตั้งค่าระบบ Login" : "เปิดใช้ระบบ Login…") + '</button>' +
     '<button class="icon-btn" style="margin-top:10px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#fff;font-size:11px;border-radius:6px;padding:7px 8px;background:rgba(91,155,213,0.14)" onclick="exportBackup()">' +
     icon("download", 12) + ' ดาวน์โหลดข้อมูลสำรอง</button>' +
@@ -926,9 +1102,11 @@ function renderMain(derived) {
   else if (STATE.tab === "status") html = renderStatusView(derived);
   else if (STATE.tab === "top10") html = renderTop10(derived);
   else if (STATE.tab === "commission") html = STATE.commissionUnlocked ? renderCommission(derived) : renderCommissionLocked();
+  else if (STATE.tab === "dailyreport") html = renderDailyReportShell(derived);
   el.innerHTML = html;
   if (STATE.tab === "projects") refreshProjectsTable(derived);
   if (STATE.tab === "customers") refreshCustomersTable(derived);
+  if (STATE.tab === "dailyreport") refreshDailyReportList();
 }
 
 function setTab(tab) {
@@ -1323,6 +1501,313 @@ function renderCommission(d) {
     '</div>' + kpiHtml + ctxBox + table;
 }
 
+/* ============================== DAILY REPORT VIEW ============================== */
+function nowHHMM() {
+  var d = new Date();
+  return (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+}
+function todayISO() {
+  var d = new Date();
+  return d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" : "") + (d.getMonth() + 1) + "-" + (d.getDate() < 10 ? "0" : "") + d.getDate();
+}
+
+function renderDailyReportShell(d) {
+  var editable = canEdit();
+  var header = '<div class="dr-hero">' +
+    '<div class="dr-eyebrow">EMT · FIELD VISITS</div>' +
+    '<div class="dr-disp dr-title">รายงานประจำวัน</div>' +
+    '<div class="dr-sub">บันทึกการเข้าพบลูกค้ารายวัน ดูสถิติ และสร้างรายงานสรุปได้ทันที — เส้นทางการเข้าพบของแต่ละวันจะแสดงเป็นแผนที่ถนนพร้อมรถวิ่งด้านล่าง</div>' +
+    '</div>';
+  var customerOptions = d.customerNames.map(function (c) { return '<option value="' + attr(c) + '">'; }).join("");
+
+  var formHtml = "";
+  if (editable) {
+    var chips = ACTIVITY_OPTIONS.map(function (a) {
+      return '<label class="dr-chip"><input type="checkbox" value="' + attr(a) + '"/>' + esc(a) + '</label>';
+    }).join("");
+    formHtml = '<div class="dr-panel" style="margin-bottom:20px">' +
+      '<div class="dr-disp" style="font-size:15px;margin-bottom:14px;color:#fff">บันทึกการเข้าพบวันนี้</div>' +
+      '<form id="daily-report-form" onsubmit="return onDailyReportSubmit(event)">' +
+      '<div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">' +
+      field("วันที่เข้าพบ", '<input type="date" name="date" class="field-input" value="' + todayISO() + '"/>') +
+      field("เวลาเข้าพบ", '<input type="time" name="time" class="field-input" value="' + nowHHMM() + '"/>') +
+      field("ชื่อลูกค้า / ผู้ติดต่อ", '<input type="text" name="person" class="field-input" placeholder="ชื่อ-นามสกุลผู้ติดต่อ"/>') +
+      '</div>' +
+      '<div style="margin-top:14px">' + field("ชื่อบริษัทที่เข้าพบ *", '<input type="text" name="company" class="field-input" list="dr-company-list" placeholder="พิมพ์หรือเลือกชื่อลูกค้า"/><datalist id="dr-company-list">' + customerOptions + '</datalist>') + '</div>' +
+      '<div style="margin-top:14px"><label class="field-label">กิจกรรมที่ทำวันนี้ (เลือกได้หลายข้อ) *</label>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="dr-activity-chips">' + chips + '</div></div>' +
+      '<div style="margin-top:14px">' + field("Feedback จากลูกค้า / รายละเอียดเพิ่มเติม", '<textarea name="feedback" class="field-input" style="min-height:60px;resize:vertical" placeholder="บันทึกรายละเอียดการเข้าพบ..."></textarea>') + '</div>' +
+      '<div id="dr-form-error" style="display:none;color:#F87171;font-size:12px;margin-top:10px"></div>' +
+      '<button type="submit" class="dr-btn-gold" style="margin-top:16px;display:inline-flex;align-items:center;gap:7px">' + icon("check", 15) + ' บันทึกรายการ</button>' +
+      '</form></div>';
+  } else {
+    formHtml = '<div class="dr-panel" style="margin-bottom:20px"><div style="font-size:12.5px;color:var(--dr-muted)">คุณมีสิทธิ์ดูอย่างเดียว — ไม่สามารถเพิ่มบันทึกการเข้าพบได้</div></div>';
+  }
+
+  return '<div class="dr-scope">' + header + formHtml + '<div id="daily-report-list"></div></div>';
+}
+
+function buildDailyRoadSvg(entries, distId) {
+  var n = entries.length;
+  if (n < 2) return "";
+  var segW = 190;
+  var W = Math.max(600, (n - 1) * segW + 120);
+  var H = 170;
+  var midY = 98;
+  var amp = 30;
+  var pts = [];
+  for (var i = 0; i < n; i++) {
+    var x = 60 + i * segW;
+    var y = midY + (i % 2 === 0 ? -amp * 0.4 : amp * 0.6) * (i === 0 || i === n - 1 ? 0.3 : 1);
+    pts.push([x, y]);
+  }
+  function smoothPath(p) {
+    var d = "M " + p[0][0] + "," + p[0][1] + " ";
+    for (var i = 0; i < p.length - 1; i++) {
+      var p0 = p[i === 0 ? 0 : i - 1], p1 = p[i], p2 = p[i + 1], p3 = p[i + 2 === p.length ? i + 1 : i + 2];
+      var c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+      var c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+      d += "C " + c1x + "," + c1y + " " + c2x + "," + c2y + " " + p2[0] + "," + p2[1] + " ";
+    }
+    return d;
+  }
+  var roadPath = smoothPath(pts);
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<defs><path id="roadpath-' + distId + '" d="' + roadPath + '" /></defs>';
+  svg += '<path d="' + roadPath + '" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="34" stroke-linecap="round"/>';
+  svg += '<path d="' + roadPath + '" fill="none" stroke="#3B4453" stroke-width="28" stroke-linecap="round"/>';
+  svg += '<path d="' + roadPath + '" fill="none" stroke="#F5E6B8" stroke-width="2" stroke-linecap="round" stroke-dasharray="9 9" opacity="0.85"/>';
+
+  pts.forEach(function (p, i) {
+    var x = p[0], y = p[1];
+    var e = entries[i];
+    var labelAbove = i % 2 === 0;
+    var pinH = 36;
+    var pinTop = labelAbove ? y - pinH - 30 : y - pinH;
+    svg += '<path d="M ' + x + ' ' + y + ' C ' + (x - 13) + ' ' + (y - 16) + ', ' + (x - 13) + ' ' + (pinTop + 5) + ', ' + x + ' ' + pinTop +
+      ' C ' + (x + 13) + ' ' + (pinTop + 5) + ', ' + (x + 13) + ' ' + (y - 16) + ', ' + x + ' ' + y + ' Z" fill="#C9A227" stroke="#0B1220" stroke-width="1.3"/>';
+    svg += '<circle cx="' + x + '" cy="' + (pinTop + 12) + '" r="10" fill="#0B1220"/>';
+    svg += '<text class="dr-road-badge-text" x="' + x + '" y="' + (pinTop + 16) + '" text-anchor="middle" fill="#F5E6B8">' + (i + 1) + '</text>';
+    var labelY = labelAbove ? pinTop - 10 : pinTop + pinH + 22;
+    var shortName = e.company.length > 16 ? e.company.slice(0, 15) + "…" : e.company;
+    svg += '<text class="dr-road-pin-name" x="' + x + '" y="' + labelY + '" text-anchor="middle">' + esc(shortName) + '</text>';
+    svg += '<text class="dr-road-pin-time" x="' + x + '" y="' + (labelY + 13) + '" text-anchor="middle">' + esc(e.time || "") + '</text>';
+  });
+
+  svg += '<g><g><animateMotion dur="' + (6 + n * 2) + 's" repeatCount="indefinite" rotate="auto"><mpath href="#roadpath-' + distId + '"/></animateMotion>' +
+    '<g transform="translate(-13,-8)"><rect x="0" y="4" width="26" height="9" rx="3" fill="#C9A227"/><rect x="5" y="0" width="14" height="7" rx="2.5" fill="#F5E6B8"/>' +
+    '<circle cx="6" cy="14" r="3" fill="#0B1220"/><circle cx="20" cy="14" r="3" fill="#0B1220"/>' +
+    '<circle cx="6" cy="14" r="1.2" fill="#5B6472"/><circle cx="20" cy="14" r="1.2" fill="#5B6472"/></g></g></g>';
+  svg += "</svg>";
+  return svg;
+}
+
+function refreshDailyReportList() {
+  var wrap = document.getElementById("daily-report-list");
+  if (!wrap) return;
+  var list = STATE.dailyReports || [];
+  if (list.length === 0) {
+    wrap.innerHTML = '<div class="dr-panel" style="text-align:center;padding:40px;color:var(--dr-muted);font-size:13px">ยังไม่มีบันทึกการเข้าพบ — กรอกแบบฟอร์มด้านบนเพื่อเริ่มบันทึก</div>';
+    return;
+  }
+  var byDate = {};
+  list.forEach(function (e) { (byDate[e.date] = byDate[e.date] || []).push(e); });
+  var dates = Object.keys(byDate).sort(function (a, b) { return b.localeCompare(a); });
+  var editable = canEdit();
+
+  wrap.innerHTML = dates.map(function (date, dIdx) {
+    var entries = byDate[date].slice().sort(function (a, b) { return (a.time || "").localeCompare(b.time || ""); });
+    var visits = entries.length;
+    var quotes = entries.filter(function (e) { return e.activities.indexOf("ใบเสนอราคา") !== -1; }).length;
+    var closed = entries.filter(function (e) { return e.activities.indexOf("ปิดการขาย") !== -1; }).length;
+    var dLabel = thaiDateLabel(date);
+    var roadSvg = buildDailyRoadSvg(entries, "dr" + dIdx);
+
+    var entriesHtml = entries.map(function (e, i) {
+      var tags = e.activities.map(function (a) {
+        return '<span class="dr-entry-tag">' + esc(a) + '</span>';
+      }).join(" ");
+      return '<div style="position:relative;padding:10px 0 10px 24px;border-bottom:' + (i < entries.length - 1 ? "1px solid var(--dr-line)" : "none") + '">' +
+        '<span style="position:absolute;left:0;top:15px;width:9px;height:9px;border-radius:99px;background:var(--dr-gold)"></span>' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">' +
+        '<div style="min-width:200px;flex:1">' +
+        '<div style="display:flex;align-items:center;gap:8px"><span class="mono" style="font-size:12px;font-weight:700;color:var(--dr-gold)">' + esc(e.time || "--:--") + '</span>' +
+        '<strong style="font-size:13.5px;color:#fff">' + esc(e.company || "-") + '</strong></div>' +
+        '<div style="font-size:11.5px;color:var(--dr-muted);margin-top:2px">ลูกค้า/ผู้ติดต่อ: ' + esc(e.person || "-") + '</div>' +
+        '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">' + tags + '</div>' +
+        (e.feedback ? '<div style="font-size:12px;color:var(--dr-text);margin-top:6px;max-width:560px;line-height:1.6">' + esc(e.feedback) + '</div>' : '') +
+        '</div>' +
+        (editable ? '<button class="icon-btn" style="color:var(--dr-red);border:1px solid var(--dr-line);border-radius:6px;padding:5px 10px;font-size:11px" onclick="deleteDailyReportClicked(\'' + e.id + '\')">' + icon("trash", 12) + ' ลบ</button>' : '') +
+        '</div></div>';
+    }).join("");
+
+    return '<div class="dr-daycard">' +
+      '<div class="dr-daycard-head">' +
+      '<div class="dr-daytitle">' + dLabel + '</div>' +
+      '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">' +
+      '<span class="dr-rstat">เข้าพบ <b>' + visits + '</b> ราย</span>' +
+      '<span class="dr-rstat">ใบเสนอราคา <b>' + quotes + '</b> ใบ</span>' +
+      '<span class="dr-rstat">ปิดการขาย <b style="color:var(--dr-green)">' + closed + '</b> งาน</span>' +
+      '<button class="dr-btn-gold" style="padding:6px 14px;font-size:11.5px;display:inline-flex;align-items:center;gap:6px" onclick="openDayReportModal(\'' + date + '\')">' + icon("clipboard", 12) + ' สร้างรายงานทั้งวัน</button>' +
+      '</div></div>' +
+      (roadSvg ? '<div class="dr-road-wrap" style="margin-top:12px">' + roadSvg + '</div>' : '') +
+      '<div style="padding:6px 18px 4px 26px">' + entriesHtml + '</div></div>';
+  }).join("");
+}
+
+function thaiDateLabel(dateStr) {
+  var d = new Date(dateStr + "T00:00:00");
+  var days = ["วันอาทิตย์", "วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์"];
+  var months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  return days[d.getDay()] + "ที่ " + d.getDate() + " " + months[d.getMonth()] + " " + (d.getFullYear() + 543);
+}
+
+function onDailyReportSubmit(ev) {
+  ev.preventDefault();
+  var f = ev.target;
+  var errEl = document.getElementById("dr-form-error");
+  var company = f.company.value.trim();
+  var activities = Array.prototype.slice.call(f.querySelectorAll('#dr-activity-chips input:checked')).map(function (c) { return c.value; });
+  if (!company) { errEl.textContent = "กรุณาระบุชื่อบริษัทที่เข้าพบ"; errEl.style.display = "block"; return false; }
+  if (activities.length === 0) { errEl.textContent = "กรุณาเลือกกิจกรรมที่ทำอย่างน้อย 1 รายการ"; errEl.style.display = "block"; return false; }
+  errEl.style.display = "none";
+  var entry = {
+    id: "r" + Date.now() + Math.floor(Math.random() * 1000),
+    date: f.date.value || todayISO(),
+    time: f.time.value || nowHHMM(),
+    person: f.person.value.trim(),
+    company: company,
+    activities: activities,
+    feedback: f.feedback.value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  addDailyReport(entry);
+  f.company.value = ""; f.person.value = ""; f.feedback.value = "";
+  f.time.value = nowHHMM();
+  f.querySelectorAll('#dr-activity-chips input:checked').forEach(function (c) { c.checked = false; });
+  refreshDailyReportList();
+  return false;
+}
+
+function deleteDailyReportClicked(id) {
+  if (!window.confirm("ต้องการลบบันทึกนี้ใช่หรือไม่?")) return;
+  deleteDailyReport(id);
+  refreshDailyReportList();
+}
+
+/* ---- printable day report modal ---- */
+function openDayReportModal(date) {
+  STATE.dailyReportModalDate = date;
+  renderModals();
+}
+function closeDayReportModal() {
+  STATE.dailyReportModalDate = null;
+  renderModals();
+}
+function buildDayReportEntries(date) {
+  return (STATE.dailyReports || []).filter(function (e) { return e.date === date; })
+    .sort(function (a, b) { return (a.time || "").localeCompare(b.time || ""); });
+}
+function buildDayReportText(date) {
+  var list = buildDayReportEntries(date);
+  var dLabel = thaiDateLabel(date);
+  var quotes = list.filter(function (e) { return e.activities.indexOf("ใบเสนอราคา") !== -1; }).length;
+  var closed = list.filter(function (e) { return e.activities.indexOf("ปิดการขาย") !== -1; }).length;
+  var txt = "รายงานประจำวัน — " + dLabel + "\n";
+  txt += "จำนวนเข้าพบทั้งหมด: " + list.length + " ราย   |   ใบเสนอราคา: " + quotes + " ใบ   |   ปิดการขาย: " + closed + " งาน\n";
+  txt += new Array(49).join("=") + "\n\n";
+  list.forEach(function (e) {
+    txt += (e.time || "--:--") + "  " + (e.company || "-") + "\n";
+    txt += "  ลูกค้า/ผู้ติดต่อ: " + (e.person || "-") + "\n";
+    txt += "  กิจกรรม: " + (e.activities.length ? e.activities.join(", ") : "-") + "\n";
+    if (e.feedback) txt += "  Feedback: " + e.feedback + "\n";
+    txt += "\n";
+  });
+  return txt;
+}
+function renderDayReportModal() {
+  var date = STATE.dailyReportModalDate;
+  var list = buildDayReportEntries(date);
+  var dLabel = thaiDateLabel(date);
+  var quotes = list.filter(function (e) { return e.activities.indexOf("ใบเสนอราคา") !== -1; }).length;
+  var closed = list.filter(function (e) { return e.activities.indexOf("ปิดการขาย") !== -1; }).length;
+
+  var itemsHtml = list.map(function (e) {
+    var tags = e.activities.map(function (a) { return '<span style="font-size:10px;font-weight:600;background:rgba(34,197,94,0.13);color:#1B7A54;padding:2px 9px;border-radius:9px;border:1px solid rgba(34,197,94,0.3)">' + esc(a) + '</span>'; }).join(" ");
+    return '<div style="position:relative;padding-bottom:18px;padding-left:22px">' +
+      '<span style="position:absolute;left:-1px;top:2px;width:11px;height:11px;border-radius:99px;background:' + COLORS.gold + ';border:2px solid #0D1420;box-shadow:0 0 0 2px ' + COLORS.gold + '"></span>' +
+      '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">' +
+      '<span class="mono" style="font-weight:700;font-size:12px;color:' + COLORS.gold + ';background:' + COLORS.gold + '1E;padding:2px 9px;border-radius:5px">' + esc(e.time || "--:--") + '</span>' +
+      '<span style="font-weight:600;font-size:13.5px;color:#fff">' + esc(e.company || "-") + '</span></div>' +
+      '<div style="font-size:11px;color:#9FB2C9;margin-top:3px">ลูกค้า/ผู้ติดต่อ: ' + esc(e.person || "-") + '</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' + tags + '</div>' +
+      (e.feedback ? '<div style="font-size:12px;color:#D1D5DB;margin-top:7px;line-height:1.7;background:rgba(255,255,255,0.05);border-left:2px solid ' + COLORS.gold + ';padding:8px 12px;border-radius:0 6px 6px 0">' + esc(e.feedback) + '</div>' : '') +
+      '</div>';
+  }).join("") || '<div style="color:#9FB2C9;font-size:12px">ไม่มีบันทึกในวันนี้</div>';
+
+  var doc = '<div id="day-report-doc" style="padding:26px 28px 30px;background:#0D1420;color:#E5E7EB;border-radius:0 0 14px 14px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid ' + COLORS.gold + ';padding-bottom:16px;margin-bottom:20px;flex-wrap:wrap;gap:14px">' +
+    '<div><div class="mono" style="font-size:11px;letter-spacing:1.5px;color:' + COLORS.gold + ';text-transform:uppercase;font-weight:700">EMT · Daily Visit Report</div>' +
+    '<div class="disp" style="font-size:19px;color:#fff;margin-top:8px">รายงานประจำวัน</div>' +
+    '<div style="font-size:11.5px;color:#9FB2C9;margin-top:4px">' + dLabel + '</div></div>' +
+    '<div style="display:flex;gap:10px;text-align:right">' +
+    '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;min-width:70px"><div class="disp" style="font-size:19px;color:' + COLORS.gold + '">' + list.length + '</div><div style="font-size:9.5px;color:#9FB2C9">เข้าพบ</div></div>' +
+    '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;min-width:70px"><div class="disp" style="font-size:19px;color:' + COLORS.gold + '">' + quotes + '</div><div style="font-size:9.5px;color:#9FB2C9">ใบเสนอราคา</div></div>' +
+    '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;min-width:70px"><div class="disp" style="font-size:19px;color:' + COLORS.gold + '">' + closed + '</div><div style="font-size:9.5px;color:#9FB2C9">ปิดการขาย</div></div>' +
+    '</div></div>' +
+    '<div style="position:relative;padding-left:20px">' +
+    '<div style="position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:linear-gradient(' + COLORS.gold + ', rgba(255,255,255,0.1))"></div>' +
+    itemsHtml + '</div>' +
+    '<div style="margin-top:20px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.15);font-size:10.5px;color:#8393A8;display:flex;justify-content:space-between">' +
+    '<span>จัดทำโดย EMT Sales Pipeline</span><span>พิมพ์เมื่อ ' + new Date().toLocaleString("th-TH") + '</span></div>' +
+    '</div>';
+
+  return '<div class="modal-overlay" onmousedown="if(event.target===this) closeDayReportModal()">' +
+    '<div class="modal-panel" style="width:680px;background:#0D1420">' +
+    '<div class="modal-header" style="background:#0B1220;border-bottom-color:rgba(255,255,255,0.1)">' +
+    '<div><div class="disp" style="font-size:16px;color:#fff">รายงานประจำวัน</div><div style="font-size:11px;color:#9FB2C9;margin-top:2px">' + dLabel + '</div></div>' +
+    '<button type="button" class="icon-btn" style="color:#fff" onclick="closeDayReportModal()">' + icon("x", 17, "#fff") + '</button></div>' +
+    '<div style="overflow-y:auto;flex:1;background:#0D1420">' + doc + '</div>' +
+    '<div class="modal-footer" style="background:#0B1220;border-top-color:rgba(255,255,255,0.1)">' +
+    '<button type="button" class="btn-secondary" style="background:transparent;border-color:' + COLORS.gold + ';color:' + COLORS.gold + '" onclick="copyDayReport()">' + icon("copy", 13) + ' คัดลอกรายงาน</button>' +
+    '<button type="button" class="btn-secondary" style="background:transparent;border-color:' + COLORS.gold + ';color:' + COLORS.gold + '" onclick="printDayReport()">' + icon("printer", 13) + ' พิมพ์ / PDF</button>' +
+    '<button type="button" class="btn-primary" style="background:' + COLORS.gold + ';color:#0B1220" onclick="downloadDayReport()">' + icon("download", 13) + ' ดาวน์โหลด</button>' +
+    '</div></div></div>';
+}
+function copyDayReport() {
+  var txt = buildDayReportText(STATE.dailyReportModalDate);
+  var done = function () { showToast("คัดลอกรายงานแล้ว"); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done).catch(function () { fallbackCopy(txt); done(); });
+  } else { fallbackCopy(txt); done(); }
+}
+function fallbackCopy(txt) {
+  var ta = document.createElement("textarea");
+  ta.value = txt; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+}
+function printDayReport() {
+  var doc = document.getElementById("day-report-doc");
+  if (!doc) return;
+  var w = window.open("", "_blank");
+  w.document.write('<html><head><title>รายงานประจำวัน</title><meta charset="utf-8"/><style>body{background:#0D1420;margin:0;font-family:sans-serif;}</style></head><body>' + doc.outerHTML + '</body></html>');
+  w.document.close();
+  w.focus();
+  window.setTimeout(function () { w.print(); }, 300);
+}
+function downloadDayReport() {
+  var date = STATE.dailyReportModalDate;
+  var txt = buildDayReportText(date);
+  var blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = "รายงานประจำวัน-" + date + ".txt";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("ดาวน์โหลดรายงานแล้ว");
+}
+
 /* ============================== MODALS ============================== */
 function renderModals() {
   var root = document.getElementById("modal-root");
@@ -1332,6 +1817,7 @@ function renderModals() {
   if (STATE.confirmDeleteId !== null) html += renderConfirmModal();
   if (STATE.statusManagerOpen) html += renderStatusManagerModal();
   if (STATE.importPending) html += renderImportConfirmModal();
+  if (STATE.dailyReportModalDate) html += renderDayReportModal();
   root.innerHTML = html;
 }
 
@@ -1600,9 +2086,13 @@ function init() {
     } catch (e) { /* ignore */ }
   }
   try { STATE.commissionUnlocked = window.sessionStorage.getItem(COMMISSION_UNLOCK_KEY) === "1"; } catch (e) {}
+  STATE.firebaseUrl = LocalStore.get(FIREBASE_URL_KEY) || DEFAULT_FIREBASE_URL || "";
   renderApp();
   if (STATE.cloudUrl && !needsLoginGate()) {
     window.setTimeout(function () { pullFromCloud(false); }, 200);
+  }
+  if (STATE.firebaseUrl && !needsLoginGate()) {
+    window.setTimeout(function () { firebaseReadOnce(); firebaseStartListening(); }, 200);
   }
   window.setInterval(function () {
     if (document.visibilityState !== "visible") return;
@@ -1616,33 +2106,4 @@ function init() {
 init();
 </script>
 </body>
-</html><!DOCTYPE html>
-<html>
-<head>
-    <title>หน้าแรก</title>
-    <style>
-        .btn-blue {
-            /* โค้ดสั่งให้ไปอยู่มุมบนขวา */
-            position: absolute;
-            top: 20px;                 /* ห่างจากขอบบน 20 พิกเซล */
-            right: 20px;               /* ห่างจากขอบขวา 20 พิกเซล */
-            
-            display: inline-block;
-            background-color: #1e3a8a; 
-            color: #ffffff;            
-            padding: 8px 16px;         
-            font-size: 14px;           
-            text-decoration: none;     
-            border-radius: 6px;        
-            font-family: sans-serif;
-            font-weight: bold;         
-            transition: 0.2s;          
-        }
-        .btn-blue:hover {
-            background-color: #3b82f6; 
-        }
-    </style>
-</head>
-<body>    
-    <!-- ย้ายมาอยู่ตรงนี้ ปุ่มจะลอยไปที่มุมบนขวาอัตโนมัติ -->
-    <a href="page2.html" class="btn-blue">ไปหน้าสอง</a>
+</html>
