@@ -27,7 +27,16 @@
   [contenteditable="true"]:focus{ background:rgba(201,162,39,0.14); box-shadow:0 0 0 1px var(--gold); }
   .edit-hint{ font-size:10px; color:var(--muted); font-style:italic; margin-top:4px; }
 
-  .masthead{ border-bottom:2px solid var(--gold); padding-bottom:22px; margin-bottom:8px; }
+  .masthead{ border-bottom:2px solid var(--gold); padding-bottom:22px; margin-bottom:8px; position:relative; }
+  .home-link{
+    position:absolute; top:0; right:0; display:inline-flex; align-items:center; gap:7px;
+    background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:7px 16px;
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:12px; color:var(--muted); text-decoration:none;
+    transition:border-color .15s, color .15s;
+  }
+  .home-link svg{ width:14px; height:14px; stroke:var(--muted); transition:stroke .15s; }
+  .home-link:hover{ border-color:var(--gold); color:var(--gold-lt); }
+  .home-link:hover svg{ stroke:var(--gold); }
   .eyebrow{ font-family:'Kanit',sans-serif; font-weight:600; font-size:11.5px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; display:flex; align-items:center; gap:8px; }
   .eyebrow svg{ width:16px; height:16px; stroke:var(--gold); fill:none; }
   h1{ font-family:'Kanit',sans-serif; font-weight:700; font-size:30px; color:#fff; margin:10px 0 6px; }
@@ -286,43 +295,45 @@
   .modal-foot{ padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; }
 
   /* ---- printable industrial report doc ---- */
-  #reportDoc{ padding:30px 34px 40px; }
-  .rd-road-wrap{ background:linear-gradient(180deg,#0E1522,#0B1220); border:1px solid var(--line); border-radius:10px; padding:8px 4px 2px; margin-bottom:20px; }
+  @page{ size: A4; margin: 8mm; }
+  #reportDoc{ padding:14px 18px 16px; }
+  .rd-road-wrap{ background:linear-gradient(180deg,#0E1522,#0B1220); border:1px solid var(--line); border-radius:8px; padding:4px 4px 0; margin-bottom:10px; max-height:110px; overflow:hidden; }
   .rd-road-wrap svg{ width:100%; height:auto; display:block; }
-  .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--gold); padding-bottom:16px; margin-bottom:22px; flex-wrap:wrap; gap:14px; }
-  .rd-header .rd-brand{ display:flex; align-items:center; gap:10px; }
-  .rd-header .rd-brand svg{ width:26px; height:26px; stroke:var(--gold); fill:none; }
-  .rd-header .rd-brand-text{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; }
-  .rd-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:19px; color:#fff; margin-top:10px; }
-  .rd-sub{ font-size:11.5px; color:var(--muted); margin-top:4px; }
-  .rd-kpis{ display:flex; gap:10px; text-align:right; }
-  .rd-kpi{ background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:8px 14px; min-width:76px; }
-  .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:19px; color:var(--gold); }
-  .rd-kpi .l{ font-size:9.5px; color:var(--muted); letter-spacing:0.4px; }
+  .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--gold); padding-bottom:8px; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
+  .rd-header .rd-brand{ display:flex; align-items:center; gap:8px; }
+  .rd-header .rd-brand svg{ width:18px; height:18px; stroke:var(--gold); fill:none; }
+  .rd-header .rd-brand-text{ font-family:'Kanit',sans-serif; font-weight:700; font-size:9.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; }
+  .rd-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:15px; color:#fff; margin-top:5px; }
+  .rd-sub{ font-size:10px; color:var(--muted); margin-top:2px; }
+  .rd-kpis{ display:flex; gap:6px; text-align:right; }
+  .rd-kpi{ background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:5px 10px; min-width:58px; }
+  .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:15px; color:var(--gold); }
+  .rd-kpi .l{ font-size:8px; color:var(--muted); letter-spacing:0.3px; }
 
-  .rd-timeline{ position:relative; padding-left:30px; }
-  .rd-timeline::before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--gold), var(--line)); }
-  .rd-item{ position:relative; padding:0 0 14px 14px; }
-  .rd-item-inner{ background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .rd-timeline{ position:relative; padding-left:20px; }
+  .rd-timeline::before{ content:""; position:absolute; left:6px; top:4px; bottom:4px; width:1.5px; background:linear-gradient(var(--gold), var(--line)); }
+  .rd-item{ position:relative; padding:0 0 6px 10px; }
+  .rd-item-inner{ background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:6px 10px; }
   .rd-item::before{
-    content:""; position:absolute; left:-30px; top:16px; width:12px; height:12px; border-radius:50%;
-    background:var(--gold); border:2px solid #0D1420; box-shadow:0 0 0 2px var(--gold);
+    content:""; position:absolute; left:-21px; top:9px; width:8px; height:8px; border-radius:50%;
+    background:var(--gold); border:1.5px solid #0D1420; box-shadow:0 0 0 1.5px var(--gold);
   }
-  .rd-item-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
-  .rd-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:var(--gold); background:var(--gold-dim); padding:2px 9px; border-radius:5px; }
-  .rd-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; }
-  .rd-person{ font-size:12px; color:#B7C0CC; margin-top:4px; }
-  .rd-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-  .rd-tags{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-  .rd-tag{ font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:3px 10px; border-radius:9px; display:inline-flex; align-items:center; gap:4px; }
-  .rd-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.7; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; white-space:pre-wrap; }
-  .rd-footer{ margin-top:26px; padding-top:14px; border-top:1px dashed var(--line); font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between; }
+  .rd-item-head{ display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; }
+  .rd-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:9.5px; color:var(--gold); background:var(--gold-dim); padding:1px 6px; border-radius:4px; }
+  .rd-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; color:#FFFFFF; }
+  .rd-person{ font-size:9.5px; color:#B7C0CC; margin-top:2px; }
+  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
+  .rd-tag{ font-size:8.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:1.5px 7px; border-radius:7px; display:inline-flex; align-items:center; gap:3px; }
+  .rd-feedback{ font-size:9.5px; color:#E8ECF1; margin-top:4px; line-height:1.4; background:rgba(255,255,255,0.045); border-left:2px solid var(--gold); padding:4px 8px; border-radius:0 5px 5px 0; white-space:pre-wrap; }
+  .rd-footer{ margin-top:10px; padding-top:6px; border-top:1px dashed var(--line); font-size:8.5px; color:var(--muted); display:flex; justify-content:space-between; }
 
   @media print{
     body *{ visibility:hidden; }
     #reportDoc, #reportDoc *{ visibility:visible; }
     #reportDoc{ position:absolute; left:0; top:0; width:100%; background:#0D1420; }
+    .rd-item-inner{ break-inside:avoid; }
   }
+
 
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
@@ -332,6 +343,10 @@
 <div class="page">
 
   <div class="masthead">
+    <a class="home-link" href="index.html">
+      <svg viewBox="0 0 24 24" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+      กลับหน้าหลัก
+    </a>
     <div class="eyebrow">
       <svg viewBox="0 0 24 24" stroke-width="2"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
       Rayong Sales Territory Plan
@@ -449,8 +464,10 @@
         <div class="activity-chips" id="activityChips">
           <label class="chip"><input type="checkbox" value="แนะนำตัว">แนะนำตัว / เปิดตลาดใหม่</label>
           <label class="chip"><input type="checkbox" value="ส่งของ">ส่งของ / ส่งตัวอย่าง</label>
+          <label class="chip"><input type="checkbox" value="ขอราคา">ลูกค้าขอราคา</label>
           <label class="chip"><input type="checkbox" value="ใบเสนอราคา">ทำใบเสนอราคา</label>
-          <label class="chip"><input type="checkbox" value="ปิดการขาย">ปิดการขาย</label>
+          <label class="chip"><input type="checkbox" value="Confirm">Confirm</label>
+          <label class="chip"><input type="checkbox" value="ปฏิเสธงาน">ปฏิเสธงาน</label>
           <label class="chip"><input type="checkbox" value="ติดตามงาน">ติดตามงาน</label>
           <label class="chip"><input type="checkbox" value="อื่นๆ">อื่นๆ</label>
         </div>
@@ -645,8 +662,10 @@ function refreshFeedbackRowUI(id, data){
 const ACTIVITY_META = {
   'แนะนำตัว': { color:'#3B82F6', icon:'<path d="M8 12l3 3 5-6"/><circle cx="12" cy="12" r="9"/>' },
   'ส่งของ': { color:'#A78BFA', icon:'<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>' },
+  'ขอราคา': { color:'#EC4899', icon:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><path d="M12 8v3M12 15h.01"/>' },
   'ใบเสนอราคา': { color:'#F59E0B', icon:'<path d="M6 2h9l3 3v17H6z"/><path d="M9 8h6M9 12h6M9 16h4"/>' },
-  'ปิดการขาย': { color:'#22C55E', icon:'<path d="M12 2l2.4 6.8L21 9l-5.5 4.6L17 21l-5-3.6L7 21l1.5-7.4L3 9l6.6-0.2z"/>' },
+  'Confirm': { color:'#22C55E', icon:'<path d="M12 2l2.4 6.8L21 9l-5.5 4.6L17 21l-5-3.6L7 21l1.5-7.4L3 9l6.6-0.2z"/>' },
+  'ปฏิเสธงาน': { color:'#F87171', icon:'<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>' },
   'ติดตามงาน': { color:'#22D3EE', icon:'<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>' },
   'อื่นๆ': { color:'#94A3B8', icon:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' },
 };
@@ -1379,13 +1398,13 @@ async function init(){
     const uniqueDates = new Set(list.map(e=>e.date));
     const visitCount = list.filter(e=>e.visit !== false).length;
     const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-    const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
+    const closed = list.filter(e=>e.activities.includes('Confirm')).length;
     document.getElementById('archiveStats').innerHTML = `
       <div class="astat">บันทึกทั้งหมด <b>${uniqueDates.size}</b> วัน</div>
       <div class="astat">เข้าพบสะสม (Visit) <b>${visitCount}</b> ครั้ง</div>
       <div class="astat">กิจกรรมทั้งหมดสะสม <b>${list.length}</b> รายการ</div>
       <div class="astat">ใบเสนอราคาสะสม <b>${quotes}</b> ใบ</div>
-      <div class="astat">ปิดการขายสะสม <b>${closed}</b> งาน</div>
+      <div class="astat">Confirm สะสม <b>${closed}</b> งาน</div>
     `;
   }
 
@@ -1409,12 +1428,12 @@ async function init(){
       const entries = byDate[date].slice().sort((a,b)=> (a.time||'').localeCompare(b.time||''));
       const visits = entries.filter(e=>e.visit !== false).length;
       const quotes = entries.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-      const closed = entries.filter(e=>e.activities.includes('ปิดการขาย')).length;
+      const closed = entries.filter(e=>e.activities.includes('Confirm')).length;
       const dObj = new Date(date+'T00:00:00');
       const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
       const entriesHtml = entries.map(e=>{
         const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
-        const visitTag = e.visit === false ? '<span class="tag" style="background:rgba(148,163,184,0.15); color:var(--muted);">ไม่ได้เข้าพบ (กิจกรรมเท่านั้น)</span>' : '<span class="tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
+        const visitTag = e.visit === false ? '' : '<span class="tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
         return `<div class="report-entry" data-id="${e.id}">
           <div class="re-time">${e.time || '--:--'}</div>
           <div class="re-main">
@@ -1437,7 +1456,7 @@ async function init(){
             <div class="rstat">เข้าพบ (Visit) <b>${visits}</b> ราย</div>
             <div class="rstat">กิจกรรมทั้งหมด <b>${entries.length}</b> รายการ</div>
             <div class="rstat">ใบเสนอราคา <b>${quotes}</b> ใบ</div>
-            <div class="rstat">ปิดการขาย <b>${closed}</b> งาน</div>
+            <div class="rstat">Confirm <b>${closed}</b> งาน</div>
           </div>
           <div class="report-date-actions">
             <button class="btn-report btn-compile" data-date="${date}">สร้างรายงานทั้งวัน</button>
@@ -1548,10 +1567,10 @@ async function init(){
     const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const visitCount = list.filter(e=>e.visit !== false).length;
     const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-    const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
+    const closed = list.filter(e=>e.activities.includes('Confirm')).length;
 
     let txt = `รายงานประจำวัน — ${dLabel}\n`;
-    txt += `จำนวนเข้าพบ (Visit): ${visitCount} ราย   |   กิจกรรมทั้งหมด: ${list.length} รายการ   |   ใบเสนอราคา: ${quotes} ใบ   |   ปิดการขาย: ${closed} งาน\n`;
+    txt += `จำนวนเข้าพบ (Visit): ${visitCount} ราย   |   กิจกรรมทั้งหมด: ${list.length} รายการ   |   ใบเสนอราคา: ${quotes} ใบ   |   Confirm: ${closed} งาน\n`;
     txt += `${'='.repeat(48)}\n\n`;
 
     list.forEach((e,i)=>{
@@ -1571,13 +1590,13 @@ async function init(){
     const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const visitCount = list.filter(e=>e.visit !== false).length;
     const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-    const closed = list.filter(e=>e.activities.includes('ปิดการขาย')).length;
+    const closed = list.filter(e=>e.activities.includes('Confirm')).length;
     const roadSvg = list.length ? buildDayRoadSvg(list, 'pdf'+date.replace(/-/g,'')) : '';
 
     const itemsHtml = list.map(e=>{
       const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
       const visitTag = e.visit === false
-        ? '<span class="rd-tag" style="background:rgba(148,163,184,0.15); color:#CBD5E1;">ไม่ได้เข้าพบ</span>'
+        ? ''
         : '<span class="rd-tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
       return `<div class="rd-item">
         <div class="rd-item-inner">
@@ -1606,7 +1625,7 @@ async function init(){
         <div class="rd-kpis">
           <div class="rd-kpi"><div class="n">${visitCount}</div><div class="l">เข้าพบ</div></div>
           <div class="rd-kpi"><div class="n">${quotes}</div><div class="l">ใบเสนอราคา</div></div>
-          <div class="rd-kpi"><div class="n">${closed}</div><div class="l">ปิดการขาย</div></div>
+          <div class="rd-kpi"><div class="n">${closed}</div><div class="l">Confirm</div></div>
         </div>
       </div>
       ${roadSvg ? `<div class="rd-road-wrap">${roadSvg}</div>` : ''}
@@ -1751,26 +1770,3 @@ init();
 </script>
 </body>
 </html>
-.btn-back-home {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  text-decoration: none;
-  background: linear-gradient(135deg, #C9A227, #E8C55A);
-  color: #1B1400;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-weight: 700;
-  font-size: 13px;
-  font-family: Arial, "Segoe UI", "Noto Sans Thai", sans-serif;
-  box-shadow: 0 6px 16px rgba(201, 162, 39, 0.25);
-  cursor: pointer;
-  border: none;
-}
-.btn-back-home:hover { background: linear-gradient(135deg, #E8C55A, #C9A227); }
-<a href="index.html" class="btn-back-home">
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="15 18 9 12 15 6"/>
-  </svg>
-  กลับหน้าหลัก
-</a>
