@@ -131,6 +131,41 @@
   .contact-summary .cs-status{ display:flex; gap:14px; flex-wrap:wrap; }
   .contact-summary .cs-chip{ font-size:11.5px; color:var(--muted); font-family:'Kanit',sans-serif; }
   .contact-summary .cs-chip b{ font-size:14px; }
+
+  .visited-section{
+    margin-top:14px; background:linear-gradient(160deg, rgba(34,197,94,0.06), var(--panel) 40%);
+    border:1px solid rgba(34,197,94,0.25); border-radius:12px; overflow:hidden;
+  }
+  .visited-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; cursor:pointer; }
+  .visited-head-left{ display:flex; align-items:center; gap:12px; }
+  .visited-icon{
+    width:36px; height:36px; border-radius:50%; background:var(--green-dim); border:1.5px solid var(--green);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .visited-icon svg{ width:18px; height:18px; stroke:var(--green); }
+  .visited-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:15px; color:#fff; }
+  .visited-meta{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .visited-caret{ color:var(--muted); font-size:14px; transition:transform .2s; }
+  .visited-caret.open{ transform:rotate(180deg); }
+  .visited-body{ display:none; padding:4px 20px 20px; }
+  .visited-body.open{ display:block; }
+  .visited-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:10px; }
+  .visited-card{
+    background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--green); border-radius:8px;
+    padding:12px 14px; position:relative;
+  }
+  .visited-card .vc-name{ font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; color:#fff; line-height:1.4; padding-right:20px; }
+  .visited-card .vc-check{ position:absolute; top:12px; right:12px; width:16px; height:16px; color:var(--green); }
+  .visited-card .vc-loc{ display:flex; align-items:center; gap:5px; margin-top:8px; font-size:10.5px; color:var(--muted); }
+  .visited-card .vc-loc svg{ width:11px; height:11px; stroke:var(--muted); flex-shrink:0; }
+  .visited-card .vc-status{ display:inline-block; margin-top:7px; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:2px 8px; border-radius:8px; }
+  .visited-empty{ padding:30px 10px; text-align:center; color:var(--muted); font-size:12.5px; }
+  .visited-filter-row{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .visited-filter-btn{
+    background:var(--panel2); border:1px solid var(--line); border-radius:16px; padding:5px 14px; font-size:11px;
+    color:var(--muted); cursor:pointer; font-family:'Kanit',sans-serif; font-weight:500;
+  }
+  .visited-filter-btn.active{ background:var(--green-dim); border-color:var(--green); color:#6EE7B7; }
   .kpi{ background:var(--panel); padding:16px 18px; }
   .kpi .l{ font-family:'Kanit',sans-serif; font-size:10.5px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
   .kpi .v{ font-family:'Kanit',sans-serif; font-weight:700; font-size:26px; color:var(--gold); margin-top:4px; }
@@ -448,6 +483,22 @@
   <div id="page1">
     <div class="kpi-row" id="kpiRow"></div>
   <div class="contact-summary" id="contactSummary"></div>
+
+  <div class="visited-section" id="visitedSection">
+    <div class="visited-head" id="visitedHead">
+      <div class="visited-head-left">
+        <div class="visited-icon">
+          <svg viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div>
+          <div class="visited-title">บริษัทที่ไปพบแล้ว</div>
+          <div class="visited-meta" id="visitedMeta">0 แห่ง</div>
+        </div>
+      </div>
+      <div class="visited-caret" id="visitedCaret">▾</div>
+    </div>
+    <div class="visited-body" id="visitedBody"></div>
+  </div>
   <div class="override-banner" id="overrideChangeBanner" style="display:none;">
     <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
     <button onclick="location.reload()">รีเฟรชตอนนี้</button>
