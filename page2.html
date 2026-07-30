@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --ink:#0B1220; --panel:#111827; --panel2:#1F2937; --panel3:#151E2E; --line:#2A3441;
@@ -507,6 +508,7 @@
       </div>
       <div class="modal-foot">
         <button class="btn-report" id="modalCopy">คัดลอกรายงาน (ข้อความ)</button>
+        <button class="btn-report" id="modalImage">บันทึกเป็นรูปภาพ (PNG)</button>
         <button class="btn-report" id="modalPrint">พิมพ์ / บันทึกเป็น PDF</button>
         <button class="btn-report" id="modalDownload">ดาวน์โหลด (.txt)</button>
       </div>
@@ -1642,6 +1644,7 @@ async function init(){
   const reportDoc = document.getElementById('reportDoc');
   const modalClose = document.getElementById('modalClose');
   const modalCopy = document.getElementById('modalCopy');
+  const modalImage = document.getElementById('modalImage');
   const modalPrint = document.getElementById('modalPrint');
   const modalDownload = document.getElementById('modalDownload');
   let currentReportDate = null;
@@ -1665,6 +1668,31 @@ async function init(){
       ta.value = txt; document.body.appendChild(ta); ta.select();
       document.execCommand('copy'); document.body.removeChild(ta);
     });
+  });
+  modalImage.addEventListener('click', async ()=>{
+    if (typeof html2canvas === 'undefined'){
+      alert('ไม่สามารถโหลดเครื่องมือสร้างรูปภาพได้ (ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต) กรุณาลองใหม่');
+      return;
+    }
+    modalImage.textContent = 'กำลังสร้างรูปภาพ...';
+    try{
+      const canvas = await html2canvas(reportDoc, {
+        backgroundColor: '#0D1420',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const link = document.createElement('a');
+      link.download = `รายงานประจำวัน-${currentReportDate}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      modalImage.textContent = 'บันทึกแล้ว ✓';
+      setTimeout(()=>{ modalImage.textContent = 'บันทึกเป็นรูปภาพ (PNG)'; }, 1500);
+    }catch(e){
+      console.error(e);
+      alert('สร้างรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+      modalImage.textContent = 'บันทึกเป็นรูปภาพ (PNG)';
+    }
   });
   modalPrint.addEventListener('click', ()=>{ window.print(); });
   modalDownload.addEventListener('click', ()=>{
