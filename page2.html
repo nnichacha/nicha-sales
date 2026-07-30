@@ -1751,35 +1751,26 @@ init();
 </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>หน้าสอง</title>
-    <style>
-        .btn-yellow {
-            /* โค้ดสั่งให้ไปอยู่มุมบนขวา */
-            position: absolute;
-            top: 20px;                 /* ห่างจากขอบบน 20 พิกเซล */
-            right: 20px;               /* ห่างจากขอบขวา 20 พิกเซล */
-            
-            display: inline-block;
-            background-color: #f59e0b; 
-            color: #1e293b;            
-            padding: 8px 16px;
-            font-size: 14px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-family: sans-serif;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        .btn-yellow:hover {
-            background-color: #fbbf24;
-        }
-    </style>
-</head>
-<body>
-    <!-- ย้ายมาอยู่ตรงนี้ ปุ่มจะลอยไปที่มุมบนขวาอัตโนมัติ -->
-    <a href="index.html" class="btn-yellow">กลับหน้าแรก</a>
-</body>
-</html>
+.btn-back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #C9A227, #E8C55A);
+  color: #1B1400;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: Arial, "Segoe UI", "Noto Sans Thai", sans-serif;
+  box-shadow: 0 6px 16px rgba(201, 162, 39, 0.25);
+  cursor: pointer;
+  border: none;
+}
+.btn-back-home:hover { background: linear-gradient(135deg, #E8C55A, #C9A227); }
+<a href="index.html" class="btn-back-home">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+  กลับหน้าหลัก
+</a>
