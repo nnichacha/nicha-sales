@@ -123,6 +123,14 @@
   .save-dot{ width:7px; height:7px; border-radius:50%; background:var(--green); }
 
   .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:22px; }
+  .contact-summary{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin-top:14px; }
+  .contact-summary .cs-main{ display:flex; align-items:baseline; gap:8px; padding-right:16px; border-right:1px solid var(--line); }
+  .contact-summary .cs-main .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:24px; color:var(--green); }
+  .contact-summary .cs-main .n .of{ font-size:14px; color:var(--muted); font-weight:500; }
+  .contact-summary .cs-main .l{ font-family:'Kanit',sans-serif; font-size:11.5px; color:var(--muted); }
+  .contact-summary .cs-status{ display:flex; gap:14px; flex-wrap:wrap; }
+  .contact-summary .cs-chip{ font-size:11.5px; color:var(--muted); font-family:'Kanit',sans-serif; }
+  .contact-summary .cs-chip b{ font-size:14px; }
   .kpi{ background:var(--panel); padding:16px 18px; }
   .kpi .l{ font-family:'Kanit',sans-serif; font-size:10.5px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
   .kpi .v{ font-family:'Kanit',sans-serif; font-weight:700; font-size:26px; color:var(--gold); margin-top:4px; }
@@ -181,13 +189,10 @@
     background:var(--panel2); border:1px solid var(--line); border-radius:6px; color:var(--text); font-size:11px;
     padding:4px 6px; font-family:'Sarabun',sans-serif; min-width:110px;
   }
+  select.status-select.st-new{ color:#38BDF8; }
   select.status-select.st-goon{ color:var(--green); }
   select.status-select.st-no{ color:var(--red); }
   select.status-select.st-wait{ color:var(--amber); }
-  select.status-select.st-askprice{ color:#38BDF8; }
-  select.status-select.st-rejected{ color:#F87171; }
-  select.status-select.st-pending{ color:#A78BFA; }
-  select.status-select.st-closed{ color:var(--gold); }
   textarea.feedback-note{
     width:100%; min-width:180px; background:var(--panel2); border:1px solid var(--line); border-radius:6px;
     color:var(--text); font-size:11.5px; font-family:'Sarabun',sans-serif; padding:6px 8px; resize:vertical; min-height:32px;
@@ -442,6 +447,7 @@
 
   <div id="page1">
     <div class="kpi-row" id="kpiRow"></div>
+  <div class="contact-summary" id="contactSummary"></div>
   <div class="override-banner" id="overrideChangeBanner" style="display:none;">
     <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
     <button onclick="location.reload()">รีเฟรชตอนนี้</button>
@@ -676,6 +682,7 @@ function refreshFeedbackRowUI(id, data){
     tr.classList.toggle('contacted', !!data.contacted);
     updateDayProgress(tr.closest('.day-card'));
   });
+  refreshContactSummaryFromCache();
 }
 
 
@@ -699,13 +706,10 @@ function activityBadge(name){
 
 const STATUS_OPTIONS = [
   {v:'', label:'— ยังไม่ระบุ —', cls:''},
+  {v:'new', label:'New customer', cls:'st-new'},
   {v:'goon', label:'ไปต่อ', cls:'st-goon'},
   {v:'no', label:'ไม่เกี่ยวข้อง', cls:'st-no'},
   {v:'wait', label:'รอติดตาม', cls:'st-wait'},
-  {v:'askprice', label:'ลูกค้าขอราคา', cls:'st-askprice'},
-  {v:'rejected', label:'ปฏิเสธงาน', cls:'st-rejected'},
-  {v:'pending_price', label:'รับงานและรอราคา', cls:'st-pending'},
-  {v:'closed', label:'ปิดการขาย', cls:'st-closed'},
 ];
 
 let feedbackCache = {};
@@ -725,6 +729,29 @@ async function addReportEntry(entry){
   if (syncConnected){
     try{ await fbDb.ref('dailyReports/'+entry.id).set(entry); }catch(e){ console.error(e); }
   }
+  if (entry.visit !== false && entry.company){
+    await autoMarkContacted(entry.company);
+  }
+}
+
+let companyNameToId = {};
+function buildCompanyNameIndex(){
+  companyNameToId = {};
+  Object.values(SITE_DATA).forEach(d=>{
+    d.sections.forEach(s=>{
+      s.companies.forEach(c=>{ companyNameToId[c.name.trim()] = c.id; });
+    });
+  });
+}
+
+async function autoMarkContacted(companyName){
+  const id = companyNameToId[companyName.trim()];
+  if (!id) return; // free-typed company name not in the database — nothing to check
+  const fb = await loadFeedback(id);
+  if (fb.contacted) return; // already checked, nothing to do
+  const updated = {...fb, contacted:true};
+  await saveFeedback(id, updated);
+  refreshFeedbackRowUI(id, updated);
 }
 
 async function removeReportEntry(id){
@@ -740,6 +767,9 @@ async function updateReportEntry(id, updatedFields){
   localStorage.setItem('dailyReports', JSON.stringify(reportsCache));
   if (syncConnected){
     try{ await fbDb.ref('dailyReports/'+id).update({...updatedFields, editedAt:new Date().toISOString()}); }catch(e){ console.error(e); }
+  }
+  if (updatedFields.visit !== false && updatedFields.company){
+    await autoMarkContacted(updatedFields.company);
   }
 }
 
@@ -776,6 +806,63 @@ async function saveFeedback(id, data){
     txt.textContent = 'บันทึกไม่สำเร็จ (ตรวจสอบการเชื่อมต่อ)';
   }
 }
+
+async function fetchAllFeedback(){
+  const all = {};
+  if (syncConnected){
+    try{
+      const snap = await fbDb.ref('feedback').once('value');
+      const remote = snap.val() || {};
+      Object.keys(remote).forEach(id=>{ all[id] = remote[id]; feedbackCache[id] = remote[id]; });
+      return all;
+    }catch(e){ console.error('fetchAllFeedback failed', e); }
+  }
+  for (const key in localStorage){
+    if (key.startsWith('feedback:')){
+      try{ all[key.slice(9)] = JSON.parse(localStorage.getItem(key)); }catch(e){}
+    }
+  }
+  return all;
+}
+
+let _totalCompaniesForSummary = 0;
+
+async function renderContactSummary(totalCompanies){
+  _totalCompaniesForSummary = totalCompanies;
+  await fetchAllFeedback(); // populates feedbackCache as a side effect
+  refreshContactSummaryFromCache();
+}
+
+function refreshContactSummaryFromCache(){
+  const el = document.getElementById('contactSummary');
+  if (!el) return;
+  const validIds = new Set();
+  Object.values(SITE_DATA).forEach(d=> d.sections.forEach(s=> s.companies.forEach(c=> validIds.add(c.id))));
+
+  let contacted = 0;
+  const statusCounts = {};
+  STATUS_OPTIONS.forEach(o=>{ if(o.v) statusCounts[o.v] = 0; });
+
+  Object.entries(feedbackCache).forEach(([id, fb])=>{
+    if (!fb || !validIds.has(id)) return;
+    if (fb.contacted) contacted++;
+    if (fb.status && statusCounts[fb.status] !== undefined) statusCounts[fb.status]++;
+  });
+
+  const colorMap = {'new':'#38BDF8','goon':'var(--green)','no':'var(--red)','wait':'var(--amber)'};
+  const statusChips = STATUS_OPTIONS.filter(o=>o.v).map(o=>
+    `<div class="cs-chip">${o.label} <b style="color:${colorMap[o.v]||'var(--text)'}">${statusCounts[o.v]||0}</b></div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="cs-main">
+      <div class="n">${contacted}<span class="of"> / ${_totalCompaniesForSummary}</span></div>
+      <div class="l">พบแล้ว<br>(ติดต่อแล้ว)</div>
+    </div>
+    <div class="cs-status">${statusChips}</div>
+  `;
+}
+
 
 function gmapsLink(name, tam, amp){
   const q = encodeURIComponent(`${name} ${tam} ${amp} ระยอง`);
@@ -1024,6 +1111,7 @@ async function renderCompanyRow(c, dist){
     sel.className = 'status-select ' + (STATUS_OPTIONS.find(o=>o.v===sel.value)||{cls:''}).cls;
     saveFeedback(c.id, data);
     updateDayProgress(tr.closest('.day-card'));
+    refreshContactSummaryFromCache();
   }
   chk.addEventListener('change', persist);
   sel.addEventListener('change', persist);
@@ -1284,6 +1372,7 @@ async function init(){
     document.getElementById('loginWidget').style.display = 'none';
   }
   applyCompanyOverrides();
+  buildCompanyNameIndex();
   await bindEditableTexts(document.querySelector('.masthead'));
 
   if (sharedReportDate){
@@ -1298,6 +1387,8 @@ async function init(){
     <div class="kpi"><div class="l">ตำบล</div><div class="v">${totalTambons}</div></div>
     <div class="kpi"><div class="l">สถานะข้อมูล</div><div class="v" style="font-size:16px">พร้อมกรอกแผน</div></div>
   `;
+
+  await renderContactSummary(totalCompanies);
 
   const container = document.getElementById('districtContainer');
   let num = 1;
