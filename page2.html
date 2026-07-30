@@ -786,11 +786,16 @@ async function addReportEntry(entry){
 }
 
 let companyNameToId = {};
+let companyIdToInfo = {};
 function buildCompanyNameIndex(){
   companyNameToId = {};
-  Object.values(SITE_DATA).forEach(d=>{
+  companyIdToInfo = {};
+  Object.entries(SITE_DATA).forEach(([dist, d])=>{
     d.sections.forEach(s=>{
-      s.companies.forEach(c=>{ companyNameToId[c.name.trim()] = c.id; });
+      s.companies.forEach(c=>{
+        companyNameToId[c.name.trim()] = c.id;
+        companyIdToInfo[c.id] = {name:c.name, tambon:c.tambon, amphoe:dist, status:c.relation||''};
+      });
     });
   });
 }
@@ -870,7 +875,12 @@ async function fetchAllFeedback(){
   }
   for (const key in localStorage){
     if (key.startsWith('feedback:')){
-      try{ all[key.slice(9)] = JSON.parse(localStorage.getItem(key)); }catch(e){}
+      const id = key.slice(9);
+      try{
+        const val = JSON.parse(localStorage.getItem(key));
+        all[id] = val;
+        feedbackCache[id] = val;
+      }catch(e){}
     }
   }
   return all;
@@ -912,6 +922,65 @@ function refreshContactSummaryFromCache(){
     </div>
     <div class="cs-status">${statusChips}</div>
   `;
+  renderVisitedSection();
+}
+
+let visitedFilterDist = 'all';
+
+function renderVisitedSection(){
+  const body = document.getElementById('visitedBody');
+  const meta = document.getElementById('visitedMeta');
+  if (!body) return;
+
+  const visited = Object.entries(feedbackCache)
+    .filter(([id, fb]) => fb && fb.contacted && companyIdToInfo[id])
+    .map(([id, fb]) => ({id, fb, info: companyIdToInfo[id]}));
+
+  meta.textContent = `${visited.length} แห่ง`;
+
+  const districts = [...new Set(Object.keys(SITE_DATA))];
+  const filterRow = `<div class="visited-filter-row">
+    <button class="visited-filter-btn ${visitedFilterDist==='all'?'active':''}" data-dist="all">ทั้งหมด (${visited.length})</button>
+    ${districts.map(d=>{
+      const n = visited.filter(v=>v.info.amphoe===d).length;
+      return `<button class="visited-filter-btn ${visitedFilterDist===d?'active':''}" data-dist="${d}">${d} (${n})</button>`;
+    }).join('')}
+  </div>`;
+
+  if (visited.length === 0){
+    body.innerHTML = `<div class="visited-empty">ยังไม่มีบริษัทที่ติ๊ก "ไปพบแล้ว" — ติ๊กในตารางด้านล่าง หรือบันทึก Visit ใน Daily Report เพื่อให้ขึ้นที่นี่อัตโนมัติ</div>`;
+    return;
+  }
+
+  const shown = visitedFilterDist==='all' ? visited : visited.filter(v=>v.info.amphoe===visitedFilterDist);
+  const statusMeta = Object.fromEntries(STATUS_OPTIONS.map(o=>[o.v, o]));
+  const colorMap = {'new':'#38BDF8','goon':'var(--green)','no':'var(--red)','wait':'var(--amber)'};
+
+  const cardsHtml = shown.sort((a,b)=> a.info.name.localeCompare(b.info.name,'th')).map(v=>{
+    const st = statusMeta[v.fb.status];
+    const statusBadge = st && st.v ? `<div class="vc-status" style="background:${colorMap[st.v]}22; color:${colorMap[st.v]};">${st.label}</div>` : '';
+    return `<div class="visited-card">
+      <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      <div class="vc-name">${v.info.name}</div>
+      <div class="vc-loc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
+      </div>
+      ${statusBadge}
+    </div>`;
+  }).join('');
+
+  body.innerHTML = filterRow + `<div class="visited-grid">${cardsHtml}</div>`;
+
+  body.querySelectorAll('.visited-filter-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      visitedFilterDist = btn.dataset.dist;
+      renderVisitedSection();
+      const b2 = document.getElementById('visitedBody');
+      if (b2) b2.classList.add('open');
+      document.getElementById('visitedCaret').classList.add('open');
+    });
+  });
 }
 
 
@@ -1441,6 +1510,14 @@ async function init(){
 
   await renderContactSummary(totalCompanies);
 
+  const visitedHead = document.getElementById('visitedHead');
+  const visitedBody = document.getElementById('visitedBody');
+  const visitedCaret = document.getElementById('visitedCaret');
+  visitedHead.addEventListener('click', ()=>{
+    const isOpen = visitedBody.classList.toggle('open');
+    visitedCaret.classList.toggle('open', isOpen);
+  });
+
   const container = document.getElementById('districtContainer');
   let num = 1;
   for (const [dist, data] of Object.entries(SITE_DATA)) {
@@ -1449,6 +1526,10 @@ async function init(){
     await bindEditableTexts(block);
     num++;
   }
+
+  // safety re-render: ensures the summary/visited section reflect every row's
+  // feedback once all rows have finished loading, closing any timing gap
+  refreshContactSummaryFromCache();
 
   // search & filter
   const searchInput = document.getElementById('searchInput');
