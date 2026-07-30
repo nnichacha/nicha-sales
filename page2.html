@@ -933,8 +933,11 @@ function renderVisitedSection(){
   if (!body) return;
 
   const visited = Object.entries(feedbackCache)
-    .filter(([id, fb]) => fb && fb.contacted && companyIdToInfo[id])
-    .map(([id, fb]) => ({id, fb, info: companyIdToInfo[id]}));
+    .filter(([id, fb]) => fb && fb.contacted)
+    .map(([id, fb]) => ({
+      id, fb,
+      info: companyIdToInfo[id] || {name:`(ไม่พบชื่อในฐานข้อมูล — id: ${id})`, tambon:'-', amphoe:'ไม่ทราบ'}
+    }));
 
   meta.textContent = `${visited.length} แห่ง`;
 
