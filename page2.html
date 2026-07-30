@@ -23,6 +23,13 @@
   body{ margin:0; font-family:'Sarabun',sans-serif; background:var(--ink); color:var(--text); }
   .page{ max-width:1240px; margin:0 auto; padding:40px 36px 80px; }
 
+  .shared-report-view{ display:none; max-width:720px; margin:0 auto; padding:30px 20px 60px; }
+  body.shared-mode .page > *:not(.shared-report-view){ display:none !important; }
+  body.shared-mode .shared-report-view{ display:block; }
+  .shared-report-topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+  .shared-report-doc{ background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; padding:24px 26px 30px; }
+  .shared-report-empty{ padding:60px 20px; text-align:center; color:var(--muted); font-size:14px; }
+
   [contenteditable="true"]{ outline:none; border-radius:4px; transition:background .15s; }
   [contenteditable="true"]:hover{ background:rgba(201,162,39,0.10); box-shadow:0 0 0 1px rgba(201,162,39,0.35); }
   [contenteditable="true"]:focus{ background:rgba(201,162,39,0.14); box-shadow:0 0 0 1px var(--gold); }
@@ -343,6 +350,17 @@
 <body>
 <div class="page">
 
+  <div class="shared-report-view" id="sharedReportView">
+    <div class="shared-report-topbar">
+      <a class="home-link" href="index.html">
+        <svg viewBox="0 0 24 24" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+        กลับหน้าหลัก
+      </a>
+      <a class="home-link" href="page2.html">เปิดระบบเต็ม (แก้ไข/ดูทั้งหมด)</a>
+    </div>
+    <div class="shared-report-doc" id="sharedReportDoc"></div>
+  </div>
+
   <div class="masthead">
     <a class="home-link" href="index.html">
       <svg viewBox="0 0 24 24" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
@@ -507,6 +525,7 @@
         <div id="reportDoc"></div>
       </div>
       <div class="modal-foot">
+        <button class="btn-report" id="modalShareLink" style="border-color:var(--green); color:#6EE7B7;">คัดลอกลิงก์แชร์</button>
         <button class="btn-report" id="modalCopy">คัดลอกรายงาน (ข้อความ)</button>
         <button class="btn-report" id="modalImage">บันทึกเป็นรูปภาพ (PNG)</button>
         <button class="btn-report" id="modalPrint">พิมพ์ / บันทึกเป็น PDF</button>
@@ -1249,6 +1268,12 @@ function flashSaved(){
 }
 
 async function init(){
+  const urlParams = new URLSearchParams(location.search);
+  const sharedReportDate = urlParams.get('report');
+  if (sharedReportDate){
+    document.body.classList.add('shared-mode');
+  }
+
   const storedConfig = getStoredFirebaseConfig();
   if (storedConfig){
     initFirebaseSync(storedConfig);
@@ -1260,6 +1285,10 @@ async function init(){
   }
   applyCompanyOverrides();
   await bindEditableTexts(document.querySelector('.masthead'));
+
+  if (sharedReportDate){
+    await renderSharedReportView(sharedReportDate);
+  }
 
   const totalCompanies = Object.values(SITE_DATA).reduce((s,d)=>s+d.total_companies,0);
   const totalTambons = Object.values(SITE_DATA).reduce((s,d)=>s+d.sections.length,0);
@@ -1586,6 +1615,24 @@ async function init(){
     return txt;
   }
 
+  async function renderSharedReportView(date){
+    const container = document.getElementById('sharedReportDoc');
+    if (syncConnected){
+      try{
+        const snap = await fbDb.ref('dailyReports').once('value');
+        const all = snap.val() || {};
+        reportsCache = Object.values(all);
+      }catch(e){ console.error('shared view fetch failed', e); }
+    }
+    const list = loadReports().filter(e=>e.date===date);
+    if (list.length === 0){
+      container.innerHTML = `<div class="shared-report-empty">ไม่พบบันทึกรายงานของวันที่ ${date}</div>`;
+      return;
+    }
+    container.innerHTML = buildDayReportHtml(date);
+    document.title = 'รายงานประจำวัน ' + date + ' — EMT Sales Pipeline';
+  }
+
   function buildDayReportHtml(date){
     const list = loadReports().filter(e=>e.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     const dObj = new Date(date+'T00:00:00');
@@ -1645,6 +1692,7 @@ async function init(){
   const modalClose = document.getElementById('modalClose');
   const modalCopy = document.getElementById('modalCopy');
   const modalImage = document.getElementById('modalImage');
+  const modalShareLink = document.getElementById('modalShareLink');
   const modalPrint = document.getElementById('modalPrint');
   const modalDownload = document.getElementById('modalDownload');
   let currentReportDate = null;
@@ -1693,6 +1741,19 @@ async function init(){
       alert('สร้างรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
       modalImage.textContent = 'บันทึกเป็นรูปภาพ (PNG)';
     }
+  });
+  modalShareLink.addEventListener('click', ()=>{
+    const url = location.origin + location.pathname + '?report=' + currentReportDate;
+    navigator.clipboard.writeText(url).then(()=>{
+      modalShareLink.textContent = 'คัดลอกลิงก์แล้ว ✓';
+      setTimeout(()=>{ modalShareLink.textContent = 'คัดลอกลิงก์แชร์'; }, 1500);
+    }).catch(()=>{
+      const ta = document.createElement('textarea');
+      ta.value = url; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      modalShareLink.textContent = 'คัดลอกลิงก์แล้ว ✓';
+      setTimeout(()=>{ modalShareLink.textContent = 'คัดลอกลิงก์แชร์'; }, 1500);
+    });
   });
   modalPrint.addEventListener('click', ()=>{ window.print(); });
   modalDownload.addEventListener('click', ()=>{
