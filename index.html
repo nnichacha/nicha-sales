@@ -34,6 +34,27 @@
   .kpi-card::after { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
   .kpi-rivet { position: absolute; width: 5px; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.35); box-shadow: 0 1px 1px rgba(0,0,0,0.4) inset; }
   .kpi-shine { position: absolute; top: -60%; left: -20%; width: 60%; height: 220%; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.10) 50%, transparent 60%); pointer-events: none; }
+  /* ---- universal hover-glow / click-bounce for interactive elements ---- */
+  .kpi-card[onclick], .btn-primary, .btn-secondary, .btn-gold, .btn-ghost, .icon-btn,
+  .sidebar-btn, .district-tab, .dr-chip, table tbody tr[onclick], .dr-btn-gold {
+    transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease, filter .15s ease, background .15s ease;
+  }
+  .kpi-card[onclick]:hover { transform: translateY(-4px) scale(1.015); box-shadow: 0 14px 28px rgba(0,0,0,0.4), 0 0 0 2px rgba(255,255,255,0.12), 0 0 24px rgba(255,255,255,0.1); }
+  .kpi-card[onclick]:active { transform: translateY(-1px) scale(0.97); }
+  .btn-primary:hover, .btn-gold:hover, .dr-btn-gold:hover { filter: brightness(1.1); box-shadow: 0 6px 18px rgba(46,83,149,0.35); transform: translateY(-2px); }
+  .btn-primary:active, .btn-gold:active, .dr-btn-gold:active { transform: translateY(0) scale(0.95); filter: brightness(0.96); }
+  .btn-secondary:hover, .btn-ghost:hover { box-shadow: 0 4px 14px rgba(20,48,79,0.14); transform: translateY(-2px); border-color: #2E5395; }
+  .btn-secondary:active, .btn-ghost:active { transform: translateY(0) scale(0.96); }
+  .icon-btn:hover { background: rgba(46,83,149,0.1); box-shadow: 0 0 0 4px rgba(46,83,149,0.08); }
+  .icon-btn:active { transform: scale(0.85); }
+  .sidebar-btn:hover { transform: translateX(3px); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+  .sidebar-btn:active { transform: translateX(1px) scale(0.98); }
+  table tbody tr[onclick]:hover { box-shadow: inset 3px 0 0 #C9A227; }
+  table tbody tr[onclick]:active { filter: brightness(0.97); }
+  .district-tab:hover, .dr-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  /* chart shapes (bars, donut arcs) */
+  .chart-clickable { transition: filter .15s ease, opacity .15s ease; }
+  .chart-clickable:hover { filter: brightness(1.18) drop-shadow(0 0 7px rgba(255,255,255,0.65)); }
   .hazard-bar { height: 6px; border-radius: 3px;
     background-image: repeating-linear-gradient(135deg, #C9A227 0, #C9A227 12px, #0B1F35 12px, #0B1F35 24px);
     box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
@@ -227,6 +248,8 @@ var STATE = {
   top5Popped: null,
   segPopped: null,
   forecastPopped: null,
+  kpiExpanded: null,
+  bulkAddOpen: false,
   dailyReportUI: { formPerson: "", formTime: "" },
   firebaseUrl: "",
   firebaseES: null,
@@ -714,6 +737,100 @@ function toggleForecastSlice(i) {
   STATE.forecastPopped = STATE.forecastPopped === i ? null : i;
   refreshForecastChart();
 }
+function toggleKpiDetail(cat) {
+  STATE.kpiExpanded = STATE.kpiExpanded === cat ? null : cat;
+  refreshKpiDetail();
+}
+
+/* ============================== BULK ADD (paste from Excel/job list) ============================== */
+function openBulkAddModal() { if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถเพิ่มงานได้"); return; } STATE.bulkAddOpen = true; renderModals(); }
+function closeBulkAddModal() { STATE.bulkAddOpen = false; renderModals(); }
+
+function parseThaiDateSlash(s) {
+  // expects DD/MM/YY or DD/MM/YYYY -> returns YYYY-MM-DD or ""
+  if (!s) return "";
+  var m = s.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (!m) return "";
+  var dd = parseInt(m[1], 10), mm = parseInt(m[2], 10), yy = parseInt(m[3], 10);
+  if (yy < 100) yy += 2000;
+  if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return "";
+  return yy + "-" + (mm < 10 ? "0" : "") + mm + "-" + (dd < 10 ? "0" : "") + dd;
+}
+function parseSaleNumber(s) {
+  if (!s) return 0;
+  var n = parseFloat(String(s).replace(/[, ]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+function parseBulkText(text) {
+  var lines = text.split(/\r?\n/).map(function (l) { return l; }).filter(function (l) { return l.trim() !== ""; });
+  return lines.map(function (line) {
+    var cols = line.split("\t");
+    if (cols.length < 2) cols = line.split(/ {2,}/); // fallback if tabs got collapsed to spaces
+    var get = function (i) { return (cols[i] || "").trim(); };
+    return {
+      note: get(0),
+      status: get(1),
+      requestedDate: parseThaiDateSlash(get(2)),
+      invoice: get(3),
+      customer: get(4),
+      description: get(5),
+      sale: parseSaleNumber(get(6)),
+      _raw: line
+    };
+  });
+}
+
+function refreshBulkPreview() {
+  var ta = document.getElementById("bulk-add-textarea");
+  var wrap = document.getElementById("bulk-preview-wrap");
+  if (!ta || !wrap) return;
+  var rows = parseBulkText(ta.value);
+  if (rows.length === 0) { wrap.innerHTML = '<div style="font-size:12px;color:' + COLORS.muted + ';padding:10px 0">วางข้อมูลด้านบนเพื่อดูตัวอย่าง</div>'; return; }
+  var validCount = rows.filter(function (r) { return r.customer && r.description; }).length;
+  var rowsHtml = rows.map(function (r, i) {
+    var ok = r.customer && r.description;
+    return '<tr style="background:' + (i % 2 ? COLORS.canvas : "#fff") + '">' +
+      '<td class="td-cell" style="font-size:11px">' + (ok ? icon("check", 12, COLORS.green) : icon("alert", 12, COLORS.red)) + '</td>' +
+      '<td class="td-cell mono" style="font-size:11px">' + esc(r.note) + '</td>' +
+      '<td class="td-cell" style="font-size:11px">' + (r.status ? statusChipHtml(r.status, (STATE.statuses.find(function (s) { return s.name === r.status; }) || {}).color) : "-") + '</td>' +
+      '<td class="td-cell" style="font-size:11px">' + esc(r.requestedDate ? fmtDate(r.requestedDate) : "(ไม่ระบุ)") + '</td>' +
+      '<td class="td-cell" style="font-size:11px;font-weight:600">' + esc(r.customer || "(ว่าง!)") + '</td>' +
+      '<td class="td-cell" style="font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(r.description || "(ว่าง!)") + '</td>' +
+      '<td class="td-cell num-td" style="font-size:11px">' + fmtTHB(r.sale) + '</td></tr>';
+  }).join("");
+  wrap.innerHTML = '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-bottom:6px">พบ ' + rows.length + ' แถว — พร้อมเพิ่ม ' + validCount + ' แถว (แถวที่ขาดลูกค้า/รายละเอียดจะถูกข้าม)</div>' +
+    '<div style="max-height:220px;overflow:auto;border:1px solid ' + COLORS.line + ';border-radius:8px"><table><thead><tr>' +
+    '<th class="th-cell"></th><th class="th-cell">Job No.</th><th class="th-cell">Status</th><th class="th-cell">Requested</th><th class="th-cell">ลูกค้า</th><th class="th-cell">รายละเอียด</th><th class="th-cell" style="text-align:right">มูลค่า</th>' +
+    '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+}
+
+function submitBulkAdd() {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถเพิ่มงานได้"); return; }
+  var ta = document.getElementById("bulk-add-textarea");
+  var rows = parseBulkText(ta ? ta.value : "");
+  var valid = rows.filter(function (r) { return r.customer && r.description; });
+  if (valid.length === 0) { showToast("ไม่พบข้อมูลที่ถูกต้องให้เพิ่ม"); return; }
+  var knownStatusNames = STATE.statuses.map(function (s) { return s.name; });
+  var nextId = STATE.projects.length ? Math.max.apply(null, STATE.projects.map(function (p) { return p.id; })) + 1 : 1;
+  var newRecords = valid.map(function (r, i) {
+    return {
+      id: nextId + i,
+      customer: r.customer, segment: "", type: "", name: "", phone: "",
+      description: r.description, workType: "", requestedDate: r.requestedDate, deadline: "", sendQu: "",
+      note: r.note, invoice: r.invoice,
+      status: knownStatusNames.indexOf(r.status) !== -1 ? r.status : (r.status || (STATE.statuses[0] || {}).name || ""),
+      sale: r.sale, month: ""
+    };
+  });
+  STATE.projects = newRecords.concat(STATE.projects);
+  persistProjects();
+  showToast("เพิ่มงานใหม่ " + newRecords.length + " รายการแล้ว");
+  STATE.bulkAddOpen = false;
+  renderModals();
+  renderMain();
+  refreshSidebarNav();
+}
 
 function computeMonthlySeries(filterFn) {
   var d = computeDerived();
@@ -1018,7 +1135,7 @@ function svgInteractiveBar(data, xKey, yKey, opts) {
       var c = colors ? colors[i % colors.length] : color;
       out += '<text x="' + (padL - 8) + '" y="' + (y + barH / 2 + 3) + '" font-size="10.5" fill="' + (isPop ? "#fff" : COLORS.text) + '" font-weight="' + (isPop ? "700" : "400") + '" text-anchor="end">' + esc(d[xKey]) + '</text>';
       out += '<rect x="' + padL + '" y="' + y + '" width="' + Math.max(2, w) + '" height="' + barH + '" rx="4" fill="' + c + '" opacity="' + (dim ? 0.4 : 1) + '" ' +
-        'stroke="' + (isPop ? "#fff" : "none") + '" stroke-width="' + (isPop ? 2 : 0) + '" style="cursor:pointer;transition:all .18s" onclick="' + onClickFn + '(' + i + ')">' +
+        'class="chart-clickable" stroke="' + (isPop ? "#fff" : "none") + '" stroke-width="' + (isPop ? 2 : 0) + '" style="cursor:pointer;transition:all .18s" onclick="' + onClickFn + '(' + i + ')">' +
         '<title>' + esc(d[xKey]) + ": " + fmtTHB(d[yKey]) + '</title></rect>';
       out += '<text x="' + (padL + w + 6) + '" y="' + (y + barH / 2 + 3) + '" font-size="10" font-weight="' + (isPop ? "700" : "400") + '" fill="' + (isPop ? "#fff" : COLORS.muted) + '">' + fmtTHB(d[yKey]) + '</text>';
     });
@@ -1035,7 +1152,7 @@ function svgInteractiveBar(data, xKey, yKey, opts) {
       var barW = colW * 0.6;
       var c = colors ? colors[i % colors.length] : color;
       out += '<rect x="' + x + '" y="' + (padT2 + innerH2 - h) + '" width="' + barW + '" height="' + Math.max(1, h) + '" rx="5" fill="' + c + '" opacity="' + (dim ? 0.4 : 1) + '" ' +
-        'stroke="' + (isPop ? "#16232F" : "none") + '" stroke-width="' + (isPop ? 2 : 0) + '" style="cursor:pointer;transition:all .18s" onclick="' + onClickFn + '(' + i + ')">' +
+        'class="chart-clickable" stroke="' + (isPop ? "#16232F" : "none") + '" stroke-width="' + (isPop ? 2 : 0) + '" style="cursor:pointer;transition:all .18s" onclick="' + onClickFn + '(' + i + ')">' +
         '<title>' + esc(d[xKey]) + ": " + fmtTHB(d[yKey]) + '</title></rect>';
       out += '<text x="' + (x + barW / 2) + '" y="' + (padT2 + innerH2 + 15) + '" font-size="10.5" font-weight="' + (isPop ? "700" : "400") + '" fill="' + (isPop ? COLORS.ink : COLORS.muted) + '" text-anchor="middle">' + esc(d[xKey]) + '</text>';
     });
@@ -1096,8 +1213,8 @@ function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, total
   var svg = '<svg viewBox="0 0 220 220" style="width:' + size + 'px;height:' + size + 'px;flex-shrink:0;overflow:visible">';
   segs.forEach(function (s) {
     var tf = s.popped ? "translate(" + s.dx.toFixed(1) + "px," + s.dy.toFixed(1) + "px)" : "translate(0,0)";
-    svg += '<path d="' + s.hitPath + '" fill="rgba(0,0,0,0.001)" style="cursor:pointer;transform:' + tf + '" onclick="' + onClickFn + '(' + s.i + ')"></path>';
-    svg += '<path d="' + s.path + '" fill="' + s.color + '" stroke="#0B1220" stroke-width="1.5" ' +
+    svg += '<path d="' + s.hitPath + '" class="chart-clickable" fill="rgba(0,0,0,0.001)" style="cursor:pointer;transform:' + tf + '" onclick="' + onClickFn + '(' + s.i + ')"></path>';
+    svg += '<path d="' + s.path + '" class="chart-clickable" fill="' + s.color + '" stroke="#0B1220" stroke-width="1.5" ' +
       'style="cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1);transform:' + tf + ';' +
       (s.popped ? 'filter:drop-shadow(0 6px 10px rgba(0,0,0,0.45));' : 'opacity:' + (poppedIndex !== null && poppedIndex !== undefined ? '0.55' : '1') + ';') +
       '" onclick="' + onClickFn + '(' + s.i + ')">' +
@@ -1164,7 +1281,7 @@ function workTypeBadgeHtml(type) {
   if (type === "M") return '<span class="status-chip badge-M">' + icon("wrench", 11) + ' Machine</span>';
   return '<span class="status-chip badge-F">' + icon("factory", 11) + ' Fabrication</span>';
 }
-function kpiCardHtml(label, value, sub, tone, iconName) {
+function kpiCardHtml(label, value, sub, tone, iconName, onClickFn) {
   var bg = {
     navy: "linear-gradient(150deg,#081525 0%,#14304F 55%,#20476E 100%)",
     green: "linear-gradient(150deg,#0F4A32 0%,#1B7A54 55%,#22946A 100%)",
@@ -1172,7 +1289,8 @@ function kpiCardHtml(label, value, sub, tone, iconName) {
     amber: "linear-gradient(150deg,#6E4E0B 0%,#A9760F 55%,#C98A1F 100%)",
     blue: "linear-gradient(150deg,#152E52 0%,#264A85 55%,#3563AC 100%)"
   }[tone || "navy"];
-  return '<div class="kpi-card" style="background:' + bg + '">' +
+  var clickAttr = onClickFn ? ' onclick="' + onClickFn + '" style="cursor:pointer"' : "";
+  return '<div class="kpi-card" style="background:' + bg + '"' + clickAttr + '>' +
     '<span class="kpi-shine"></span>' +
     '<span class="kpi-rivet" style="bottom:7px;left:7px"></span><span class="kpi-rivet" style="bottom:7px;right:7px"></span>' +
     '<div style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between">' +
@@ -1512,6 +1630,34 @@ function refreshForecastChart() {
   if (wrap) wrap.innerHTML = buildForecastChartInner();
 }
 
+function buildKpiDetailInner(d) {
+  var exp = STATE.kpiExpanded;
+  if (!exp) return "";
+  var catColor = { Won: COLORS.green, Lost: COLORS.red, Pending: COLORS.amber, all: COLORS.navy }[exp];
+  var statuses = exp === "all" ? d.byStatus : d.byStatus.filter(function (s) { return s.category === exp; });
+  var totalJobs = statuses.reduce(function (a, s) { return a + s.count; }, 0);
+  var totalValue = statuses.reduce(function (a, s) { return a + s.value; }, 0);
+  var chips = statuses.map(function (s) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fff;border:1px solid ' + COLORS.line + ';border-radius:9px;min-width:130px">' +
+      '<span style="width:9px;height:9px;border-radius:99px;background:' + (d.statusColorMap[s.status] || COLORS.muted) + ';flex-shrink:0"></span>' +
+      '<div><div style="font-size:11px;color:' + COLORS.muted + '">' + esc(s.status) + '</div>' +
+      '<div class="mono" style="font-size:14px;font-weight:700;color:' + COLORS.ink + '">' + s.count + ' งาน</div>' +
+      '<div class="mono" style="font-size:10px;color:' + COLORS.muted + '">' + fmtTHB(s.value) + ' บาท</div></div></div>';
+  }).join("");
+  var title = exp === "all" ? "แยกตามสถานะทั้งหมด" : "แยกตามสถานะ — หมวด " + exp;
+  return '<div class="card" style="border-top-color:' + catColor + ';background:' + catColor + '0D">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">' +
+    '<span class="disp" style="font-size:13.5px;color:' + COLORS.ink + '">' + title + ' — รวม ' + totalJobs + ' งาน · ' + fmtTHB(totalValue) + ' บาท</span>' +
+    '<button onclick="toggleKpiDetail(\'' + exp + '\')" class="icon-btn" style="border:1px solid ' + COLORS.line + ';border-radius:6px;padding:4px 10px;font-size:11px;color:' + COLORS.muted + '">' + icon("x", 12) + ' ปิด</button>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap">' + chips + '</div></div>';
+}
+function refreshKpiDetail() {
+  var d = computeDerived();
+  var wrap = document.getElementById("kpi-detail-wrap");
+  if (wrap) wrap.innerHTML = buildKpiDetailInner(d);
+}
+
 function buildForecastCard(d) {
   var rows = computeForecastRows(d);
   var total = rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0);
@@ -1554,14 +1700,18 @@ function renderDashboard(d) {
     '<div style="color:#9FB2C9;font-size:13px;margin-top:6px">สรุปสถานะ Pipeline ทั้งหมดแบบเรียลไทม์</div>' +
     '<div class="hazard-bar" style="width:96px;margin-top:14px"></div>' +
     '</div></div>';
-  var kpiRow = '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px">' +
-    kpiCardHtml("Pipeline รวม", fmtTHB(d.kpis.totalQuoted), "THB ที่เสนอราคาทั้งหมด", "navy", "trending") +
-    kpiCardHtml("Won", fmtTHB(d.kpis.won), "ยอดขายที่ยืนยันแล้ว", "green", "check") +
-    kpiCardHtml("Lost", fmtTHB(d.kpis.lost), "งานที่เสียให้คู่แข่ง", "red", "x") +
-    kpiCardHtml("Pending", fmtTHB(d.kpis.pending), "รอผลตัดสินใจ", "amber", "alert") +
+  var wonJobs = d.byStatus.filter(function (s) { return s.category === "Won"; }).reduce(function (a, s) { return a + s.count; }, 0);
+  var lostJobs = d.byStatus.filter(function (s) { return s.category === "Lost"; }).reduce(function (a, s) { return a + s.count; }, 0);
+  var pendingJobs = d.byStatus.filter(function (s) { return s.category === "Pending"; }).reduce(function (a, s) { return a + s.count; }, 0);
+  var kpiRow = '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:10px">' +
+    kpiCardHtml("Pipeline รวม", fmtTHB(d.kpis.totalQuoted), d.kpis.totalJobs + " งานทั้งหมด — คลิกดูแยกสถานะ", "navy", "trending", "toggleKpiDetail('all')") +
+    kpiCardHtml("Won", fmtTHB(d.kpis.won), wonJobs + " งาน — คลิกดูแยกสถานะ", "green", "check", "toggleKpiDetail('Won')") +
+    kpiCardHtml("Lost", fmtTHB(d.kpis.lost), lostJobs + " งาน — คลิกดูแยกสถานะ", "red", "x", "toggleKpiDetail('Lost')") +
+    kpiCardHtml("Pending", fmtTHB(d.kpis.pending), pendingJobs + " งาน — คลิกดูแยกสถานะ", "amber", "alert", "toggleKpiDetail('Pending')") +
     kpiCardHtml("Win Rate", fmtPct(d.kpis.winRate), d.kpis.totalJobs + " งานทั้งหมด", "blue", "trophy") +
     kpiCardHtml("ลูกค้า Active", d.kpis.customers, "รายที่มีการเสนอราคา", "navy", "users") +
-    '</div>';
+    '</div>' +
+    '<div id="kpi-detail-wrap" style="margin-bottom:22px">' + buildKpiDetailInner(d) + '</div>';
 
   var row1 = '<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px">' +
     '<div class="card">' + cardTitleHtml("trending", "ยอดขาย Won รายเดือน (THB)") + svgLineChart(d.monthlyTrend, "month", "value", COLORS.blue, 230) + '</div>' +
@@ -1611,7 +1761,7 @@ function getFilteredSortedProjects(d) {
   if (ui.workType) rows = rows.filter(function (p) { return p.workType === ui.workType; });
   rows = rows.slice().sort(function (a, b) {
     var va = a[ui.sortKey], vb = b[ui.sortKey];
-    if (ui.sortKey === "sale") { va = va || 0; vb = vb || 0; }
+    if (ui.sortKey === "sale" || ui.sortKey === "id") { va = Number(va) || 0; vb = Number(vb) || 0; }
     else { va = (va || "").toString().toLowerCase(); vb = (vb || "").toString().toLowerCase(); }
     if (va < vb) return ui.sortDir === "asc" ? -1 : 1;
     if (va > vb) return ui.sortDir === "asc" ? 1 : -1;
@@ -1632,7 +1782,8 @@ function renderProjectsShell(d) {
     '<option value=""' + (ui.workType === "" ? " selected" : "") + '>Machine + Fabrication</option>' +
     '<option value="M"' + (ui.workType === "M" ? " selected" : "") + '>Machine (M)</option>' +
     '<option value="F"' + (ui.workType === "F" ? " selected" : "") + '>Fabrication (F)</option></select>' +
-    (canEdit() ? '<button class="btn-primary" style="margin-left:auto" onclick="openNewProjectForm()">' + icon("plus", 15) + ' เพิ่มงานใหม่</button>' : '<span style="margin-left:auto;font-size:11px;color:' + COLORS.muted + ';display:flex;align-items:center;gap:5px">' + icon("cloud", 13) + ' โหมดดูอย่างเดียว</span>') +
+    (canEdit() ? '<button class="btn-secondary" style="margin-left:auto" onclick="openBulkAddModal()">' + icon("clipboard", 14) + ' เพิ่มหลายรายการ</button>' : '') +
+    (canEdit() ? '<button class="btn-primary" onclick="openNewProjectForm()">' + icon("plus", 15) + ' เพิ่มงานใหม่</button>' : '<span style="margin-left:auto;font-size:11px;color:' + COLORS.muted + ';display:flex;align-items:center;gap:5px">' + icon("cloud", 13) + ' โหมดดูอย่างเดียว</span>') +
     '</div>';
   return header + toolbar + '<div id="projects-table-wrap"></div>';
 }
@@ -2251,6 +2402,7 @@ function renderModals() {
   if (STATE.statusManagerOpen) html += renderStatusManagerModal();
   if (STATE.importPending) html += renderImportConfirmModal();
   if (STATE.dailyReportModalDate) html += renderDayReportModal();
+  if (STATE.bulkAddOpen) html += renderBulkAddModal();
   root.innerHTML = html;
 }
 
@@ -2507,6 +2659,22 @@ function renderImportConfirmModal() {
 }
 
 /* ============================== INIT ============================== */
+function renderBulkAddModal() {
+  return '<div class="modal-overlay" onmousedown="if(event.target===this) closeBulkAddModal()">' +
+    '<div class="modal-panel" style="width:700px">' +
+    '<div class="modal-header"><div><div class="disp" style="font-size:17px">เพิ่มงานหลายรายการ (วางจาก Excel)</div>' +
+    '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:2px">คัดลอกแถวจาก Excel มาวางได้เลย เรียงคอลัมน์: Job No. → Status → วันที่ (dd/mm/yy) → Invoice → ลูกค้า → รายละเอียดงาน → มูลค่า</div></div>' +
+    '<button type="button" class="icon-btn" onclick="closeBulkAddModal()">' + icon("x", 17) + '</button></div>' +
+    '<div style="padding:18px 22px;overflow-y:auto;flex:1">' +
+    '<textarea id="bulk-add-textarea" class="field-input" style="min-height:130px;font-family:Consolas,monospace;font-size:12px;resize:vertical" placeholder="J1774&#9;On process&#9;31/07/26&#9;&#9;SNU&#9;Ball valve 6&quot; 600# welding&#9;15,000.00" oninput="refreshBulkPreview()"></textarea>' +
+    '<div style="margin-top:14px" id="bulk-preview-wrap">' + '<div style="font-size:12px;color:' + COLORS.muted + ';padding:10px 0">วางข้อมูลด้านบนเพื่อดูตัวอย่าง</div>' + '</div>' +
+    '<div style="font-size:10.5px;color:' + COLORS.muted + ';margin-top:10px">ช่องที่ไม่ได้ระบุ (Segment, Type, ประเภทงาน, ผู้ติดต่อ, เบอร์โทร, Deadline ฯลฯ) จะเว้นว่างไว้ให้แก้ไขเพิ่มทีหลังในตาราง</div>' +
+    '</div>' +
+    '<div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeBulkAddModal()">ยกเลิก</button>' +
+    '<button type="button" class="btn-primary" onclick="submitBulkAdd()">' + icon("check", 15) + ' เพิ่มทั้งหมด</button></div>' +
+    '</div></div>';
+}
+
 function init() {
   loadAll();
   STATE.cloudUrl = LocalStore.get(CLOUD_URL_KEY) || DEFAULT_CLOUD_URL || "";
