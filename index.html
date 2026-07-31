@@ -144,9 +144,10 @@ var COLORS = {
   ink: "#0B1F35", navy: "#14304F", navy2: "#1B3A5C", blue: "#2E5395", sky: "#5B9BD5",
   canvas: "#EEF2F7", card: "#FFFFFF", text: "#16232F", muted: "#6B7A90", line: "#DCE3EC",
   green: "#1F8A5F", greenBg: "#E5F3ED", red: "#C0392B", redBg: "#FBEAE8",
-  amber: "#C98A1F", amberBg: "#FBF1DF", gold: "#C9A227"
+  amber: "#C98A1F", amberBg: "#FBF1DF", gold: "#C9A227",
+  teal: "#0E9AA8", violet: "#7C4FE0", emerald: "#1FAE63", coral: "#F0793C", rose: "#E0446B", vividRed: "#DC2626"
 };
-var PIE_COLORS = [COLORS.blue, COLORS.sky, COLORS.gold, COLORS.green, COLORS.amber, COLORS.red, COLORS.muted];
+var PIE_COLORS = [COLORS.blue, COLORS.teal, COLORS.gold, COLORS.emerald, COLORS.coral, COLORS.violet, COLORS.rose, COLORS.sky];
 
 var DEFAULT_STATUSES = [
   { name: "Done Q1", category: "Won", color: COLORS.green },
@@ -218,6 +219,14 @@ var STATE = {
   commissionUnlocked: false,
   dailyReports: null,
   dailyReportModalDate: null,
+  focusDimension: "customer",
+  focusMetric: "value",
+  focusPopped: null,
+  wtPopped: null,
+  wtPeriod: "month",
+  top5Popped: null,
+  segPopped: null,
+  forecastPopped: null,
   dailyReportUI: { formPerson: "", formTime: "" },
   firebaseUrl: "",
   firebaseES: null,
@@ -644,6 +653,85 @@ function deleteDailyReport(id) {
 }
 
 /* ============================== DERIVED ANALYTICS ============================== */
+function computeFocusData() {
+  var d = computeDerived();
+  var rows = d.withCat.filter(function (p) { return p.category === "Won"; });
+  var dim = STATE.focusDimension;
+  var metric = STATE.focusMetric;
+  var map = {}, order = [];
+  rows.forEach(function (p) {
+    var key = dim === "customer" ? p.customer : (p.month || "ไม่ระบุ");
+    if (!map[key]) { map[key] = { label: key, value: 0, count: 0 }; order.push(key); }
+    map[key].value += p.sale || 0;
+    map[key].count += 1;
+  });
+  var arr = order.map(function (k) { return map[k]; });
+  if (dim === "month") {
+    var monthOrder = MONTHS.slice(0, 12);
+    arr.sort(function (a, b) { return monthOrder.indexOf(a.label) - monthOrder.indexOf(b.label); });
+  } else {
+    arr.sort(function (a, b) { return b.value - a.value; });
+    if (arr.length > 7) {
+      var top = arr.slice(0, 7);
+      var rest = arr.slice(7);
+      var restAgg = {
+        label: "อื่นๆ (" + rest.length + " ราย)",
+        value: rest.reduce(function (s, x) { return s + x.value; }, 0),
+        count: rest.reduce(function (s, x) { return s + x.count; }, 0)
+      };
+      arr = top.concat([restAgg]);
+    }
+  }
+  return arr;
+}
+
+function setFocusDimension(dim) {
+  STATE.focusDimension = dim;
+  STATE.focusPopped = null;
+  refreshFocusChart();
+}
+function toggleFocusSegment(i) {
+  STATE.focusPopped = STATE.focusPopped === i ? null : i;
+  refreshFocusChart();
+}
+function toggleWtBar(i) {
+  STATE.wtPopped = STATE.wtPopped === i ? null : i;
+  refreshWtChart();
+}
+function setWtPeriod(p) {
+  STATE.wtPeriod = p;
+  refreshWtChart();
+}
+function toggleTop5Bar(i) {
+  STATE.top5Popped = STATE.top5Popped === i ? null : i;
+  refreshTop5Chart();
+}
+function toggleSegSlice(i) {
+  STATE.segPopped = STATE.segPopped === i ? null : i;
+  refreshSegChart();
+}
+function toggleForecastSlice(i) {
+  STATE.forecastPopped = STATE.forecastPopped === i ? null : i;
+  refreshForecastChart();
+}
+
+function computeMonthlySeries(filterFn) {
+  var d = computeDerived();
+  var months = MONTHS.slice(0, 8);
+  return months.map(function (m) {
+    var rows = d.withCat.filter(function (p) { return p.category === "Won" && p.month === m && filterFn(p); });
+    return { label: m, value: rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0), count: rows.length };
+  });
+}
+function computeQuarterlySeries(filterFn) {
+  var d = computeDerived();
+  var qMap = { "Q1": ["Jan", "Feb", "Mar"], "Q2": ["Apr", "May", "Jun"], "Q3": ["Jul", "Aug", "Sep"], "Q4": ["Oct", "Nov", "Dec"] };
+  return Object.keys(qMap).map(function (q) {
+    var rows = d.withCat.filter(function (p) { return p.category === "Won" && qMap[q].indexOf(p.month) !== -1 && filterFn(p); });
+    return { label: q, value: rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0), count: rows.length };
+  });
+}
+
 function computeDerived() {
   var statuses = STATE.statuses;
   var withCat = STATE.projects.map(function (p) {
@@ -714,11 +802,17 @@ function computeDerived() {
 
   var machineWonTotal = withCat.filter(function (p) { return p.category === "Won" && p.workType === "M"; }).reduce(function (s, p) { return s + (p.sale || 0); }, 0);
   var fabWonTotal = withCat.filter(function (p) { return p.category === "Won" && p.workType === "F"; }).reduce(function (s, p) { return s + (p.sale || 0); }, 0);
-  var workTypeSplit = [{ name: "Machine (M)", value: machineWonTotal }, { name: "Fabrication (F)", value: fabWonTotal }];
+  var machineWonCount = withCat.filter(function (p) { return p.category === "Won" && p.workType === "M"; }).length;
+  var fabWonCount = withCat.filter(function (p) { return p.category === "Won" && p.workType === "F"; }).length;
+  var workTypeSplit = [
+    { name: "Machine (M)", value: machineWonTotal, count: machineWonCount, key: "M" },
+    { name: "Fabrication (F)", value: fabWonTotal, count: fabWonCount, key: "F" }
+  ];
 
   var segmentSplit = SEGMENTS.map(function (s) {
-    var value = withCat.filter(function (p) { return p.category === "Won" && p.segment === s; }).reduce(function (sum, p) { return sum + (p.sale || 0); }, 0);
-    return { name: s, value: value };
+    var rows = withCat.filter(function (p) { return p.category === "Won" && p.segment === s; });
+    var value = rows.reduce(function (sum, p) { return sum + (p.sale || 0); }, 0);
+    return { name: s, value: value, count: rows.length };
   });
 
   var top5Customers = byCustomer.slice().sort(function (a, b) { return b.won - a.won; }).slice(0, 5);
@@ -886,6 +980,149 @@ function svgBarChart(data, xKey, yKey, opts) {
   }
   out += '</svg>';
   return out;
+}
+
+function polarToCartesian(cx, cy, r, angleDeg) {
+  var rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+function donutArcPath(cx, cy, rOuter, rInner, startAngle, endAngle) {
+  var startOuter = polarToCartesian(cx, cy, rOuter, endAngle);
+  var endOuter = polarToCartesian(cx, cy, rOuter, startAngle);
+  var startInner = polarToCartesian(cx, cy, rInner, endAngle);
+  var endInner = polarToCartesian(cx, cy, rInner, startAngle);
+  var largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+  return ["M", startOuter.x, startOuter.y, "A", rOuter, rOuter, 0, largeArc, 0, endOuter.x, endOuter.y,
+    "L", endInner.x, endInner.y, "A", rInner, rInner, 0, largeArc, 1, startInner.x, startInner.y, "Z"].join(" ");
+}
+
+/* Interactive bar chart — click a bar to highlight it and dim the rest. */
+function svgInteractiveBar(data, xKey, yKey, opts) {
+  opts = opts || {};
+  var color = opts.color || COLORS.blue, colors = opts.colors, height = opts.height || 220, horizontal = !!opts.horizontal;
+  var popped = (opts.popped === null || opts.popped === undefined) ? null : opts.popped;
+  var onClickFn = opts.onClickFn;
+  var W = 560, H = height;
+  var max = Math.max.apply(null, [1].concat(data.map(function (d) { return d[yKey] || 0; })));
+  var out = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:' + H + 'px;overflow:visible">';
+  if (horizontal) {
+    var padL = 90, padR = 60, padT = 6, padB = 6;
+    var innerW = W - padL - padR;
+    var rowH = (H - padT - padB) / data.length;
+    data.forEach(function (d, i) {
+      var isPop = popped === i;
+      var dim = popped !== null && !isPop;
+      var w = ((d[yKey] || 0) / max) * innerW;
+      var y = padT + i * rowH + rowH * 0.2;
+      var barH = rowH * 0.6;
+      var c = colors ? colors[i % colors.length] : color;
+      out += '<text x="' + (padL - 8) + '" y="' + (y + barH / 2 + 3) + '" font-size="10.5" fill="' + (isPop ? "#fff" : COLORS.text) + '" font-weight="' + (isPop ? "700" : "400") + '" text-anchor="end">' + esc(d[xKey]) + '</text>';
+      out += '<rect x="' + padL + '" y="' + y + '" width="' + Math.max(2, w) + '" height="' + barH + '" rx="4" fill="' + c + '" opacity="' + (dim ? 0.4 : 1) + '" ' +
+        'stroke="' + (isPop ? "#fff" : "none") + '" stroke-width="' + (isPop ? 2 : 0) + '" style="cursor:pointer;transition:all .18s" onclick="' + onClickFn + '(' + i + ')">' +
+        '<title>' + esc(d[xKey]) + ": " + fmtTHB(d[yKey]) + '</title></rect>';
+      out += '<text x="' + (padL + w + 6) + '" y="' + (y + barH / 2 + 3) + '" font-size="10" font-weight="' + (isPop ? "700" : "400") + '" fill="' + (isPop ? "#fff" : COLORS.muted) + '">' + fmtTHB(d[yKey]) + '</text>';
+    });
+  } else {
+    var padL2 = 40, padR2 = 12, padT2 = 10, padB2 = 24;
+    var innerW2 = W - padL2 - padR2, innerH2 = H - padT2 - padB2;
+    var colW = innerW2 / data.length;
+    out += '<line x1="' + padL2 + '" x2="' + (W - padR2) + '" y1="' + (padT2 + innerH2) + '" y2="' + (padT2 + innerH2) + '" stroke="' + COLORS.line + '"/>';
+    data.forEach(function (d, i) {
+      var isPop = popped === i;
+      var dim = popped !== null && !isPop;
+      var h = ((d[yKey] || 0) / max) * innerH2;
+      var x = padL2 + i * colW + colW * 0.2;
+      var barW = colW * 0.6;
+      var c = colors ? colors[i % colors.length] : color;
+      out += '<rect x="' + x + '" y="' + (padT2 + innerH2 - h) + '" width="' + barW + '" height="' + Math.max(1, h) + '" rx="5" fill="' + c + '" opacity="' + (dim ? 0.4 : 1) + '" ' +
+        'stroke="' + (isPop ? "#16232F" : "none") + '" stroke-width="' + (isPop ? 2 : 0) + '" style="cursor:pointer;transition:all .18s" onclick="' + onClickFn + '(' + i + ')">' +
+        '<title>' + esc(d[xKey]) + ": " + fmtTHB(d[yKey]) + '</title></rect>';
+      out += '<text x="' + (x + barW / 2) + '" y="' + (padT2 + innerH2 + 15) + '" font-size="10.5" font-weight="' + (isPop ? "700" : "400") + '" fill="' + (isPop ? COLORS.ink : COLORS.muted) + '" text-anchor="middle">' + esc(d[xKey]) + '</text>';
+    });
+  }
+  out += "</svg>";
+  return out;
+}
+
+function svgMiniBars(data, color, height) {
+  height = height || 54;
+  var W = 100 * data.length > 400 ? 400 : Math.max(160, 34 * data.length);
+  var max = Math.max.apply(null, [1].concat(data.map(function (d) { return d.value || 0; })));
+  var padB = 14, padT = 2;
+  var colW = W / data.length;
+  var innerH = height - padT - padB;
+  var out = '<svg viewBox="0 0 ' + W + ' ' + height + '" style="width:100%;height:' + height + 'px;overflow:visible">';
+  data.forEach(function (d, i) {
+    var h = ((d.value || 0) / max) * innerH;
+    var x = i * colW + colW * 0.22;
+    var barW = colW * 0.56;
+    out += '<rect x="' + x + '" y="' + (padT + innerH - h) + '" width="' + barW + '" height="' + Math.max(1, h) + '" rx="2.5" fill="' + color + '"><title>' + esc(d.label) + ": " + fmtTHB(d.value) + '</title></rect>';
+    out += '<text x="' + (x + barW / 2) + '" y="' + (height - 3) + '" font-size="8.5" fill="' + COLORS.muted + '" text-anchor="middle">' + esc(d.label) + '</text>';
+  });
+  out += "</svg>";
+  return out;
+}
+
+
+function detailStripHtml(label, value, sub, color) {
+  return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:9px 12px;background:' + COLORS.canvas + ';border-radius:8px;border-left:3px solid ' + (color || COLORS.blue) + '">' +
+    '<span style="font-size:11.5px;color:' + COLORS.text + ';font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(label) + '</span>' +
+    '<span style="text-align:right;flex-shrink:0"><div class="mono" style="font-size:13px;font-weight:700;color:' + COLORS.ink + '">' + esc(value) + '</div>' +
+    '<div style="font-size:10px;color:' + COLORS.muted + '">' + esc(sub) + '</div></span></div>';
+}
+
+
+function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
+  onClickFn = onClickFn || "toggleFocusSegment";
+  size = size || 230;
+  var total = data.reduce(function (s, d) { return s + (d[valueKey] || 0); }, 0) || 1;
+  var CX = 110, CY = 110, R_OUT = 92, R_IN = 56, POP = 12;
+  var acc = 0;
+  var segs = data.map(function (d, i) {
+    var frac = (d[valueKey] || 0) / total;
+    var start = acc * 360; var end = (acc + frac) * 360;
+    acc += frac;
+    var mid = (start + end) / 2;
+    var dir = polarToCartesian(0, 0, 1, mid);
+    var popped = poppedIndex === i;
+    return {
+      i: i, path: donutArcPath(CX, CY, R_OUT, R_IN, start, end),
+      hitPath: donutArcPath(CX, CY, R_OUT + 16, Math.max(4, R_IN - 20), start, end),
+      color: (colors && colors[i]) || PIE_COLORS[i % PIE_COLORS.length],
+      dx: dir.x * POP, dy: dir.y * POP, frac: frac, popped: popped, name: d[nameKey], value: d[valueKey], count: d.count
+    };
+  });
+
+  var svg = '<svg viewBox="0 0 220 220" style="width:' + size + 'px;height:' + size + 'px;flex-shrink:0;overflow:visible">';
+  segs.forEach(function (s) {
+    var tf = s.popped ? "translate(" + s.dx.toFixed(1) + "px," + s.dy.toFixed(1) + "px)" : "translate(0,0)";
+    svg += '<path d="' + s.hitPath + '" fill="rgba(0,0,0,0.001)" style="cursor:pointer;transform:' + tf + '" onclick="' + onClickFn + '(' + s.i + ')"></path>';
+    svg += '<path d="' + s.path + '" fill="' + s.color + '" stroke="#0B1220" stroke-width="1.5" ' +
+      'style="cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1);transform:' + tf + ';' +
+      (s.popped ? 'filter:drop-shadow(0 6px 10px rgba(0,0,0,0.45));' : 'opacity:' + (poppedIndex !== null && poppedIndex !== undefined ? '0.55' : '1') + ';') +
+      '" onclick="' + onClickFn + '(' + s.i + ')">' +
+      '<title>' + esc(s.name) + ": " + fmtTHB(s.value) + " (" + (s.frac * 100).toFixed(1) + '%)</title></path>';
+  });
+
+  var centerLabel, centerValue, centerSub;
+  var totalCount = data.reduce(function (s, x) { return s + (x.count || 0); }, 0);
+  if (poppedIndex !== null && poppedIndex !== undefined && segs[poppedIndex]) {
+    var sel = segs[poppedIndex];
+    centerLabel = sel.name.length > 12 ? sel.name.slice(0, 11) + "…" : sel.name;
+    centerValue = fmtTHB(sel.value);
+    centerSub = (sel.frac * 100).toFixed(1) + "% · " + sel.count + " งาน";
+  } else {
+    centerLabel = totalLabel || "รวม Won";
+    centerValue = fmtTHB(total);
+    centerSub = totalCount + " งาน จาก " + data.length + " รายการ";
+  }
+  svg += '<g style="pointer-events:none">' +
+    '<text x="110" y="103" text-anchor="middle" font-size="11" fill="#94A3B8" font-family="Arial">' + esc(centerLabel) + '</text>' +
+    '<text x="110" y="123" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="Arial">' + centerValue + '</text>' +
+    '<text x="110" y="139" text-anchor="middle" font-size="9" fill="#C9A227" font-family="Arial">' + esc(centerSub) + '</text>' +
+    '</g>';
+  svg += "</svg>";
+  return svg;
 }
 
 function svgPieChart(data, valueKey, nameKey, colors, height) {
@@ -1126,6 +1363,189 @@ function renderToast() {
 }
 
 /* ============================== DASHBOARD ============================== */
+function focusToggleBtn(value, current, label) {
+  var active = value === current;
+  var onclickFn = (value === "customer" || value === "month") ? "setFocusDimension" : "setFocusMetric";
+  return '<button onclick="' + onclickFn + '(\'' + value + '\')" style="font-size:10.5px;font-weight:600;padding:5px 11px;border-radius:6px;border:1px solid ' +
+    (active ? "#C9A227" : "#2A3441") + ';background:' + (active ? "#C9A227" : "transparent") + ';color:' + (active ? "#1B1400" : "#94A3B8") + ';cursor:pointer">' + esc(label) + '</button>';
+}
+
+function buildFocusCardInner() {
+  var data = computeFocusData();
+  var colors = data.map(function (_, i) { return PIE_COLORS[i % PIE_COLORS.length]; });
+  var donut = svgFocusDonut(data, "value", "label", colors, STATE.focusPopped, 200);
+  var total = data.reduce(function (s, x) { return s + (x.value || 0); }, 0) || 1;
+  var legend = data.map(function (x, i) {
+    var pct = ((x.value || 0) / total * 100).toFixed(1);
+    var popped = STATE.focusPopped === i;
+    return '<div onclick="toggleFocusSegment(' + i + ')" style="display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? "rgba(201,162,39,0.15)" : "transparent") + '">' +
+      '<span style="width:9px;height:9px;border-radius:3px;background:' + colors[i] + ';flex-shrink:0"></span>' +
+      '<span style="font-size:11px;color:' + (popped ? "#fff" : "#C9CFDA") + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.label) + '</span>' +
+      '<span class="mono" style="font-size:9.5px;color:#6B7A90">' + x.count + ' งาน</span>' +
+      '<span class="mono" style="font-size:10px;color:#94A3B8">' + pct + '%</span>' +
+      '<span class="mono" style="font-size:10.5px;color:#fff;min-width:64px;text-align:right">' + fmtTHB(x.value) + '</span></div>';
+  }).join("");
+  return '<div style="display:flex;align-items:center;gap:14px">' + donut +
+    '<div style="flex:1;min-width:0;max-height:200px;overflow-y:auto">' + legend + '</div></div>';
+}
+
+function refreshFocusChart() {
+  var wrap = document.getElementById("focus-chart-wrap");
+  if (!wrap) return;
+  wrap.innerHTML = buildFocusCardInner();
+  // also refresh the toggle button active states in the header row
+  var header = wrap.previousElementSibling;
+  if (header) {
+    var btns = header.querySelectorAll("button");
+    if (btns[0]) { var a = STATE.focusDimension === "customer"; btns[0].style.background = a ? "#C9A227" : "transparent"; btns[0].style.color = a ? "#1B1400" : "#94A3B8"; btns[0].style.borderColor = a ? "#C9A227" : "#2A3441"; }
+    if (btns[1]) { var b = STATE.focusDimension === "month"; btns[1].style.background = b ? "#C9A227" : "transparent"; btns[1].style.color = b ? "#1B1400" : "#94A3B8"; btns[1].style.borderColor = b ? "#C9A227" : "#2A3441"; }
+  }
+}
+
+function buildWtCardInner() {
+  var d = computeDerived();
+  var data = d.workTypeSplit;
+  var total = data.reduce(function (s, x) { return s + x.value; }, 0) || 1;
+  var colors = [COLORS.blue, COLORS.vividRed];
+  var chart = svgInteractiveBar(data, "name", "value", { colors: colors, height: 170, popped: STATE.wtPopped, onClickFn: "toggleWtBar" });
+  var sel = STATE.wtPopped !== null ? data[STATE.wtPopped] : null;
+  var strip = sel
+    ? detailStripHtml(sel.name, fmtTHB(sel.value) + " บาท", ((sel.value / total) * 100).toFixed(1) + "% · " + sel.count + " งาน Won", colors[STATE.wtPopped])
+    : detailStripHtml("รวมทั้งหมด", fmtTHB(total) + " บาท", (data[0].count + data[1].count) + " งาน — คลิกแท่งกราฟเพื่อดูรายละเอียด", COLORS.muted);
+  var breakdown = "";
+  if (sel) {
+    var series = STATE.wtPeriod === "quarter" ? computeQuarterlySeries(function (p) { return p.workType === sel.key; }) : computeMonthlySeries(function (p) { return p.workType === sel.key; });
+    var periodToggle = '<div style="display:flex;gap:4px;margin-top:8px">' +
+      '<button onclick="setWtPeriod(\'month\')" style="font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:5px;border:1px solid ' + (STATE.wtPeriod === "month" ? COLORS.blue : COLORS.line) + ';background:' + (STATE.wtPeriod === "month" ? COLORS.blue : "#fff") + ';color:' + (STATE.wtPeriod === "month" ? "#fff" : COLORS.muted) + ';cursor:pointer">รายเดือน</button>' +
+      '<button onclick="setWtPeriod(\'quarter\')" style="font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:5px;border:1px solid ' + (STATE.wtPeriod === "quarter" ? COLORS.blue : COLORS.line) + ';background:' + (STATE.wtPeriod === "quarter" ? COLORS.blue : "#fff") + ';color:' + (STATE.wtPeriod === "quarter" ? "#fff" : COLORS.muted) + ';cursor:pointer">รายไตรมาส</button>' +
+      '</div>';
+    breakdown = '<div style="margin-top:2px;padding-top:8px;border-top:1px dashed ' + COLORS.line + '">' +
+      periodToggle + svgMiniBars(series, colors[STATE.wtPopped], 56) + '</div>';
+  }
+  return chart + strip + breakdown;
+}
+function refreshWtChart() {
+  var wrap = document.getElementById("wt-chart-wrap");
+  if (wrap) wrap.innerHTML = buildWtCardInner();
+}
+
+function buildTop5CardInner() {
+  var d = computeDerived();
+  var data = d.top5Customers;
+  var total = data.reduce(function (s, x) { return s + x.won; }, 0) || 1;
+  var chart = svgInteractiveBar(data, "customer", "won", { color: COLORS.navy, height: 170, horizontal: true, popped: STATE.top5Popped, onClickFn: "toggleTop5Bar" });
+  var sel = STATE.top5Popped !== null ? data[STATE.top5Popped] : null;
+  var strip = sel
+    ? detailStripHtml(sel.customer, fmtTHB(sel.won) + " บาท", ((sel.won / total) * 100).toFixed(1) + "% ของ Top 5 · " + sel.wonJobs + " งาน · เฉลี่ย " + fmtTHB(sel.avgDeal) + "/งาน", COLORS.navy)
+    : detailStripHtml("รวม Top 5", fmtTHB(total) + " บาท", "คลิกแท่งกราฟเพื่อดูรายละเอียดลูกค้า", COLORS.muted);
+  return chart + strip;
+}
+function refreshTop5Chart() {
+  var wrap = document.getElementById("top5-chart-wrap");
+  if (wrap) wrap.innerHTML = buildTop5CardInner();
+}
+
+function buildSegCardInner() {
+  var d = computeDerived();
+  var data = d.segmentSplit;
+  var total = data.reduce(function (s, x) { return s + x.value; }, 0) || 1;
+  var segColors = [COLORS.blue, COLORS.coral, COLORS.violet];
+  var colors = data.map(function (_, i) { return segColors[i % segColors.length]; });
+  var donut = svgFocusDonut(data, "value", "name", colors, STATE.segPopped, 170, null, "toggleSegSlice");
+  var legend = data.map(function (x, i) {
+    var pct = ((x.value || 0) / total * 100).toFixed(1);
+    var popped = STATE.segPopped === i;
+    return '<div onclick="toggleSegSlice(' + i + ')" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? colors[i] + "1A" : "transparent") + '">' +
+      '<span style="width:9px;height:9px;border-radius:3px;background:' + colors[i] + ';flex-shrink:0"></span>' +
+      '<span style="font-size:11px;color:' + COLORS.text + ';font-weight:600;flex:1">' + esc(x.name) + '</span>' +
+      '<span class="mono" style="font-size:9px;color:' + COLORS.muted + '">' + x.count + ' งาน</span>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:flex-end;gap:8px;margin:-2px 0 4px 15px">' +
+      '<span class="mono" style="font-size:9.5px;color:' + colors[i] + ';font-weight:700">' + pct + '%</span>' +
+      '<span class="mono" style="font-size:11px;color:' + COLORS.ink + ';font-weight:700">' + fmtTHB(x.value) + '</span></div>';
+  }).join("");
+  var top = '<div style="display:flex;align-items:center;gap:10px">' + donut + '<div style="flex:1;min-width:0">' + legend + '</div></div>';
+  var monthly = "";
+  if (STATE.segPopped !== null && data[STATE.segPopped]) {
+    var segName = data[STATE.segPopped].name;
+    var series = computeMonthlySeries(function (p) { return p.segment === segName; });
+    monthly = '<div style="margin-top:10px;padding-top:8px;border-top:1px dashed ' + COLORS.line + '">' +
+      '<div style="font-size:10px;color:' + COLORS.muted + ';margin-bottom:2px">ยอด Won รายเดือน — ' + esc(segName) + '</div>' +
+      svgMiniBars(series, colors[STATE.segPopped], 56) + '</div>';
+  }
+  return top + monthly;
+}
+function refreshSegChart() {
+  var wrap = document.getElementById("seg-chart-wrap");
+  if (wrap) wrap.innerHTML = buildSegCardInner();
+}
+
+function computeForecastRows(d) {
+  return d.withCat.filter(function (p) { return p.status === "On process"; }).sort(function (a, b) { return (b.sale || 0) - (a.sale || 0); });
+}
+
+function buildForecastChartInner() {
+  var d = computeDerived();
+  var rows = computeForecastRows(d);
+  if (rows.length === 0) return '<div style="font-size:12px;color:' + COLORS.muted + ';padding:10px 0">ไม่มีงานที่กำลังเสนอราคาอยู่ตอนนี้</div>';
+  var chartData = rows.slice(0, 8).map(function (p) { return { label: p.customer, value: p.sale || 0, count: 1, jobId: p.id, desc: p.description }; });
+  if (rows.length > 8) {
+    var rest = rows.slice(8);
+    chartData.push({ label: "อื่นๆ (" + rest.length + " งาน)", value: rest.reduce(function (s, p) { return s + (p.sale || 0); }, 0), count: rest.length, jobId: null, desc: "" });
+  }
+  var colors = chartData.map(function (_, i) { return PIE_COLORS[i % PIE_COLORS.length]; });
+  var donut = svgFocusDonut(chartData, "value", "label", colors, STATE.forecastPopped, 170, "รวม Forecast", "toggleForecastSlice");
+  var legend = chartData.map(function (x, i) {
+    var popped = STATE.forecastPopped === i;
+    return '<div onclick="toggleForecastSlice(' + i + ')" style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? colors[i] + "1A" : "transparent") + '">' +
+      '<span style="width:8px;height:8px;border-radius:3px;background:' + colors[i] + ';flex-shrink:0"></span>' +
+      '<span style="font-size:10.5px;color:' + COLORS.text + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.label) + '</span>' +
+      '<span class="mono" style="font-size:10.5px;color:' + COLORS.ink + ';font-weight:700">' + fmtTHB(x.value) + '</span></div>';
+  }).join("");
+  var clickHint = STATE.forecastPopped !== null && chartData[STATE.forecastPopped].jobId
+    ? '<button onclick="openEditProjectForm(' + chartData[STATE.forecastPopped].jobId + ')" class="btn-secondary" style="margin-top:8px;width:100%;font-size:11px;padding:6px">' + icon("edit", 12) + ' เปิดดูรายละเอียดงานนี้</button>'
+    : "";
+  return '<div style="display:flex;align-items:center;gap:14px">' + donut + '<div style="flex:1;min-width:0;max-height:170px;overflow-y:auto">' + legend + clickHint + '</div></div>';
+}
+function refreshForecastChart() {
+  var wrap = document.getElementById("forecast-chart-wrap");
+  if (wrap) wrap.innerHTML = buildForecastChartInner();
+}
+
+function buildForecastCard(d) {
+  var rows = computeForecastRows(d);
+  var total = rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0);
+  var itemsHtml = rows.map(function (p, i) {
+    return '<tr class="row-hover" style="cursor:pointer" onclick="openEditProjectForm(' + p.id + ')">' +
+      '<td class="td-cell"><strong style="font-size:12.5px">' + esc(p.customer) + '</strong></td>' +
+      '<td class="td-cell" style="max-width:320px"><div style="font-size:12px;color:' + COLORS.muted + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</div></td>' +
+      '<td class="td-cell">' + workTypeBadgeHtml(p.workType) + '</td>' +
+      '<td class="td-cell" style="font-size:11.5px;color:' + COLORS.muted + '">' + fmtDate(p.requestedDate) + '</td>' +
+      '<td class="td-cell num-td" style="font-weight:700;color:' + COLORS.amber + '">' + fmtTHB(p.sale) + '</td>' +
+      '<td class="td-cell" style="width:20px;color:' + COLORS.muted + '">' + icon("chevronRight", 14) + '</td>' +
+      '</tr>';
+  }).join("") || '<tr><td class="td-cell" colspan="6" style="text-align:center;padding:30px;color:' + COLORS.muted + '">ไม่มีงานที่กำลังเสนอราคาอยู่ตอนนี้</td></tr>';
+
+  return '<div class="card" style="margin-top:16px;border-top-color:' + COLORS.amber + '">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">' +
+    '<div style="display:flex;align-items:center;gap:7px">' + icon("alert", 15, COLORS.amber) +
+    '<span class="disp" style="font-size:14.5px;color:' + COLORS.ink + '">Forecast — งานที่กำลังเสนอราคา (On process)</span></div>' +
+    '<div style="display:flex;gap:14px">' +
+    '<span style="font-size:12px;color:' + COLORS.muted + '">' + rows.length + ' งาน</span>' +
+    '<span class="mono" style="font-size:13px;font-weight:700;color:' + COLORS.amber + '">' + fmtTHB(total) + ' บาท</span>' +
+    '</div></div>' +
+    '<div id="forecast-chart-wrap" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed ' + COLORS.line + '">' + buildForecastChartInner() + '</div>' +
+    '<div style="overflow-x:auto;max-height:320px;overflow-y:auto">' +
+    '<table><thead><tr>' +
+    '<th class="th-cell" style="position:sticky;top:0">ลูกค้า</th>' +
+    '<th class="th-cell" style="position:sticky;top:0">รายละเอียดงาน</th>' +
+    '<th class="th-cell" style="position:sticky;top:0">ประเภทงาน</th>' +
+    '<th class="th-cell" style="position:sticky;top:0">Requested</th>' +
+    '<th class="th-cell" style="position:sticky;top:0;text-align:right">มูลค่า (THB)</th>' +
+    '<th class="th-cell" style="position:sticky;top:0"></th>' +
+    '</tr></thead><tbody>' + itemsHtml + '</tbody></table></div></div>';
+}
+
 function renderDashboard(d) {
   var heroHtml = '<div class="dash-hero">' +
     '<div style="position:relative;z-index:2">' +
@@ -1145,13 +1565,20 @@ function renderDashboard(d) {
 
   var row1 = '<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px">' +
     '<div class="card">' + cardTitleHtml("trending", "ยอดขาย Won รายเดือน (THB)") + svgLineChart(d.monthlyTrend, "month", "value", COLORS.blue, 230) + '</div>' +
-    '<div class="card">' + cardTitleHtml("pie", "สัดส่วนตาม Status") + svgPieChart(d.byStatus, "value", "status", d.byStatus.map(function (s) { return d.statusColorMap[s.status]; }), 230) + '</div>' +
+    '<div class="card" style="background:#0B1220;border-color:#1F2937;border-top-color:#C9A227">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
+    '<div style="display:flex;align-items:center;gap:7px">' + icon("trophy", 15, "#C9A227") +
+    '<span class="disp" style="font-size:14.5px;color:#fff">โฟกัสยอดขาย (Won)</span></div>' +
+    '<div style="display:flex;gap:4px">' + focusToggleBtn("customer", STATE.focusDimension, "ลูกค้า") + focusToggleBtn("month", STATE.focusDimension, "เดือน") + '</div>' +
+    '</div>' +
+    '<div id="focus-chart-wrap">' + buildFocusCardInner() + '</div>' +
+    '</div>' +
     '</div>';
 
   var row2 = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">' +
-    '<div class="card">' + cardTitleHtml("wrench", "Machine vs Fabrication (Won)") + svgBarChart(d.workTypeSplit, "name", "value", { colors: [COLORS.blue, COLORS.gold], height: 200 }) + '</div>' +
-    '<div class="card">' + cardTitleHtml("trophy", "Top 5 ลูกค้า (Won)") + svgBarChart(d.top5Customers, "customer", "won", { color: COLORS.navy, height: 200, horizontal: true }) + '</div>' +
-    '<div class="card">' + cardTitleHtml("users", "Won ตาม Segment") + svgPieChart(d.segmentSplit, "value", "name", null, 200) + '</div>' +
+    '<div class="card">' + cardTitleHtml("wrench", "Machine vs Fabrication (Won)") + '<div id="wt-chart-wrap">' + buildWtCardInner() + '</div></div>' +
+    '<div class="card">' + cardTitleHtml("trophy", "Top 5 ลูกค้า (Won)") + '<div id="top5-chart-wrap">' + buildTop5CardInner() + '</div></div>' +
+    '<div class="card">' + cardTitleHtml("users", "Won ตาม Segment") + '<div id="seg-chart-wrap">' + buildSegCardInner() + '</div></div>' +
     '</div>';
 
   var updatedBanner = "";
@@ -1165,7 +1592,9 @@ function renderDashboard(d) {
       (canEdit() ? '<button class="icon-btn" style="padding:2px 8px;margin-left:6px;border:1px solid ' + COLORS.line + ';border-radius:6px;font-size:11px;color:' + COLORS.blue + '" onclick="manualSyncNow()">รีเฟรช</button>' : '') +
       '</div>';
   }
-  return heroHtml + updatedBanner + kpiRow + row1 + row2;
+  var row3 = buildForecastCard(d);
+
+  return heroHtml + updatedBanner + kpiRow + row1 + row2 + row3;
 }
 
 /* ============================== PROJECTS VIEW ============================== */
