@@ -109,14 +109,17 @@
   /* ---- read-only mode: hide/disable all edit affordances until signed in ---- */
   body:not(.can-edit) .chk,
   body:not(.can-edit) .status-select,
+  body:not(.can-edit) .diw-select,
   body:not(.can-edit) .feedback-note,
   body:not(.can-edit) .company-name[contenteditable],
   body:not(.can-edit) .editable-type[contenteditable],
+  body:not(.can-edit) .estate-name[contenteditable],
   body:not(.can-edit) [data-editkey]{
     pointer-events:none; opacity:0.72; cursor:default;
   }
   body:not(.can-edit) .company-name[contenteditable]:hover,
   body:not(.can-edit) .editable-type[contenteditable]:hover,
+  body:not(.can-edit) .estate-name[contenteditable]:hover,
   body:not(.can-edit) [data-editkey]:hover{ background:none; box-shadow:none; }
   body:not(.can-edit) .re-delete,
   body:not(.can-edit) .re-edit,
@@ -273,9 +276,15 @@
   table.company-table tr.relation-visited td{ background: rgba(255,255,255,0.03); }
   table.company-table tr.contacted td{ background: var(--green-dim); }
   .company-name{ font-weight:600; padding:3px 5px; margin:-3px -5px; border-radius:4px; }
-  .company-name[contenteditable]:hover, .editable-type[contenteditable]:hover{ background:rgba(201,169,110,0.10); box-shadow:0 0 0 1px rgba(201,169,110,0.35); }
-  .company-name[contenteditable]:focus, .editable-type[contenteditable]:focus{ background:rgba(201,169,110,0.14); box-shadow:0 0 0 1px var(--gold); outline:none; }
+  .company-name[contenteditable]:hover, .editable-type[contenteditable]:hover, .estate-name[contenteditable]:hover{ background:rgba(201,169,110,0.10); box-shadow:0 0 0 1px rgba(201,169,110,0.35); }
+  .company-name[contenteditable]:focus, .editable-type[contenteditable]:focus, .estate-name[contenteditable]:focus{ background:rgba(201,169,110,0.14); box-shadow:0 0 0 1px var(--gold); outline:none; }
   .editable-type{ padding:3px 5px; margin:-3px -5px; border-radius:4px; }
+  .estate-name{ padding:3px 5px; margin:-3px -5px; border-radius:4px; min-height:16px; }
+  .estate-name:empty:before{ content:attr(data-placeholder); color:var(--muted); font-style:italic; }
+  .diw-select{
+    background:var(--panel2); border:1.5px solid; border-radius:6px; padding:4px 6px; font-size:11px;
+    font-family:'Kanit',sans-serif; font-weight:600; cursor:pointer; min-width:100px;
+  }
   .row-delete{ padding:4px 10px !important; font-size:10px !important; }
   .tag{ display:inline-block; font-family:'Kanit',sans-serif; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px; }
   .tag-visited{ background:rgba(255,255,255,0.08); color:var(--muted); }
@@ -284,6 +293,7 @@
     background:var(--panel2); border:1px solid var(--line); border-radius:6px; color:var(--text); font-size:11px;
     padding:4px 6px; font-family:'Sarabun',sans-serif; min-width:110px;
   }
+  select.status-select.st-customer{ color:#34D399; }
   select.status-select.st-new{ color:#38BDF8; }
   select.status-select.st-goon{ color:var(--green); }
   select.status-select.st-no{ color:var(--red); }
@@ -503,6 +513,9 @@
         <option value="target">เป้าหมาย</option>
         <option value="nontarget">ไม่เกี่ยวข้อง</option>
         <option value="unknown">ยังไม่ทราบ</option>
+      </select>
+      <select class="filter-select" id="filterEstate">
+        <option value="">นิคมทั้งหมด</option>
       </select>
       <select class="filter-select" id="filterRelation">
         <option value="">ทุกความสัมพันธ์</option>
@@ -900,6 +913,7 @@ function activityBadge(name){
 
 const STATUS_OPTIONS = [
   {v:'', label:'— ยังไม่ระบุ —', cls:''},
+  {v:'customer', label:'Customer', cls:'st-customer'},
   {v:'new', label:'New customer', cls:'st-new'},
   {v:'goon', label:'ไปต่อ', cls:'st-goon'},
   {v:'no', label:'ไม่เกี่ยวข้อง', cls:'st-no'},
@@ -1068,6 +1082,37 @@ async function renderContactSummary(totalCompanies){
   _totalCompaniesForSummary = totalCompanies;
   await fetchAllFeedback(); // populates feedbackCache as a side effect
   refreshContactSummaryFromCache();
+}
+
+function refreshDiwSummary(){
+  const el = document.getElementById('diwSummaryBar');
+  if (!el) return;
+  let diwTarget=0, diwNontarget=0, diwUnknown=0;
+  Object.values(SITE_DATA).forEach(d=> d.sections.forEach(s=> s.companies.forEach(c=>{
+    if (c.diwStatus==='target') diwTarget++;
+    else if (c.diwStatus==='nontarget') diwNontarget++;
+    else diwUnknown++;
+  })));
+  el.innerHTML = `
+    <div class="cs-status" style="gap:22px;">
+      <div class="cs-chip">เป้าหมาย <b style="color:var(--green)">${diwTarget}</b></div>
+      <div class="cs-chip">ไม่เกี่ยวข้อง <b style="color:var(--red)">${diwNontarget}</b></div>
+      <div class="cs-chip">ยังไม่ทราบ <b style="color:var(--amber)">${diwUnknown}</b></div>
+    </div>`;
+}
+
+function refreshEstateFilterOptions(){
+  const sel = document.getElementById('filterEstate');
+  if (!sel) return;
+  const current = sel.value;
+  const estates = new Set();
+  Object.values(SITE_DATA).forEach(d=> d.sections.forEach(s=> s.companies.forEach(c=>{
+    if (c.estate && c.estate.trim()) estates.add(c.estate.trim());
+  })));
+  const sorted = [...estates].sort((a,b)=> a.localeCompare(b,'th'));
+  sel.innerHTML = '<option value="">นิคมทั้งหมด</option>' +
+    sorted.map(e=>`<option value="${e.toLowerCase()}">${e}</option>`).join('');
+  if (sorted.map(e=>e.toLowerCase()).includes(current)) sel.value = current;
 }
 
 function refreshContactSummaryFromCache(){
@@ -1335,6 +1380,16 @@ function saveCompanyOverrides(ov){
 }
 function sectionKey(dist, tambon){ return (dist + '|' + tambon).replace(/[.#$/\[\]]/g, '_'); }
 
+function persistFieldEdit(id, fields){
+  const ov = loadCompanyOverrides();
+  ov.edits[id] = {...(ov.edits[id]||{}), ...fields};
+  saveCompanyOverrides(ov);
+  if (syncConnected){
+    fbDb.ref('companyOverrides/edits/'+id).set(ov.edits[id]).catch(e=>console.error(e));
+  }
+  flashSaved();
+}
+
 async function fetchRemoteOverrides(){
   if (!syncConnected) return;
   try{
@@ -1361,6 +1416,8 @@ function applyCompanyOverrides(){
         if (ov.edits[c.id]){
           if (ov.edits[c.id].name !== undefined) c.name = ov.edits[c.id].name;
           if (ov.edits[c.id].type !== undefined) c.type = ov.edits[c.id].type;
+          if (ov.edits[c.id].diwStatus !== undefined) c.diwStatus = ov.edits[c.id].diwStatus;
+          if (ov.edits[c.id].estate !== undefined) c.estate = ov.edits[c.id].estate;
         }
       });
       // append additions for this section
@@ -1382,18 +1439,25 @@ async function renderCompanyRow(c, dist){
   tr.dataset.contacted = fb.contacted ? 'yes' : 'no';
   tr.dataset.id = c.id;
   tr.dataset.diwStatus = c.diwStatus || '';
+  tr.dataset.estate = (c.estate||'').toLowerCase();
 
   const relTag = c.relation ? `<span class="tag tag-visited">${c.relation}</span>` : '';
   const curOpt = STATUS_OPTIONS.find(o=>o.v===fb.status) || STATUS_OPTIONS[0];
-  const diwMeta = {target:{label:'เป้าหมาย', color:'var(--green)'}, nontarget:{label:'ไม่เกี่ยวข้อง', color:'var(--red)'}, unknown:{label:'ไม่ทราบ', color:'var(--amber)'}}[c.diwStatus] || {label:'—', color:'var(--muted)'};
+  const DIW_OPTIONS = [
+    {v:'target', label:'เป้าหมาย', color:'var(--green)'},
+    {v:'nontarget', label:'ไม่เกี่ยวข้อง', color:'var(--red)'},
+    {v:'unknown', label:'ยังไม่ทราบ', color:'var(--amber)'},
+  ];
+  const diwMeta = DIW_OPTIONS.find(o=>o.v===c.diwStatus) || DIW_OPTIONS[2];
+  const diwOptionsHtml = DIW_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===c.diwStatus?'selected':''}>${o.label}</option>`).join('');
 
   tr.innerHTML = `
     <td><input type="checkbox" class="chk chk-contacted" ${fb.contacted?'checked':''}></td>
     <td><div class="company-name" contenteditable="true" spellcheck="false">${c.name}</div>${relTag}</td>
     <td>${c.tambon}</td>
     <td><div class="editable-type" contenteditable="true" spellcheck="false">${c.type||''}</div></td>
-    <td>${c.estate||'—'}</td>
-    <td><span class="diw-badge" style="color:${diwMeta.color}; border-color:${diwMeta.color};">${diwMeta.label}</span></td>
+    <td><div class="estate-name" contenteditable="true" spellcheck="false" data-placeholder="ระบุชื่อนิคม...">${c.estate||''}</div></td>
+    <td><select class="diw-select" style="color:${diwMeta.color}; border-color:${diwMeta.color};">${diwOptionsHtml}</select></td>
     <td><select class="status-select ${curOpt.cls}">${statusOptionsHtml(fb.status)}</select></td>
     <td><textarea class="feedback-note" placeholder="บันทึก Feedback ลูกค้า...">${fb.note||''}</textarea></td>
     <td><a class="maplink" href="${gmapsLink(c.name, c.tambon, dist)}" target="_blank" rel="noopener">เปิดแผนที่</a></td>
@@ -1405,7 +1469,26 @@ async function renderCompanyRow(c, dist){
   const note = tr.querySelector('.feedback-note');
   const nameEl = tr.querySelector('.company-name');
   const typeEl = tr.querySelector('.editable-type');
+  const estateEl = tr.querySelector('.estate-name');
+  const diwSel = tr.querySelector('.diw-select');
   const delBtn = tr.querySelector('.row-delete');
+
+  diwSel.addEventListener('change', ()=>{
+    const opt = DIW_OPTIONS.find(o=>o.v===diwSel.value);
+    diwSel.style.color = opt.color; diwSel.style.borderColor = opt.color;
+    tr.dataset.diwStatus = diwSel.value;
+    c.diwStatus = diwSel.value;
+    persistFieldEdit(c.id, {diwStatus: diwSel.value});
+    refreshDiwSummary();
+  });
+
+  estateEl.addEventListener('blur', ()=>{
+    const val = estateEl.textContent.trim();
+    tr.dataset.estate = val.toLowerCase();
+    c.estate = val;
+    persistFieldEdit(c.id, {estate: val});
+    refreshEstateFilterOptions();
+  });
 
   function persist(){
     const data = {contacted: chk.checked, status: sel.value, note: note.value};
@@ -1422,16 +1505,8 @@ async function renderCompanyRow(c, dist){
   note.addEventListener('input', ()=>{ clearTimeout(noteTimer); noteTimer = setTimeout(persist, 600); });
 
   function persistNameType(){
-    const ov = loadCompanyOverrides();
-    ov.edits[c.id] = ov.edits[c.id] || {};
-    ov.edits[c.id].name = nameEl.textContent.trim();
-    ov.edits[c.id].type = typeEl.textContent.trim();
-    saveCompanyOverrides(ov);
+    persistFieldEdit(c.id, {name: nameEl.textContent.trim(), type: typeEl.textContent.trim()});
     tr.dataset.name = nameEl.textContent.trim().toLowerCase();
-    if (syncConnected){
-      fbDb.ref('companyOverrides/edits/'+c.id).set(ov.edits[c.id]).catch(e=>console.error(e));
-    }
-    flashSaved();
   }
   nameEl.addEventListener('blur', persistNameType);
   typeEl.addEventListener('blur', persistNameType);
@@ -1516,7 +1591,7 @@ async function buildTambonSection(dist, section, distId, tIndex, labelPrefix){
 
   addRow.querySelector('.add-company-btn').addEventListener('click', async ()=>{
     const newId = 'new' + Date.now() + Math.floor(Math.random()*1000);
-    const newCompany = {id:newId, name:'บริษัทใหม่ (คลิกแก้ไขชื่อ)', tambon:section.tambon, type:'', relation:''};
+    const newCompany = {id:newId, name:'บริษัทใหม่ (คลิกแก้ไขชื่อ)', tambon:section.tambon, type:'', estate:'', diwStatus:'unknown', relation:''};
     const ov = loadCompanyOverrides();
     const key = sectionKey(dist, section.tambon);
     ov.additions[key] = ov.additions[key] || {};
@@ -1709,22 +1784,12 @@ async function init(){
     <div class="kpi"><div class="l">ตำบล / นิคม</div><div class="v">${totalTambons}</div></div>
   `;
 
-  let diwTarget=0, diwNontarget=0, diwUnknown=0;
-  Object.values(SITE_DATA).forEach(d=> d.sections.forEach(s=> s.companies.forEach(c=>{
-    if (c.diwStatus==='target') diwTarget++;
-    else if (c.diwStatus==='nontarget') diwNontarget++;
-    else diwUnknown++;
-  })));
   const diwBar = document.createElement('div');
   diwBar.className = 'contact-summary';
+  diwBar.id = 'diwSummaryBar';
   diwBar.style.marginTop = '10px';
-  diwBar.innerHTML = `
-    <div class="cs-status" style="gap:22px;">
-      <div class="cs-chip">เป้าหมาย <b style="color:var(--green)">${diwTarget}</b></div>
-      <div class="cs-chip">ไม่เกี่ยวข้อง <b style="color:var(--red)">${diwNontarget}</b></div>
-      <div class="cs-chip">ยังไม่ทราบ <b style="color:var(--amber)">${diwUnknown}</b></div>
-    </div>`;
   document.getElementById('kpiRow').insertAdjacentElement('afterend', diwBar);
+  refreshDiwSummary();
 
   await renderContactSummary(totalCompanies);
 
@@ -1793,12 +1858,15 @@ async function init(){
   const filterRelation = document.getElementById('filterRelation');
   const filterContacted = document.getElementById('filterContacted');
   const filterDiw = document.getElementById('filterDiw');
+  const filterEstate = document.getElementById('filterEstate');
+  refreshEstateFilterOptions();
 
   function applyFilters(){
     const q = searchInput.value.trim().toLowerCase();
     const rel = filterRelation.value;
     const cont = filterContacted.value;
     const diw = filterDiw.value;
+    const est = filterEstate.value;
     document.querySelectorAll('table.company-table tbody tr').forEach(tr=>{
       let show = true;
       if (q && !(tr.dataset.name.includes(q) || tr.dataset.tambon.includes(q))) show = false;
@@ -1807,6 +1875,7 @@ async function init(){
       if (cont === 'yes' && tr.dataset.contacted !== 'yes') show = false;
       if (cont === 'no' && tr.dataset.contacted !== 'no') show = false;
       if (diw && tr.dataset.diwStatus !== diw) show = false;
+      if (est && tr.dataset.estate !== est) show = false;
       tr.style.display = show ? '' : 'none';
     });
     // auto-switch to the matching district tab when searching, and gently
@@ -1832,6 +1901,7 @@ async function init(){
   filterRelation.addEventListener('change', applyFilters);
   filterContacted.addEventListener('change', applyFilters);
   filterDiw.addEventListener('change', applyFilters);
+  filterEstate.addEventListener('change', applyFilters);
 
   // ---- live search suggestions dropdown ----
   const searchSuggest = document.getElementById('searchSuggest');
