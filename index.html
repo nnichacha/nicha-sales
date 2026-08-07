@@ -251,6 +251,7 @@ var STATE = {
   kpiExpanded: null,
   bulkAddOpen: false,
   pendingEdits: {},
+  resetConfirmOpen: false,
   dailyReportUI: { formPerson: "", formTime: "" },
   firebaseUrl: "",
   firebaseES: null,
@@ -630,14 +631,25 @@ function deleteProject(id) {
   STATE.confirmDeleteId = null;
   showToast("ลบรายการแล้ว");
 }
+function askResetToSeed() {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถรีเซ็ตข้อมูลได้"); return; }
+  STATE.resetConfirmOpen = true;
+  renderModals();
+}
+function cancelResetToSeed() {
+  STATE.resetConfirmOpen = false;
+  renderModals();
+}
 function resetToSeed() {
   if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถรีเซ็ตข้อมูลได้"); return; }
+  exportBackup(); // safety net: always download a backup of current data first
   STATE.projects = SEED_DATA.slice();
   STATE.statuses = DEFAULT_STATUSES.slice();
   persistProjects();
   persistStatuses();
   LocalStore.set(BACKUP_COUNT_KEY, "0");
-  showToast("รีเซ็ตข้อมูลกลับไปยังชุดเริ่มต้นแล้ว");
+  STATE.resetConfirmOpen = false;
+  showToast("รีเซ็ตข้อมูลกลับไปยังชุดเริ่มต้นแล้ว (สำรองข้อมูลเดิมดาวน์โหลดให้แล้ว)");
   renderApp();
 }
 function addStatus(s) {
@@ -1416,7 +1428,7 @@ function renderSidebarFooter() {
     icon("download", 12) + ' ดาวน์โหลดข้อมูลสำรอง</button>' +
     (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="triggerImportFile()">' +
     icon("upload", 12) + ' นำเข้าข้อมูลสำรอง</button>' : '') +
-    (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="resetToSeed()">' +
+    (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="askResetToSeed()">' +
     icon("reset", 12) + ' รีเซ็ตข้อมูลตัวอย่าง</button>' : '') +
     '<div style="margin-top:10px;font-size:9.5px;color:#6E82A0;line-height:1.4">' +
     (STATE.cloudUrl ? 'ข้อมูลซิงก์ขึ้น Google Sheets อัตโนมัติ + สำรองไว้ในเบราว์เซอร์นี้ด้วย' : 'ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (localStorage) — ไม่ซิงก์ข้ามเครื่อง') + '</div>';
@@ -2454,6 +2466,7 @@ function renderModals() {
   if (STATE.importPending) html += renderImportConfirmModal();
   if (STATE.dailyReportModalDate) html += renderDayReportModal();
   if (STATE.bulkAddOpen) html += renderBulkAddModal();
+  if (STATE.resetConfirmOpen) html += renderResetConfirmModal();
   root.innerHTML = html;
 }
 
@@ -2724,6 +2737,24 @@ function renderBulkAddModal() {
     '<div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeBulkAddModal()">ยกเลิก</button>' +
     '<button type="button" class="btn-primary" onclick="submitBulkAdd()">' + icon("check", 15) + ' เพิ่มทั้งหมด</button></div>' +
     '</div></div>';
+}
+
+function renderResetConfirmModal() {
+  var jobCount = STATE.projects.length;
+  var seedCount = SEED_DATA.length;
+  return '<div class="modal-overlay" onmousedown="if(event.target===this) cancelResetToSeed()">' +
+    '<div class="modal-panel" style="max-width:440px;height:auto">' +
+    '<div style="padding:22px 22px 8px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+    '<div style="width:34px;height:34px;border-radius:99px;background:' + COLORS.redBg + ';display:flex;align-items:center;justify-content:center">' + icon("alert", 16, COLORS.red) + '</div>' +
+    '<div class="disp" style="font-size:15.5px">รีเซ็ตข้อมูลทั้งหมด?</div></div>' +
+    '<div style="font-size:12.5px;color:' + COLORS.muted + ';margin-left:44px;line-height:1.7">' +
+    'ตอนนี้มีข้อมูลอยู่ <strong style="color:' + COLORS.ink + '">' + jobCount + ' งาน</strong><br/>' +
+    'การรีเซ็ตจะ<strong style="color:' + COLORS.red + '">ลบข้อมูลทั้งหมดทิ้ง แล้วแทนที่ด้วยชุดเริ่มต้น ' + seedCount + ' งาน</strong> ทันที ทั้งในเครื่องนี้และบนคลาวด์ — ' +
+    '<strong>กู้คืนไม่ได้</strong> (ระบบจะดาวน์โหลดไฟล์สำรองของข้อมูลปัจจุบันให้อัตโนมัติก่อนรีเซ็ต แต่ต้องนำเข้าไฟล์นั้นเองทีหลังถ้าต้องการกู้คืน)' +
+    '</div></div>' +
+    '<div class="modal-footer" style="border-top:none">' +
+    '<button class="btn-secondary" onclick="cancelResetToSeed()">ยกเลิก</button>' +
+    '<button class="btn-primary" style="background:' + COLORS.red + '" onclick="resetToSeed()">' + icon("reset", 14) + ' ยืนยันรีเซ็ต (' + jobCount + ' → ' + seedCount + ' งาน)</button></div></div></div>';
 }
 
 function init() {
