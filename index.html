@@ -129,16 +129,15 @@
 var STORAGE_KEY = "emt-projects-v1";
 var STATUS_KEY = "emt-statuses-v1";
 var BACKUP_COUNT_KEY = "emt-edits-since-backup";
-var CLOUD_URL_KEY = "emt-cloud-url";
 var GOOGLE_CLIENT_ID_KEY = "emt-google-client-id";
 var AUTH_KEY = "emt-auth-session";
+var EDITOR_EMAILS_KEY = "emt-editor-emails";
 var COMMISSION_PIN = "888999";
 var COMMISSION_UNLOCK_KEY = "emt-commission-unlocked";
 var DAILY_REPORTS_KEY = "emt-daily-reports";
 var ACTIVITY_OPTIONS = ["แนะนำตัว", "ส่งของ", "ใบเสนอราคา", "ปิดการขาย", "ติดตามงาน", "อื่นๆ"];
 var FIREBASE_URL_KEY = "emt-firebase-url";
 var DEFAULT_FIREBASE_URL = "https://sales-nicha-default-rtdb.asia-southeast1.firebasedatabase.app";
-var DEFAULT_CLOUD_URL = ""; // Google Sheets sync disabled — using Firebase only
 var LocalStore = {
   get: function (key) {
     try {
@@ -229,10 +228,7 @@ var STATE = {
   confirmDeleteId: null,
   statusManagerOpen: false,
   importPending: null,
-  cloudUrl: "",
-  syncStatus: "idle",
   lastSyncedAt: null,
-  syncTimer: null,
   googleClientId: "",
   gisReady: false,
   auth: { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null },
@@ -280,7 +276,6 @@ function loadAll() {
 }
 function persistDailyReports() {
   LocalStore.set(DAILY_REPORTS_KEY, JSON.stringify(STATE.dailyReports));
-  scheduleCloudPush();
   scheduleFirebasePush();
 }
 function persistProjects() {
@@ -288,7 +283,6 @@ function persistProjects() {
   LocalStore.set(STORAGE_KEY, JSON.stringify(STATE.projects));
   window.setTimeout(function () { STATE.saving = false; renderSidebarFooter(); }, 250);
   bumpBackupCounter();
-  scheduleCloudPush();
   scheduleFirebasePush();
 }
 function bumpBackupCounter() {
@@ -302,7 +296,6 @@ function bumpBackupCounter() {
 }
 function persistStatuses() {
   LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
-  scheduleCloudPush();
   scheduleFirebasePush();
 }
 function showToast(msg) {
@@ -312,76 +305,6 @@ function showToast(msg) {
   STATE.toastTimer = window.setTimeout(function () { STATE.toastMsg = null; renderToast(); }, 2600);
 }
 
-/* ============================== CLOUD SYNC (Google Sheets via Apps Script) ============================== */
-function scheduleCloudPush() {
-  if (!STATE.cloudUrl) return;
-  window.clearTimeout(STATE.syncTimer);
-  STATE.syncTimer = window.setTimeout(pushToCloud, 900);
-}
-
-function pushToCloud() {
-  if (!STATE.cloudUrl) return;
-  if (STATE.googleClientId && !isTokenValid()) { STATE.syncStatus = "error"; renderSidebarFooter(); return; }
-  if (STATE.googleClientId && STATE.auth.role && STATE.auth.role !== "editor") { return; } // viewers never write
-  STATE.syncStatus = "syncing";
-  renderSidebarFooter();
-  var payload = JSON.stringify({
-    projects: STATE.projects, statuses: STATE.statuses, dailyReports: STATE.dailyReports,
-    idToken: STATE.auth.idToken || ""
-  });
-  fetch(STATE.cloudUrl, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: payload
-  }).then(function (res) { return res.json(); })
-    .then(function (res) {
-      if (res && res.unauthorized) { handleUnauthorized(res.error); return; }
-      if (res && res.role) { STATE.auth.role = res.role; saveAuthSession(); }
-      STATE.syncStatus = res && res.ok ? "synced" : "error";
-      STATE.lastSyncedAt = new Date();
-      renderSidebarFooter();
-    })
-    .catch(function () {
-      STATE.syncStatus = "error";
-      renderSidebarFooter();
-    });
-}
-
-function pullFromCloud(showToastOnDone) {
-  if (!STATE.cloudUrl) return;
-  if (STATE.googleClientId && !isTokenValid()) { STATE.syncStatus = "error"; renderSidebarFooter(); return; }
-  STATE.syncStatus = "syncing";
-  renderSidebarFooter();
-  var qs = STATE.auth.idToken ? ("?idToken=" + encodeURIComponent(STATE.auth.idToken)) : "";
-  fetch(STATE.cloudUrl + qs, { method: "GET" })
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-      if (data && data.unauthorized) { handleUnauthorized(data.error); return; }
-      if (data && data.role) { STATE.auth.role = data.role; saveAuthSession(); }
-      if (data && Array.isArray(data.projects) && data.projects.length > 0) {
-        STATE.projects = data.projects.map(normalizeCloudProject);
-        if (Array.isArray(data.statuses) && data.statuses.length) STATE.statuses = data.statuses;
-        if (Array.isArray(data.dailyReports)) STATE.dailyReports = data.dailyReports;
-        LocalStore.set(STORAGE_KEY, JSON.stringify(STATE.projects));
-        LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
-        LocalStore.set(DAILY_REPORTS_KEY, JSON.stringify(STATE.dailyReports));
-        STATE.syncStatus = "synced";
-        STATE.lastSyncedAt = new Date();
-        renderApp();
-        if (showToastOnDone) showToast("ดึงข้อมูลล่าสุดจากคลาวด์แล้ว");
-      } else {
-        STATE.syncStatus = "synced";
-        renderSidebarFooter();
-        if (!STATE.googleClientId || STATE.auth.role === "editor") pushToCloud();
-        if (showToastOnDone) showToast("คลาวด์ยังไม่มีข้อมูล — อัปโหลดข้อมูลปัจจุบันขึ้นไปให้แล้ว");
-      }
-    })
-    .catch(function () {
-      STATE.syncStatus = "error";
-      renderSidebarFooter();
-      if (showToastOnDone) showToast("เชื่อมต่อคลาวด์ไม่สำเร็จ — ใช้ข้อมูลในเครื่องต่อไป");
-    });
-}
 
 /* ============================== FIREBASE REALTIME SYNC ============================== */
 function firebaseDataUrl() {
@@ -406,7 +329,7 @@ function firebasePush() {
   });
   fetch(firebaseDataUrl(), { method: "PUT", headers: { "Content-Type": "application/json" }, body: payload })
     .then(function (res) { return res.json(); })
-    .then(function () { STATE.firebaseStatus = "synced"; renderSidebarFooter(); })
+    .then(function () { STATE.firebaseStatus = "synced"; STATE.lastSyncedAt = new Date(); renderSidebarFooter(); })
     .catch(function () { STATE.firebaseStatus = "error"; renderSidebarFooter(); });
 }
 
@@ -425,7 +348,7 @@ function applyRemoteData(data) {
   if (!busy && !typing) { renderApp(); showToast("อัปเดตข้อมูลแบบเรียลไทม์จากอุปกรณ์อื่น"); }
 }
 
-function firebaseReadOnce() {
+function firebaseReadOnce(showToastOnDone) {
   if (!STATE.firebaseUrl) return;
   STATE.firebaseStatus = "syncing";
   renderSidebarFooter();
@@ -433,11 +356,14 @@ function firebaseReadOnce() {
     .then(function (res) { return res.json(); })
     .then(function (data) {
       STATE.firebaseStatus = "synced";
-      if (data) { applyRemoteData(data); }
+      if (data) { applyRemoteData(data); STATE.lastSyncedAt = new Date(); if (showToastOnDone) showToast("ดึงข้อมูลล่าสุดจากคลาวด์แล้ว"); }
       else { firebasePush(); } // empty DB -> seed it with current local data
       renderSidebarFooter();
     })
-    .catch(function () { STATE.firebaseStatus = "error"; renderSidebarFooter(); });
+    .catch(function () {
+      STATE.firebaseStatus = "error"; renderSidebarFooter();
+      if (showToastOnDone) showToast("เชื่อมต่อคลาวด์ไม่สำเร็จ — ใช้ข้อมูลในเครื่องต่อไป");
+    });
 }
 
 function firebaseStartListening() {
@@ -484,37 +410,12 @@ function normalizeCloudProject(p) {
   return out;
 }
 
-function handleUnauthorized(errCode) {
-  STATE.syncStatus = "error";
-  if (String(errCode || "").indexOf("not_authorized") === 0) {
-    STATE.authError = "บัญชี " + (STATE.auth.email || "") + " ยังไม่ได้รับอนุญาต — แจ้งผู้ดูแลให้เพิ่มอีเมลนี้ในชีต AllowedUsers";
-    STATE.auth = { signedIn: false, email: STATE.auth.email, name: null, picture: null, idToken: null, exp: 0, role: null };
-    LocalStore.set(AUTH_KEY, "");
-  } else {
-    STATE.authError = "เข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่";
-    STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null };
-    LocalStore.set(AUTH_KEY, "");
-  }
-  renderApp();
-}
-
-function manualSyncNow() { pullFromCloud(true); }
+function manualSyncNow() { firebaseReadOnce(true); }
 function manualSaveNow() {
   if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถบันทึกได้"); return; }
-  window.clearTimeout(STATE.syncTimer);
-  pushToCloud();
+  window.clearTimeout(STATE.firebasePushTimer);
+  firebasePush();
   showToast("กำลังบันทึกขึ้นคลาวด์…");
-}
-function changeCloudUrl() {
-  var next = window.prompt("วาง Web app URL ของ Google Apps Script (เว้นว่างเพื่อปิดการซิงก์คลาวด์):", STATE.cloudUrl || "");
-  if (next === null) return;
-  next = next.trim();
-  STATE.cloudUrl = next;
-  LocalStore.set(CLOUD_URL_KEY, next);
-  STATE.syncStatus = "idle";
-  renderSidebarFooter();
-  if (next) { showToast("ตั้งค่าคลาวด์แล้ว กำลังซิงก์…"); pullFromCloud(true); }
-  else { showToast("ปิดการซิงก์คลาวด์แล้ว — ใช้ข้อมูลในเครื่องเท่านั้น"); }
 }
 
 /* ============================== GOOGLE LOGIN ============================== */
@@ -565,17 +466,23 @@ function saveAuthSession() {
   LocalStore.set(AUTH_KEY, JSON.stringify(STATE.auth));
 }
 
+function computeRoleForEmail(email) {
+  var list = (LocalStore.get(EDITOR_EMAILS_KEY) || "").toLowerCase();
+  var emails = list.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+  return emails.indexOf((email || "").toLowerCase()) !== -1 ? "editor" : "viewer";
+}
+
 function handleGoogleCredential(response) {
   var claims = decodeJwt(response.credential);
   if (!claims) { STATE.authError = "อ่านข้อมูลบัญชีไม่สำเร็จ"; renderApp(); return; }
   STATE.auth = {
     signedIn: true, email: claims.email, name: claims.name, picture: claims.picture,
-    idToken: response.credential, exp: claims.exp * 1000, role: null
+    idToken: response.credential, exp: claims.exp * 1000, role: computeRoleForEmail(claims.email)
   };
   STATE.authError = null;
   saveAuthSession();
   renderApp();
-  if (STATE.cloudUrl) pullFromCloud(false);
+  if (STATE.firebaseUrl) firebaseReadOnce();
 }
 
 function signOut() {
@@ -592,6 +499,20 @@ function changeGoogleClientId() {
   STATE.googleClientId = next;
   LocalStore.set(GOOGLE_CLIENT_ID_KEY, next);
   if (!next) { STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null }; LocalStore.set(AUTH_KEY, ""); }
+  renderApp();
+}
+
+function setEditorEmails() {
+  var current = LocalStore.get(EDITOR_EMAILS_KEY) || "";
+  var next = window.prompt("ใส่ Gmail ของคนที่แก้ไขข้อมูลได้ (คั่นด้วย , ถ้ามีหลายคน) คนอื่นที่ล็อกอินจะเห็นแบบดูอย่างเดียว:", current);
+  if (next === null) return;
+  next = next.trim();
+  LocalStore.set(EDITOR_EMAILS_KEY, next);
+  if (STATE.auth && STATE.auth.signedIn) {
+    STATE.auth.role = computeRoleForEmail(STATE.auth.email);
+    saveAuthSession();
+  }
+  showToast("ตั้งค่ารายชื่อ Editor แล้ว");
   renderApp();
 }
 
@@ -1385,21 +1306,12 @@ function renderApp() {
 function renderSidebarFooter() {
   var el = document.getElementById("sidebar-footer");
   if (!el) return;
-  var cloudBlock;
-  if (!STATE.cloudUrl) {
-    cloudBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6E82A0">' + icon("cloud", 12) + ' ยังไม่ได้เชื่อมคลาวด์</div>';
-  } else if (STATE.syncStatus === "syncing") {
-    cloudBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD">' + icon("loader", 12) + ' กำลังซิงก์คลาวด์…</div>';
-  } else if (STATE.syncStatus === "error") {
-    cloudBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#E8B563">' + icon("cloud", 12) + ' ซิงก์คลาวด์ไม่สำเร็จ (ใช้ในเครื่อง)</div>';
-  } else {
-    cloudBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7FD6A6">' + icon("cloud", 12) + ' เชื่อมต่อ Google Sheets แล้ว</div>';
-  }
   var userBlock = "";
   if (STATE.googleClientId && STATE.auth && STATE.auth.signedIn) {
     userBlock = '<div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
       (STATE.auth.picture ? '<img src="' + attr(STATE.auth.picture) + '" style="width:26px;height:26px;border-radius:99px" referrerpolicy="no-referrer"/>' : '') +
       '<div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(STATE.auth.name || STATE.auth.email) + '</div>' +
+      '<div style="font-size:9.5px;color:' + (STATE.auth.role === "editor" ? "#7FD6A6" : "#B7C4D6") + '">' + (STATE.auth.role === "editor" ? "แก้ไขได้" : "ดูอย่างเดียว") + '</div>' +
       '<button class="icon-btn" style="padding:0;font-size:10px;color:#8FA3BD" onclick="signOut()">ออกจากระบบ</button></div></div>';
   }
   var fbBlock;
@@ -1415,18 +1327,18 @@ function renderSidebarFooter() {
     fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7FD6A6;margin-top:4px">' + icon("cloud", 12) + ' เชื่อม Firebase แล้ว</div>';
   }
   var lastSyncLine = "";
-  if (STATE.cloudUrl && STATE.lastSyncedAt) {
+  if (STATE.firebaseUrl && STATE.lastSyncedAt) {
     lastSyncLine = '<div style="font-size:10px;color:#6E82A0;margin-top:3px">อัปเดตล่าสุด: ' + fmtDateTime(STATE.lastSyncedAt) + '</div>';
   }
   el.innerHTML = userBlock +
     '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD">' +
     (STATE.saving ? icon("loader", 12) + " กำลังบันทึก…" : icon("check", 12, COLORS.green) + " บันทึกลงเครื่องนี้แล้ว") + '</div>' +
-    cloudBlock + fbBlock + lastSyncLine +
-    (STATE.cloudUrl && canEdit() ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
-    (STATE.cloudUrl ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="manualSyncNow()">' + icon("cloud", 12) + ' ดึงข้อมูลล่าสุดจากคลาวด์</button>' : '') +
-    '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeCloudUrl()">' + (STATE.cloudUrl ? "เปลี่ยน/ปิดการซิงก์คลาวด์" : "เชื่อมต่อ Google Sheets…") + '</button>' +
-    '<button class="icon-btn" style="margin-top:2px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeFirebaseUrl()">' + (STATE.firebaseUrl ? "เปลี่ยน/ปิด Firebase เรียลไทม์" : "เชื่อมต่อ Firebase (เรียลไทม์)…") + '</button>' +
+    fbBlock + lastSyncLine +
+    (STATE.firebaseUrl && canEdit() ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
+    (STATE.firebaseUrl ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="manualSyncNow()">' + icon("cloud", 12) + ' ดึงข้อมูลล่าสุดจากคลาวด์</button>' : '') +
+    '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeFirebaseUrl()">' + (STATE.firebaseUrl ? "เปลี่ยน/ปิด Firebase เรียลไทม์" : "เชื่อมต่อ Firebase (เรียลไทม์)…") + '</button>' +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeGoogleClientId()">' + (STATE.googleClientId ? "ตั้งค่าระบบ Login" : "เปิดใช้ระบบ Login…") + '</button>' +
+    (STATE.googleClientId ? '<button class="icon-btn" style="margin-top:2px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="setEditorEmails()">ตั้งค่าอีเมล Editor</button>' : '') +
     '<button class="icon-btn" style="margin-top:10px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#fff;font-size:11px;border-radius:6px;padding:7px 8px;background:rgba(91,155,213,0.14)" onclick="exportBackup()">' +
     icon("download", 12) + ' ดาวน์โหลดข้อมูลสำรอง</button>' +
     (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="triggerImportFile()">' +
@@ -1434,7 +1346,7 @@ function renderSidebarFooter() {
     (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="askResetToSeed()">' +
     icon("reset", 12) + ' รีเซ็ตข้อมูลตัวอย่าง</button>' : '') +
     '<div style="margin-top:10px;font-size:9.5px;color:#6E82A0;line-height:1.4">' +
-    (STATE.cloudUrl ? 'ข้อมูลซิงก์ขึ้น Google Sheets อัตโนมัติ + สำรองไว้ในเบราว์เซอร์นี้ด้วย' : 'ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (localStorage) — ไม่ซิงก์ข้ามเครื่อง') + '</div>';
+    (STATE.firebaseUrl ? 'ข้อมูลซิงก์ขึ้น Firebase แบบเรียลไทม์ + สำรองไว้ในเบราว์เซอร์นี้ด้วย' : 'ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (localStorage) — ไม่ซิงก์ข้ามเครื่อง') + '</div>';
 }
 
 function renderLoginScreen() {
@@ -1840,13 +1752,13 @@ function renderDashboard(d) {
     '</div>';
 
   var updatedBanner = "";
-  if (STATE.cloudUrl) {
+  if (STATE.firebaseUrl) {
     var statusTxt, statusColor;
-    if (STATE.syncStatus === "syncing") { statusTxt = "กำลังซิงก์ข้อมูลล่าสุด…"; statusColor = COLORS.muted; }
-    else if (STATE.syncStatus === "error") { statusTxt = "ใช้ข้อมูลในเครื่อง (ซิงก์คลาวด์ไม่สำเร็จ)"; statusColor = COLORS.amber; }
+    if (STATE.firebaseStatus === "syncing") { statusTxt = "กำลังซิงก์ข้อมูลล่าสุด…"; statusColor = COLORS.muted; }
+    else if (STATE.firebaseStatus === "error") { statusTxt = "ใช้ข้อมูลในเครื่อง (ซิงก์คลาวด์ไม่สำเร็จ)"; statusColor = COLORS.amber; }
     else { statusTxt = "ข้อมูลอัปเดตล่าสุด: " + fmtDateTime(STATE.lastSyncedAt); statusColor = COLORS.green; }
     updatedBanner = '<div style="display:flex;align-items:center;gap:7px;margin-bottom:18px;padding:8px 14px;background:#fff;border:1px solid ' + COLORS.line + ';border-radius:8px;font-size:12px;color:' + statusColor + ';width:fit-content">' +
-      icon(STATE.syncStatus === "syncing" ? "loader" : "cloud", 13, statusColor) + statusTxt +
+      icon(STATE.firebaseStatus === "syncing" ? "loader" : "cloud", 13, statusColor) + statusTxt +
       (canEdit() ? '<button class="icon-btn" style="padding:2px 8px;margin-left:6px;border:1px solid ' + COLORS.line + ';border-radius:6px;font-size:11px;color:' + COLORS.blue + '" onclick="manualSyncNow()">รีเฟรช</button>' : '') +
       '</div>';
   }
@@ -2791,7 +2703,6 @@ function confirmImport() {
   LocalStore.set(STORAGE_KEY, JSON.stringify(STATE.projects));
   LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
   STATE.importPending = null;
-  scheduleCloudPush();
   window.setTimeout(function () {
     renderModals();
     renderApp();
@@ -2855,7 +2766,6 @@ function renderResetConfirmModal() {
 
 function init() {
   loadAll();
-  STATE.cloudUrl = LocalStore.get(CLOUD_URL_KEY) || DEFAULT_CLOUD_URL || "";
   STATE.googleClientId = LocalStore.get(GOOGLE_CLIENT_ID_KEY) || "";
   var savedAuth = LocalStore.get(AUTH_KEY);
   if (savedAuth) {
@@ -2867,19 +2777,16 @@ function init() {
   try { STATE.commissionUnlocked = window.sessionStorage.getItem(COMMISSION_UNLOCK_KEY) === "1"; } catch (e) {}
   STATE.firebaseUrl = LocalStore.get(FIREBASE_URL_KEY) || DEFAULT_FIREBASE_URL || "";
   renderApp();
-  if (STATE.cloudUrl && !needsLoginGate()) {
-    window.setTimeout(function () { pullFromCloud(false); }, 200);
-  }
   if (STATE.firebaseUrl && !needsLoginGate()) {
     window.setTimeout(function () { firebaseReadOnce(); firebaseStartListening(); }, 200);
   }
   window.setInterval(function () {
     if (document.visibilityState !== "visible") return;
-    if (!STATE.cloudUrl || needsLoginGate()) return;
+    if (!STATE.firebaseUrl || needsLoginGate()) return;
     var busy = STATE.formOpen || STATE.statusManagerOpen || STATE.confirmDeleteId !== null || STATE.importPending;
     var typing = document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].indexOf(document.activeElement.tagName) !== -1;
     if (busy || typing) return;
-    pullFromCloud(false);
+    firebaseReadOnce(false);
   }, 45000);
 }
 init();
