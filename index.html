@@ -136,6 +136,8 @@ var FIREBASE_URL_KEY = "emt-firebase-url";
 var EDIT_UNLOCKED_KEY = "emt-edit-unlocked";
 var EDITOR_GMAIL_KEY = "emt-editor-gmail";
 var DEFAULT_EDITOR_GMAIL = "nc.nichacha@gmail.com";
+var EDITOR_PASSWORD_KEY = "emt-editor-password";
+var DEFAULT_EDITOR_PASSWORD = "nicha888";
 var DEFAULT_FIREBASE_URL = "https://sales-nicha-default-rtdb.asia-southeast1.firebasedatabase.app";
 var LocalStore = {
   get: function (key) {
@@ -417,16 +419,19 @@ function manualSaveNow() {
 /* ============================== EDIT UNLOCK (simple Gmail text match, like Commission PIN) ============================== */
 function tryUnlockEdit() {
   if (STATE.editUnlocked) { return; }
-  var entered = window.prompt("ใส่ Gmail ที่ใช้แก้ไขข้อมูลได้:");
-  if (entered === null) return;
-  var expected = (LocalStore.get(EDITOR_GMAIL_KEY) || DEFAULT_EDITOR_GMAIL).trim().toLowerCase();
-  if (entered.trim().toLowerCase() === expected) {
+  var enteredGmail = window.prompt("ใส่ Gmail ที่ใช้แก้ไขข้อมูลได้:");
+  if (enteredGmail === null) return;
+  var enteredPass = window.prompt("ใส่รหัสผ่าน:");
+  if (enteredPass === null) return;
+  var expectedGmail = (LocalStore.get(EDITOR_GMAIL_KEY) || DEFAULT_EDITOR_GMAIL).trim().toLowerCase();
+  var expectedPass = LocalStore.get(EDITOR_PASSWORD_KEY) || DEFAULT_EDITOR_PASSWORD;
+  if (enteredGmail.trim().toLowerCase() === expectedGmail && enteredPass.trim() === expectedPass) {
     STATE.editUnlocked = true;
     LocalStore.set(EDIT_UNLOCKED_KEY, "1");
     showToast("ปลดล็อกแล้ว — แก้ไขข้อมูลได้ทันที");
     renderApp();
   } else {
-    showToast("Gmail ไม่ถูกต้อง");
+    showToast("Gmail หรือรหัสผ่านไม่ถูกต้อง");
   }
 }
 function lockEdit() {
@@ -436,13 +441,19 @@ function lockEdit() {
   renderApp();
 }
 function setEditorGmail() {
-  var current = LocalStore.get(EDITOR_GMAIL_KEY) || DEFAULT_EDITOR_GMAIL;
-  var next = window.prompt("ตั้งค่า Gmail ที่ใช้ปลดล็อกการแก้ไข:", current);
-  if (next === null) return;
-  next = next.trim();
-  if (!next) { showToast("ต้องใส่ Gmail"); return; }
-  LocalStore.set(EDITOR_GMAIL_KEY, next);
-  showToast("ตั้งค่า Gmail สำหรับแก้ไขแล้ว");
+  var currentGmail = LocalStore.get(EDITOR_GMAIL_KEY) || DEFAULT_EDITOR_GMAIL;
+  var nextGmail = window.prompt("ตั้งค่า Gmail ที่ใช้ปลดล็อกการแก้ไข:", currentGmail);
+  if (nextGmail === null) return;
+  nextGmail = nextGmail.trim();
+  if (!nextGmail) { showToast("ต้องใส่ Gmail"); return; }
+  var currentPass = LocalStore.get(EDITOR_PASSWORD_KEY) || DEFAULT_EDITOR_PASSWORD;
+  var nextPass = window.prompt("ตั้งค่ารหัสผ่านที่ใช้คู่กับ Gmail นี้:", currentPass);
+  if (nextPass === null) return;
+  nextPass = nextPass.trim();
+  if (!nextPass) { showToast("ต้องใส่รหัสผ่าน"); return; }
+  LocalStore.set(EDITOR_GMAIL_KEY, nextGmail);
+  LocalStore.set(EDITOR_PASSWORD_KEY, nextPass);
+  showToast("ตั้งค่า Gmail และรหัสผ่านสำหรับแก้ไขแล้ว");
 }
 function canEdit() {
   return STATE.editUnlocked;
@@ -1244,7 +1255,7 @@ function renderSidebarFooter() {
   } else {
     authBlock = '<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
       '<div style="font-size:10.5px;color:#B7C4D6;margin-bottom:7px">โหมดดูอย่างเดียว</div>' +
-      '<button class="btn-primary" style="width:100%;justify-content:center;font-size:12px;padding:8px;background:' + COLORS.gold + '" onclick="tryUnlockEdit()">' + icon("edit", 13) + ' ใส่ Gmail เพื่อแก้ไข</button></div>';
+      '<button class="btn-primary" style="width:100%;justify-content:center;font-size:12px;padding:8px;background:' + COLORS.gold + '" onclick="tryUnlockEdit()">' + icon("edit", 13) + ' ใส่ Gmail + รหัสผ่านเพื่อแก้ไข</button></div>';
   }
   var fbBlock;
   if (!STATE.firebaseUrl) {
@@ -1269,7 +1280,7 @@ function renderSidebarFooter() {
     (STATE.firebaseUrl && canEdit() ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
     (STATE.firebaseUrl ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="manualSyncNow()">' + icon("cloud", 12) + ' ดึงข้อมูลล่าสุดจากคลาวด์</button>' : '') +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeFirebaseUrl()">' + (STATE.firebaseUrl ? "เปลี่ยน/ปิด Firebase เรียลไทม์" : "เชื่อมต่อ Firebase (เรียลไทม์)…") + '</button>' +
-    '<button class="icon-btn" style="margin-top:2px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="setEditorGmail()">ตั้งค่า Gmail สำหรับแก้ไข</button>' +
+    '<button class="icon-btn" style="margin-top:2px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="setEditorGmail()">ตั้งค่า Gmail + รหัสผ่านสำหรับแก้ไข</button>' +
     '<button class="icon-btn" style="margin-top:10px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#fff;font-size:11px;border-radius:6px;padding:7px 8px;background:rgba(91,155,213,0.14)" onclick="exportBackup()">' +
     icon("download", 12) + ' ดาวน์โหลดข้อมูลสำรอง</button>' +
     (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="triggerImportFile()">' +
