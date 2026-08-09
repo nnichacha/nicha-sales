@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <title>Sales_Nicha — ระบบติดตามงานขาย EMT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -133,6 +134,8 @@ var COMMISSION_UNLOCK_KEY = "emt-commission-unlocked";
 var DAILY_REPORTS_KEY = "emt-daily-reports";
 var ACTIVITY_OPTIONS = ["แนะนำตัว", "ส่งของ", "ใบเสนอราคา", "ปิดการขาย", "ติดตามงาน", "อื่นๆ"];
 var FIREBASE_URL_KEY = "emt-firebase-url";
+var AUTH_KEY = "emt-auth-session";
+var GOOGLE_CLIENT_ID_KEY = "emt-google-client-id";
 var DEFAULT_FIREBASE_URL = "https://sales-nicha-default-rtdb.asia-southeast1.firebasedatabase.app";
 var LocalStore = {
   get: function (key) {
@@ -248,6 +251,9 @@ var STATE = {
   firebaseES: null,
   firebaseStatus: "idle",
   firebasePushTimer: null,
+  googleClientId: "",
+  auth: { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0 },
+  authError: null,
   projectsUI: { q: "", status: "", workType: "", sortKey: "sendQu", sortDir: "desc", page: 1 },
   customersUI: { q: "", sortKey: "won", sortDir: "desc" }
 };
@@ -411,12 +417,77 @@ function manualSaveNow() {
 }
 
 /* ============================== GOOGLE LOGIN ============================== */
-function needsLoginGate() {
-  return false; // login system removed
+function decodeJwt(token) {
+  try {
+    var base64Url = token.split(".")[1];
+    var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    var jsonStr = decodeURIComponent(
+      atob(base64).split("").map(function (c) { return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2); }).join("")
+    );
+    return JSON.parse(jsonStr);
+  } catch (e) { return null; }
+}
+
+function isTokenValid() {
+  return !!(STATE.auth && STATE.auth.signedIn && STATE.auth.idToken && STATE.auth.exp > Date.now());
+}
+
+function saveAuthSession() {
+  LocalStore.set(AUTH_KEY, JSON.stringify(STATE.auth));
+}
+
+function handleGoogleCredential(response) {
+  var claims = decodeJwt(response.credential);
+  if (!claims) { STATE.authError = "อ่านข้อมูลบัญชีไม่สำเร็จ"; renderApp(); return; }
+  STATE.auth = {
+    signedIn: true, email: claims.email, name: claims.name, picture: claims.picture,
+    idToken: response.credential, exp: claims.exp * 1000
+  };
+  STATE.authError = null;
+  saveAuthSession();
+  showToast("เข้าสู่ระบบแล้ว — แก้ไขข้อมูลได้ทันที");
+  renderApp();
+}
+
+function signOut() {
+  STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0 };
+  LocalStore.set(AUTH_KEY, "");
+  try { if (window.google && window.google.accounts) window.google.accounts.id.disableAutoSelect(); } catch (e) {}
+  showToast("ออกจากระบบแล้ว — ตอนนี้ดูข้อมูลได้อย่างเดียว");
+  renderApp();
+}
+
+function changeGoogleClientId() {
+  var next = window.prompt("วาง Google OAuth Client ID (เว้นว่างเพื่อปิดระบบ login และให้ทุกคนแก้ไขได้):", STATE.googleClientId || "");
+  if (next === null) return;
+  next = next.trim();
+  STATE.googleClientId = next;
+  LocalStore.set(GOOGLE_CLIENT_ID_KEY, next);
+  if (!next) { STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0 }; LocalStore.set(AUTH_KEY, ""); }
+  renderApp();
+  if (next) window.setTimeout(initGoogleSignInWidget, 100);
+}
+
+function initGoogleSignInWidget() {
+  if (!STATE.googleClientId) return;
+  var tries = 0;
+  function attempt() {
+    tries++;
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      try {
+        window.google.accounts.id.initialize({ client_id: STATE.googleClientId, callback: handleGoogleCredential });
+        var el = document.getElementById("google-signin-btn");
+        if (el) window.google.accounts.id.renderButton(el, { theme: "outline", size: "medium", width: 220, text: "signin_with" });
+      } catch (e) { /* ignore */ }
+      return;
+    }
+    if (tries < 50) window.setTimeout(attempt, 100);
+  }
+  attempt();
 }
 
 function canEdit() {
-  return true; // login system removed — anyone with the link can edit
+  return isTokenValid();
 }
 
 function tryOpenCommission() {
@@ -1207,6 +1278,20 @@ function renderApp() {
 function renderSidebarFooter() {
   var el = document.getElementById("sidebar-footer");
   if (!el) return;
+  var authBlock;
+  if (isTokenValid()) {
+    authBlock = '<div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
+      (STATE.auth.picture ? '<img src="' + attr(STATE.auth.picture) + '" style="width:26px;height:26px;border-radius:99px" referrerpolicy="no-referrer"/>' : '') +
+      '<div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(STATE.auth.name || STATE.auth.email) + '</div>' +
+      '<div style="font-size:9.5px;color:#7FD6A6">เข้าสู่ระบบแล้ว — แก้ไขได้</div>' +
+      '<button class="icon-btn" style="padding:0;font-size:10px;color:#8FA3BD" onclick="signOut()">ออกจากระบบ</button></div></div>';
+  } else if (STATE.googleClientId) {
+    authBlock = '<div style="padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
+      '<div style="font-size:10.5px;color:#B7C4D6;margin-bottom:7px">โหมดดูอย่างเดียว — เข้าสู่ระบบเพื่อแก้ไข</div>' +
+      '<div id="google-signin-btn"></div></div>';
+  } else {
+    authBlock = '<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:10.5px;color:#6E82A0">ยังไม่ได้ตั้งค่าระบบ Login — ทุกคนแก้ไขได้</div>';
+  }
   var fbBlock;
   if (!STATE.firebaseUrl) {
     fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6E82A0;margin-top:4px">' + icon("cloud", 12) + ' ยังไม่ได้เชื่อม Firebase (เรียลไทม์)</div>';
@@ -1223,13 +1308,14 @@ function renderSidebarFooter() {
   if (STATE.firebaseUrl && STATE.lastSyncedAt) {
     lastSyncLine = '<div style="font-size:10px;color:#6E82A0;margin-top:3px">อัปเดตล่าสุด: ' + fmtDateTime(STATE.lastSyncedAt) + '</div>';
   }
-  el.innerHTML =
+  el.innerHTML = authBlock +
     '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD">' +
     (STATE.saving ? icon("loader", 12) + " กำลังบันทึก…" : icon("check", 12, COLORS.green) + " บันทึกลงเครื่องนี้แล้ว") + '</div>' +
     fbBlock + lastSyncLine +
-    (STATE.firebaseUrl ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
+    (STATE.firebaseUrl && canEdit() ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
     (STATE.firebaseUrl ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="manualSyncNow()">' + icon("cloud", 12) + ' ดึงข้อมูลล่าสุดจากคลาวด์</button>' : '') +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeFirebaseUrl()">' + (STATE.firebaseUrl ? "เปลี่ยน/ปิด Firebase เรียลไทม์" : "เชื่อมต่อ Firebase (เรียลไทม์)…") + '</button>' +
+    '<button class="icon-btn" style="margin-top:2px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeGoogleClientId()">' + (STATE.googleClientId ? "ตั้งค่าระบบ Login" : "เปิดใช้ระบบ Login…") + '</button>' +
     '<button class="icon-btn" style="margin-top:10px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#fff;font-size:11px;border-radius:6px;padding:7px 8px;background:rgba(91,155,213,0.14)" onclick="exportBackup()">' +
     icon("download", 12) + ' ดาวน์โหลดข้อมูลสำรอง</button>' +
     (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="triggerImportFile()">' +
@@ -1238,6 +1324,7 @@ function renderSidebarFooter() {
     icon("reset", 12) + ' รีเซ็ตข้อมูลตัวอย่าง</button>' : '') +
     '<div style="margin-top:10px;font-size:9.5px;color:#6E82A0;line-height:1.4">' +
     (STATE.firebaseUrl ? 'ข้อมูลซิงก์ขึ้น Firebase แบบเรียลไทม์ + สำรองไว้ในเบราว์เซอร์นี้ด้วย' : 'ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (localStorage) — ไม่ซิงก์ข้ามเครื่อง') + '</div>';
+  if (STATE.googleClientId && !isTokenValid()) window.setTimeout(initGoogleSignInWidget, 50);
 }
 
 function renderCommissionLocked() {
@@ -2638,13 +2725,22 @@ function init() {
   loadAll();
   try { STATE.commissionUnlocked = window.sessionStorage.getItem(COMMISSION_UNLOCK_KEY) === "1"; } catch (e) {}
   STATE.firebaseUrl = LocalStore.get(FIREBASE_URL_KEY) || DEFAULT_FIREBASE_URL || "";
+  STATE.googleClientId = LocalStore.get(GOOGLE_CLIENT_ID_KEY) || "";
+  var savedAuth = LocalStore.get(AUTH_KEY);
+  if (savedAuth) {
+    try {
+      var a = JSON.parse(savedAuth);
+      if (a && a.exp && a.exp > Date.now()) STATE.auth = a;
+    } catch (e) { /* ignore */ }
+  }
   renderApp();
-  if (STATE.firebaseUrl && !needsLoginGate()) {
+  if (STATE.googleClientId) window.setTimeout(initGoogleSignInWidget, 200);
+  if (STATE.firebaseUrl) {
     window.setTimeout(function () { firebaseReadOnce(); firebaseStartListening(); }, 200);
   }
   window.setInterval(function () {
     if (document.visibilityState !== "visible") return;
-    if (!STATE.firebaseUrl || needsLoginGate()) return;
+    if (!STATE.firebaseUrl) return;
     var busy = STATE.formOpen || STATE.statusManagerOpen || STATE.confirmDeleteId !== null || STATE.importPending;
     var typing = document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].indexOf(document.activeElement.tagName) !== -1;
     if (busy || typing) return;
