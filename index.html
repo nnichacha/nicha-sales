@@ -137,6 +137,7 @@ var EDIT_UNLOCKED_KEY = "emt-edit-unlocked";
 var EDITOR_GMAIL_KEY = "emt-editor-gmail";
 var DEFAULT_EDITOR_GMAIL = "nc.nichacha@gmail.com";
 var EDITOR_PASSWORD_KEY = "emt-editor-password";
+var QUARTER_PAID_KEY = "emt-quarter-paid";
 var DEFAULT_EDITOR_PASSWORD = "nicha888";
 var DEFAULT_FIREBASE_URL = "https://sales-nicha-default-rtdb.asia-southeast1.firebasedatabase.app";
 var LocalStore = {
@@ -254,6 +255,7 @@ var STATE = {
   firebaseStatus: "idle",
   firebasePushTimer: null,
   editUnlocked: false,
+  quarterPaid: {},
   projectsUI: { q: "", status: "", workType: "", sortKey: "sendQu", sortDir: "desc", page: 1 },
   customersUI: { q: "", sortKey: "won", sortDir: "desc" }
 };
@@ -271,10 +273,24 @@ function loadAll() {
   var rawD = LocalStore.get(DAILY_REPORTS_KEY);
   if (rawD) { try { STATE.dailyReports = JSON.parse(rawD); } catch (e) { STATE.dailyReports = []; } }
   else { STATE.dailyReports = []; }
+
+  var rawQ = LocalStore.get(QUARTER_PAID_KEY);
+  if (rawQ) { try { STATE.quarterPaid = JSON.parse(rawQ); } catch (e) { STATE.quarterPaid = {}; } }
+  else { STATE.quarterPaid = { "Done Q1": true, "Done Q2": true, "Done Q3": false, "Done Q4": false }; LocalStore.set(QUARTER_PAID_KEY, JSON.stringify(STATE.quarterPaid)); }
 }
 function persistDailyReports() {
   LocalStore.set(DAILY_REPORTS_KEY, JSON.stringify(STATE.dailyReports));
   scheduleFirebasePush();
+}
+function persistQuarterPaid() {
+  LocalStore.set(QUARTER_PAID_KEY, JSON.stringify(STATE.quarterPaid));
+  scheduleFirebasePush();
+}
+function toggleQuarterPaid(qName) {
+  if (!canEdit()) { showToast("คุณมีสิทธิ์ดูข้อมูลอย่างเดียว ไม่สามารถแก้ไขได้"); return; }
+  STATE.quarterPaid[qName] = !STATE.quarterPaid[qName];
+  persistQuarterPaid();
+  renderMain();
 }
 function persistProjects() {
   STATE.saving = true;
@@ -322,7 +338,7 @@ function firebasePush() {
   STATE.firebaseStatus = "syncing";
   renderSidebarFooter();
   var payload = JSON.stringify({
-    projects: STATE.projects, statuses: STATE.statuses, dailyReports: STATE.dailyReports,
+    projects: STATE.projects, statuses: STATE.statuses, dailyReports: STATE.dailyReports, quarterPaid: STATE.quarterPaid,
     updatedAt: new Date().toISOString(), updatedBy: "local"
   });
   fetch(firebaseDataUrl(), { method: "PUT", headers: { "Content-Type": "application/json" }, body: payload })
@@ -337,10 +353,12 @@ function applyRemoteData(data) {
   if (Array.isArray(data.projects)) { STATE.projects = data.projects.map(normalizeCloudProject); changed = true; }
   if (Array.isArray(data.statuses) && data.statuses.length) { STATE.statuses = data.statuses; changed = true; }
   if (Array.isArray(data.dailyReports)) { STATE.dailyReports = data.dailyReports; changed = true; }
+  if (data.quarterPaid && typeof data.quarterPaid === "object") { STATE.quarterPaid = data.quarterPaid; changed = true; }
   if (!changed) return;
   LocalStore.set(STORAGE_KEY, JSON.stringify(STATE.projects));
   LocalStore.set(STATUS_KEY, JSON.stringify(STATE.statuses));
   LocalStore.set(DAILY_REPORTS_KEY, JSON.stringify(STATE.dailyReports));
+  LocalStore.set(QUARTER_PAID_KEY, JSON.stringify(STATE.quarterPaid));
   var busy = STATE.formOpen || STATE.statusManagerOpen || STATE.confirmDeleteId !== null || STATE.importPending;
   var typing = document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].indexOf(document.activeElement.tagName) !== -1;
   if (!busy && !typing) { renderApp(); showToast("อัปเดตข้อมูลแบบเรียลไทม์จากอุปกรณ์อื่น"); }
@@ -841,36 +859,32 @@ function computeDerived() {
     quoted: sortDesc(withThresholds, "totalQuoted").slice(0, 10)
   };
 
-  // commission: auto-detect "Done Q<n>" pattern statuses
+  // commission: fixed at exactly 4 quarters (Q1-Q4), each independently marked paid/unpaid
   var qRe = /^done\s*q\s*(\d+)$/i;
   var quarterStatuses = [];
   statuses.forEach(function (s) {
     var m = s.name.match(qRe);
-    if (m) quarterStatuses.push({ name: s.name, q: parseInt(m[1], 10) });
+    if (m && parseInt(m[1], 10) <= 4) quarterStatuses.push({ name: s.name, q: parseInt(m[1], 10) });
   });
   quarterStatuses.sort(function (a, b) { return a.q - b.q; });
-  var currentQ = quarterStatuses.length ? quarterStatuses[quarterStatuses.length - 1] : null;
-  var closedQuarters = currentQ ? quarterStatuses.filter(function (q) { return q.q !== currentQ.q; }) : [];
-  var closedGroups = closedQuarters.map(function (cq) {
+  var closedGroups = quarterStatuses.map(function (cq) {
     var rows = withCat.filter(function (p) { return p.status === cq.name; });
-    return { name: cq.name, jobs: rows.length, value: rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0) };
+    var paid = !!STATE.quarterPaid[cq.name];
+    return { name: cq.name, q: cq.q, jobs: rows.length, value: rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0), paid: paid };
   });
-  var commissionRows = closedQuarters.length
-    ? withCat.filter(function (p) { return closedQuarters.some(function (cq) { return cq.name === p.status; }); })
+  var commissionRows = quarterStatuses.length
+    ? withCat.filter(function (p) { return quarterStatuses.some(function (cq) { return cq.name === p.status; }); })
       .sort(function (a, b) { return (a.requestedDate || "").localeCompare(b.requestedDate || ""); })
     : [];
   var otherOpenStatuses = statuses.filter(function (s) {
-    if (currentQ && s.name === currentQ.name) return false;
-    if (closedQuarters.some(function (cq) { return cq.name === s.name; })) return false;
+    if (quarterStatuses.some(function (cq) { return cq.name === s.name; })) return false;
     return s.category === "Won" || s.category === "Pending";
   });
-  var currentContext = [];
-  if (currentQ) currentContext.push({ label: currentQ.name + " (เสร็จแล้ว รอคอมมิชชั่น)", rows: withCat.filter(function (p) { return p.status === currentQ.name; }) });
-  otherOpenStatuses.forEach(function (s) { currentContext.push({ label: s.name, rows: withCat.filter(function (p) { return p.status === s.name; }) }); });
+  var currentContext = otherOpenStatuses.map(function (s) { return { label: s.name, rows: withCat.filter(function (p) { return p.status === s.name; }) }; });
   var commissionLabel = "Commission";
-  var commissionSub = currentQ
-    ? "Q" + currentQ.q + " คือไตรมาสปัจจุบันที่กำลังดำเนินอยู่"
-    : 'เพิ่มสถานะรูปแบบ "Done Q4" ใน "จัดการสถานะ" เพื่อให้ระบบตรวจจับไตรมาสอัตโนมัติ';
+  var commissionSub = quarterStatuses.length
+    ? "คิดค่าคอมมิชชั่น 4 ไตรมาสต่อปี (Q1–Q4) — คลิกปุ่มเพื่อบันทึกว่าไตรมาสไหนจ่ายแล้ว"
+    : 'เพิ่มสถานะรูปแบบ "Done Q1".."Done Q4" ใน "จัดการสถานะ" เพื่อให้ระบบตรวจจับไตรมาสอัตโนมัติ';
   var commission = { closedGroups: closedGroups, rows: commissionRows, currentContext: currentContext, label: commissionLabel, sub: commissionSub, hasQuarters: quarterStatuses.length > 0 };
 
   var customerNames = Object.keys(custMap).sort();
@@ -1705,7 +1719,7 @@ function getFilteredSortedProjects(d) {
   if (ui.q.trim()) {
     var qq = ui.q.trim().toLowerCase();
     rows = rows.filter(function (p) {
-      return [p.customer, p.description, p.invoice, p.note, p.name].some(function (f) { return (f || "").toLowerCase().indexOf(qq) !== -1; });
+      return [p.customer, p.description, p.invoice, p.note, p.name, p.month].some(function (f) { return (f || "").toLowerCase().indexOf(qq) !== -1; });
     });
   }
   if (ui.status) rows = rows.filter(function (p) { return p.status === ui.status; });
@@ -2052,16 +2066,31 @@ function renderCommission(d) {
   var c = d.commission;
   if (!c.hasQuarters) {
     return sectionHeaderHtml("Commission", "งานที่จบและได้คอมมิชชั่นแล้ว", c.sub) +
-      '<div class="card"><div style="font-size:13px;color:' + COLORS.muted + '">ยังไม่พบสถานะรูปแบบ "Done Q1", "Done Q2" ฯลฯ ในระบบ — เพิ่มสถานะแบบนี้ได้จากเมนู <strong>“จัดการสถานะ”</strong> ในแถบด้านซ้าย แล้วหน้านี้จะตรวจจับไตรมาสและแยกงานที่ปิดแล้ว/กำลังดำเนินอยู่ให้อัตโนมัติ</div></div>';
+      '<div class="card"><div style="font-size:13px;color:' + COLORS.muted + '">ยังไม่พบสถานะรูปแบบ "Done Q1", "Done Q2" ฯลฯ ในระบบ — เพิ่มสถานะแบบนี้ได้จากเมนู <strong>“จัดการสถานะ”</strong> ในแถบด้านซ้าย แล้วหน้านี้จะตรวจจับไตรมาสให้อัตโนมัติ (สูงสุด 4 ไตรมาสต่อปี)</div></div>';
   }
   var totalValue = c.closedGroups.reduce(function (s, g) { return s + g.value; }, 0);
-  var kpiCols = c.closedGroups.length * 2 + 1;
-  var kpiHtml = '<div style="display:grid;grid-template-columns:repeat(' + kpiCols + ',1fr);gap:12px;margin-bottom:18px">';
-  c.closedGroups.forEach(function (g, i) {
-    var tone = i % 2 === 0 ? "green" : "blue";
-    kpiHtml += kpiCardHtml(g.name + " — Jobs", g.jobs, "", tone) + kpiCardHtml(g.name + " — Value", fmtTHB(g.value), "", tone);
-  });
-  kpiHtml += kpiCardHtml("รวมทั้งหมด", fmtTHB(totalValue), "", "navy", "wallet") + '</div>';
+  var totalPaid = c.closedGroups.filter(function (g) { return g.paid; }).reduce(function (s, g) { return s + g.value; }, 0);
+  var totalUnpaid = totalValue - totalPaid;
+
+  var quarterCards = '<div style="display:grid;grid-template-columns:repeat(' + c.closedGroups.length + ',1fr);gap:14px;margin-bottom:16px">' +
+    c.closedGroups.map(function (g) {
+      var paidColor = g.paid ? COLORS.green : COLORS.amber;
+      return '<div class="card" style="border-top-color:' + paidColor + '">' +
+        '<div style="font-size:11px;color:' + COLORS.muted + ';text-transform:uppercase;letter-spacing:0.5px;font-weight:700">' + esc(g.name) + '</div>' +
+        '<div class="disp" style="font-size:21px;margin-top:5px;color:' + COLORS.ink + '">' + fmtTHB(g.value) + '</div>' +
+        '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:1px">' + g.jobs + ' งาน</div>' +
+        (canEdit()
+          ? '<button onclick="toggleQuarterPaid(\'' + g.name + '\')" style="margin-top:10px;width:100%;padding:8px;border-radius:8px;border:none;font-weight:700;font-size:12px;cursor:pointer;background:' + paidColor + ';color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">' +
+            icon(g.paid ? "check" : "alert", 13) + (g.paid ? "ชำระแล้ว" : "ยังไม่ชำระ") + '</button>'
+          : '<div style="margin-top:10px;width:100%;padding:8px;border-radius:8px;text-align:center;font-weight:700;font-size:12px;background:' + paidColor + '1E;color:' + paidColor + '">' + (g.paid ? "ชำระแล้ว" : "ยังไม่ชำระ") + '</div>') +
+        '</div>';
+    }).join("") + '</div>';
+
+  var summaryStrip = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">' +
+    kpiCardHtml("รวมทั้งหมด (4 ไตรมาส)", fmtTHB(totalValue), c.closedGroups.reduce(function (s, g) { return s + g.jobs; }, 0) + " งาน", "navy", "wallet") +
+    kpiCardHtml("ชำระแล้ว", fmtTHB(totalPaid), "", "green", "check") +
+    kpiCardHtml("ยังไม่ชำระ", fmtTHB(totalUnpaid), "", "amber", "alert") +
+    '</div>';
 
   var ctxCols = Math.max(1, c.currentContext.length);
   var ctxItems = c.currentContext.map(function (ctx) {
@@ -2069,10 +2098,10 @@ function renderCommission(d) {
     return '<div><div style="font-size:11px;color:#8A6212">' + esc(ctx.label) + '</div>' +
       '<div class="disp" style="font-size:18px;color:#7A5610">' + ctx.rows.length + ' <span style="font-size:11px;font-weight:400">งาน</span></div>' +
       '<div class="mono" style="font-size:11px;color:#8A6212">' + fmtTHB(val) + ' THB</div></div>';
-  }).join("") || '<div style="font-size:12px;color:#8A6212">ไม่มีสถานะที่ยังเปิดอยู่</div>';
+  }).join("") || '<div style="font-size:12px;color:#8A6212">ไม่มีสถานะที่ยังเปิดอยู่นอกเหนือจาก 4 ไตรมาส</div>';
   var ctxBox = '<div class="card" style="margin-bottom:18px;background:' + COLORS.amberBg + ';border:1px solid #EBD7A6">' +
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' + icon("alert", 15, COLORS.amber) +
-    '<span class="disp" style="font-size:13.5px;color:#7A5610">ไตรมาสปัจจุบัน — กำลังดำเนินอยู่ (ยังไม่ได้คอมมิชชั่น)</span></div>' +
+    '<span class="disp" style="font-size:13.5px;color:#7A5610">สถานะอื่นที่ยังไม่นับเข้าไตรมาส</span></div>' +
     '<div style="display:grid;grid-template-columns:repeat(' + ctxCols + ',1fr);gap:12px">' + ctxItems + '</div></div>';
 
   var rowsHtml = c.rows.map(function (p, i) {
@@ -2097,7 +2126,7 @@ function renderCommission(d) {
   return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
     sectionHeaderHtml("Commission", "งานที่จบและได้คอมมิชชั่นแล้ว", c.sub) +
     '<button class="btn-secondary" style="flex-shrink:0;display:flex;align-items:center;gap:6px" onclick="lockCommission()">' + icon("x", 14) + ' ล็อกหน้านี้</button>' +
-    '</div>' + kpiHtml + ctxBox + table;
+    '</div>' + quarterCards + summaryStrip + ctxBox + table;
 }
 
 /* ============================== DAILY REPORT VIEW ============================== */
