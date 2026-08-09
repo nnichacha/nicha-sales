@@ -478,6 +478,7 @@ function canEdit() {
 }
 
 function tryOpenCommission() {
+  if (!canEdit()) { showToast("ต้อง Login ก่อนถึงจะเข้าดูหน้าคอมมิชชั่นได้"); return; }
   if (STATE.commissionUnlocked) { setTab("commission"); return; }
   var entered = window.prompt("กรุณาใส่รหัสผ่านเพื่อดูข้อมูลคอมมิชชั่น:");
   if (entered === null) return;
@@ -1313,11 +1314,14 @@ function renderSidebarFooter() {
 }
 
 function renderCommissionLocked() {
+  var needsLogin = !canEdit();
   return '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center">' +
     '<div style="width:52px;height:52px;border-radius:99px;background:' + COLORS.amberBg + ';display:flex;align-items:center;justify-content:center;margin-bottom:16px">' + icon("wallet", 22, COLORS.amber) + '</div>' +
-    '<div class="disp" style="font-size:16px;color:' + COLORS.ink + ';margin-bottom:6px">หน้านี้ต้องใส่รหัสผ่าน</div>' +
-    '<div style="font-size:12.5px;color:' + COLORS.muted + ';margin-bottom:18px">ข้อมูลคอมมิชชั่นถูกล็อกไว้เพื่อความเป็นส่วนตัว</div>' +
-    '<button class="btn-primary" onclick="tryOpenCommission()">' + icon("check", 15) + ' ใส่รหัสผ่าน</button></div>';
+    '<div class="disp" style="font-size:16px;color:' + COLORS.ink + ';margin-bottom:6px">' + (needsLogin ? "หน้านี้ต้อง Login ก่อน" : "หน้านี้ต้องใส่รหัสผ่าน") + '</div>' +
+    '<div style="font-size:12.5px;color:' + COLORS.muted + ';margin-bottom:18px">' + (needsLogin ? "ข้อมูลคอมมิชชั่นดูได้เฉพาะคนที่ล็อกอินแล้วเท่านั้น" : "ข้อมูลคอมมิชชั่นถูกล็อกไว้เพื่อความเป็นส่วนตัว") + '</div>' +
+    (needsLogin
+      ? '<div style="font-size:11.5px;color:' + COLORS.muted + '">กด "Login เพื่อแก้ไข" ที่แถบเมนูซ้ายก่อน</div>'
+      : '<button class="btn-primary" onclick="tryOpenCommission()">' + icon("check", 15) + ' ใส่รหัสผ่าน</button>') + '</div>';
 }
 
 function renderMain(derived) {
@@ -1330,7 +1334,7 @@ function renderMain(derived) {
   else if (STATE.tab === "customers") html = renderCustomersShell(derived);
   else if (STATE.tab === "status") html = renderStatusView(derived);
   else if (STATE.tab === "top10") html = renderTop10(derived);
-  else if (STATE.tab === "commission") html = STATE.commissionUnlocked ? renderCommission(derived) : renderCommissionLocked();
+  else if (STATE.tab === "commission") html = (STATE.commissionUnlocked && canEdit()) ? renderCommission(derived) : renderCommissionLocked();
   else if (STATE.tab === "dailyreport") html = renderDailyReportShell(derived);
   el.innerHTML = html;
   if (STATE.tab === "projects") refreshProjectsTable(derived);
