@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <title>Sales_Nicha — ระบบติดตามงานขาย EMT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -129,9 +128,6 @@
 var STORAGE_KEY = "emt-projects-v1";
 var STATUS_KEY = "emt-statuses-v1";
 var BACKUP_COUNT_KEY = "emt-edits-since-backup";
-var GOOGLE_CLIENT_ID_KEY = "emt-google-client-id";
-var AUTH_KEY = "emt-auth-session";
-var EDITOR_EMAILS_KEY = "emt-editor-emails";
 var COMMISSION_PIN = "888999";
 var COMMISSION_UNLOCK_KEY = "emt-commission-unlocked";
 var DAILY_REPORTS_KEY = "emt-daily-reports";
@@ -229,10 +225,6 @@ var STATE = {
   statusManagerOpen: false,
   importPending: null,
   lastSyncedAt: null,
-  googleClientId: "",
-  gisReady: false,
-  auth: { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null },
-  authError: null,
   commissionUnlocked: false,
   dailyReports: null,
   dailyReportModalDate: null,
@@ -325,7 +317,7 @@ function firebasePush() {
   renderSidebarFooter();
   var payload = JSON.stringify({
     projects: STATE.projects, statuses: STATE.statuses, dailyReports: STATE.dailyReports,
-    updatedAt: new Date().toISOString(), updatedBy: (STATE.auth && STATE.auth.email) || "local"
+    updatedAt: new Date().toISOString(), updatedBy: "local"
   });
   fetch(firebaseDataUrl(), { method: "PUT", headers: { "Content-Type": "application/json" }, body: payload })
     .then(function (res) { return res.json(); })
@@ -419,28 +411,12 @@ function manualSaveNow() {
 }
 
 /* ============================== GOOGLE LOGIN ============================== */
-function decodeJwt(token) {
-  try {
-    var base64Url = token.split(".")[1];
-    var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    var jsonStr = decodeURIComponent(
-      atob(base64).split("").map(function (c) { return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2); }).join("")
-    );
-    return JSON.parse(jsonStr);
-  } catch (e) { return null; }
-}
-
-function isTokenValid() {
-  return !!(STATE.auth && STATE.auth.signedIn && STATE.auth.idToken && STATE.auth.exp > Date.now());
-}
-
 function needsLoginGate() {
-  return !!STATE.googleClientId && !isTokenValid();
+  return false; // login system removed
 }
 
 function canEdit() {
-  if (!STATE.googleClientId) return true; // no login configured = single-user local mode
-  return STATE.auth.role === "editor";
+  return true; // login system removed — anyone with the link can edit
 }
 
 function tryOpenCommission() {
@@ -460,77 +436,6 @@ function lockCommission() {
   try { window.sessionStorage.removeItem(COMMISSION_UNLOCK_KEY); } catch (e) {}
   setTab("dashboard");
   showToast("ล็อกหน้าคอมมิชชั่นแล้ว");
-}
-
-function saveAuthSession() {
-  LocalStore.set(AUTH_KEY, JSON.stringify(STATE.auth));
-}
-
-function computeRoleForEmail(email) {
-  var list = (LocalStore.get(EDITOR_EMAILS_KEY) || "").toLowerCase();
-  var emails = list.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
-  return emails.indexOf((email || "").toLowerCase()) !== -1 ? "editor" : "viewer";
-}
-
-function handleGoogleCredential(response) {
-  var claims = decodeJwt(response.credential);
-  if (!claims) { STATE.authError = "อ่านข้อมูลบัญชีไม่สำเร็จ"; renderApp(); return; }
-  STATE.auth = {
-    signedIn: true, email: claims.email, name: claims.name, picture: claims.picture,
-    idToken: response.credential, exp: claims.exp * 1000, role: computeRoleForEmail(claims.email)
-  };
-  STATE.authError = null;
-  saveAuthSession();
-  renderApp();
-  if (STATE.firebaseUrl) firebaseReadOnce();
-}
-
-function signOut() {
-  STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null };
-  LocalStore.set(AUTH_KEY, "");
-  try { if (window.google && window.google.accounts) window.google.accounts.id.disableAutoSelect(); } catch (e) {}
-  renderApp();
-}
-
-function changeGoogleClientId() {
-  var next = window.prompt("วาง Google OAuth Client ID (เว้นว่างเพื่อปิดระบบ login):", STATE.googleClientId || "");
-  if (next === null) return;
-  next = next.trim();
-  STATE.googleClientId = next;
-  LocalStore.set(GOOGLE_CLIENT_ID_KEY, next);
-  if (!next) { STATE.auth = { signedIn: false, email: null, name: null, picture: null, idToken: null, exp: 0, role: null }; LocalStore.set(AUTH_KEY, ""); }
-  renderApp();
-}
-
-function setEditorEmails() {
-  var current = LocalStore.get(EDITOR_EMAILS_KEY) || "";
-  var next = window.prompt("ใส่ Gmail ของคนที่แก้ไขข้อมูลได้ (คั่นด้วย , ถ้ามีหลายคน) คนอื่นที่ล็อกอินจะเห็นแบบดูอย่างเดียว:", current);
-  if (next === null) return;
-  next = next.trim();
-  LocalStore.set(EDITOR_EMAILS_KEY, next);
-  if (STATE.auth && STATE.auth.signedIn) {
-    STATE.auth.role = computeRoleForEmail(STATE.auth.email);
-    saveAuthSession();
-  }
-  showToast("ตั้งค่ารายชื่อ Editor แล้ว");
-  renderApp();
-}
-
-function initGoogleSignInWidget() {
-  var tries = 0;
-  function attempt() {
-    tries++;
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      try {
-        window.google.accounts.id.initialize({ client_id: STATE.googleClientId, callback: handleGoogleCredential });
-        var el = document.getElementById("google-signin-btn");
-        if (el) window.google.accounts.id.renderButton(el, { theme: "outline", size: "large", width: 280, text: "signin_with" });
-      } catch (e) { /* ignore, will show manual message */ }
-      return;
-    }
-    if (tries < 50) window.setTimeout(attempt, 100);
-  }
-  attempt();
 }
 
 /* ============================== MUTATIONS ============================== */
@@ -1265,10 +1170,6 @@ function renderApp() {
       icon("loader", 28, COLORS.sky, "") + '<div style="margin-top:12px;letter-spacing:1px" class="disp">กำลังโหลดข้อมูล…</div></div>';
     return;
   }
-  if (needsLoginGate()) {
-    renderLoginScreen();
-    return;
-  }
   var derived = computeDerived();
   var navHtml = NAV_ITEMS.map(function (n) {
     var active = STATE.tab === n.key;
@@ -1306,14 +1207,6 @@ function renderApp() {
 function renderSidebarFooter() {
   var el = document.getElementById("sidebar-footer");
   if (!el) return;
-  var userBlock = "";
-  if (STATE.googleClientId && STATE.auth && STATE.auth.signedIn) {
-    userBlock = '<div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
-      (STATE.auth.picture ? '<img src="' + attr(STATE.auth.picture) + '" style="width:26px;height:26px;border-radius:99px" referrerpolicy="no-referrer"/>' : '') +
-      '<div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(STATE.auth.name || STATE.auth.email) + '</div>' +
-      '<div style="font-size:9.5px;color:' + (STATE.auth.role === "editor" ? "#7FD6A6" : "#B7C4D6") + '">' + (STATE.auth.role === "editor" ? "แก้ไขได้" : "ดูอย่างเดียว") + '</div>' +
-      '<button class="icon-btn" style="padding:0;font-size:10px;color:#8FA3BD" onclick="signOut()">ออกจากระบบ</button></div></div>';
-  }
   var fbBlock;
   if (!STATE.firebaseUrl) {
     fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6E82A0;margin-top:4px">' + icon("cloud", 12) + ' ยังไม่ได้เชื่อม Firebase (เรียลไทม์)</div>';
@@ -1330,15 +1223,13 @@ function renderSidebarFooter() {
   if (STATE.firebaseUrl && STATE.lastSyncedAt) {
     lastSyncLine = '<div style="font-size:10px;color:#6E82A0;margin-top:3px">อัปเดตล่าสุด: ' + fmtDateTime(STATE.lastSyncedAt) + '</div>';
   }
-  el.innerHTML = userBlock +
+  el.innerHTML =
     '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD">' +
     (STATE.saving ? icon("loader", 12) + " กำลังบันทึก…" : icon("check", 12, COLORS.green) + " บันทึกลงเครื่องนี้แล้ว") + '</div>' +
     fbBlock + lastSyncLine +
-    (STATE.firebaseUrl && canEdit() ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
+    (STATE.firebaseUrl ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#fff;font-size:11.5px;font-weight:600;border-radius:6px;padding:8px 8px;background:' + COLORS.blue + '" onclick="manualSaveNow()">' + icon("cloud", 13) + ' บันทึกขึ้นคลาวด์ตอนนี้</button>' : '') +
     (STATE.firebaseUrl ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="manualSyncNow()">' + icon("cloud", 12) + ' ดึงข้อมูลล่าสุดจากคลาวด์</button>' : '') +
     '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeFirebaseUrl()">' + (STATE.firebaseUrl ? "เปลี่ยน/ปิด Firebase เรียลไทม์" : "เชื่อมต่อ Firebase (เรียลไทม์)…") + '</button>' +
-    '<button class="icon-btn" style="margin-top:6px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="changeGoogleClientId()">' + (STATE.googleClientId ? "ตั้งค่าระบบ Login" : "เปิดใช้ระบบ Login…") + '</button>' +
-    (STATE.googleClientId ? '<button class="icon-btn" style="margin-top:2px;width:100%;text-align:left;color:#6E82A0;font-size:10px;padding:4px 8px" onclick="setEditorEmails()">ตั้งค่าอีเมล Editor</button>' : '') +
     '<button class="icon-btn" style="margin-top:10px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#fff;font-size:11px;border-radius:6px;padding:7px 8px;background:rgba(91,155,213,0.14)" onclick="exportBackup()">' +
     icon("download", 12) + ' ดาวน์โหลดข้อมูลสำรอง</button>' +
     (canEdit() ? '<button class="icon-btn" style="margin-top:6px;width:100%;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.16);color:#B7C4D6;font-size:11px;border-radius:6px;padding:7px 8px" onclick="triggerImportFile()">' +
@@ -1347,27 +1238,6 @@ function renderSidebarFooter() {
     icon("reset", 12) + ' รีเซ็ตข้อมูลตัวอย่าง</button>' : '') +
     '<div style="margin-top:10px;font-size:9.5px;color:#6E82A0;line-height:1.4">' +
     (STATE.firebaseUrl ? 'ข้อมูลซิงก์ขึ้น Firebase แบบเรียลไทม์ + สำรองไว้ในเบราว์เซอร์นี้ด้วย' : 'ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (localStorage) — ไม่ซิงก์ข้ามเครื่อง') + '</div>';
-}
-
-function renderLoginScreen() {
-  var app = document.getElementById("app");
-  var errBox = STATE.authError ? '<div style="background:' + COLORS.redBg + ';color:' + COLORS.red + ';font-size:12.5px;padding:10px 14px;border-radius:8px;margin-top:16px;max-width:320px;text-align:center">' + esc(STATE.authError) + '</div>' : '';
-  app.innerHTML =
-    '<div class="blueprint-grid" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:' + COLORS.ink + ';color:#fff;padding:20px">' +
-    '<img src="' + LOGO_DATA_URI + '" alt="EMT Machinery Service" style="height:64px;width:auto;border-radius:10px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.4)"/>' +
-    '<div class="disp" style="font-size:20px;margin-bottom:4px">Sales_Nicha</div>' +
-    '<div style="font-size:12.5px;color:#8FA3BD;margin-bottom:26px">กรุณาเข้าสู่ระบบด้วยบัญชี Google ที่ได้รับอนุญาต</div>' +
-    '<div id="google-signin-btn"></div>' +
-    '<div id="google-signin-fallback" style="display:none;font-size:11.5px;color:#8FA3BD;margin-top:14px">โหลดปุ่มเข้าสู่ระบบไม่สำเร็จ — ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต แล้วรีเฟรชหน้านี้</div>' +
-    errBox +
-    '<button class="icon-btn" style="margin-top:28px;font-size:10.5px;color:#6E82A0" onclick="changeGoogleClientId()">ตั้งค่า Google Client ID</button>' +
-    '</div>';
-  initGoogleSignInWidget();
-  window.setTimeout(function () {
-    var btn = document.getElementById("google-signin-btn");
-    var fb = document.getElementById("google-signin-fallback");
-    if (btn && fb && btn.children.length === 0) fb.style.display = "block";
-  }, 5500);
 }
 
 function renderCommissionLocked() {
@@ -2766,14 +2636,6 @@ function renderResetConfirmModal() {
 
 function init() {
   loadAll();
-  STATE.googleClientId = LocalStore.get(GOOGLE_CLIENT_ID_KEY) || "";
-  var savedAuth = LocalStore.get(AUTH_KEY);
-  if (savedAuth) {
-    try {
-      var a = JSON.parse(savedAuth);
-      if (a && a.exp && a.exp > Date.now()) STATE.auth = a;
-    } catch (e) { /* ignore */ }
-  }
   try { STATE.commissionUnlocked = window.sessionStorage.getItem(COMMISSION_UNLOCK_KEY) === "1"; } catch (e) {}
   STATE.firebaseUrl = LocalStore.get(FIREBASE_URL_KEY) || DEFAULT_FIREBASE_URL || "";
   renderApp();
