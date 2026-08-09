@@ -695,11 +695,18 @@ function submitBulkAdd() {
   if (valid.length === 0) { showToast("ไม่พบข้อมูลที่ถูกต้องให้เพิ่ม"); return; }
   var knownStatusNames = STATE.statuses.map(function (s) { return s.name; });
   var nextId = STATE.projects.length ? Math.max.apply(null, STATE.projects.map(function (p) { return p.id; })) + 1 : 1;
+  function lookupCustomerDefaults(customerName) {
+    var matches = STATE.projects.filter(function (p) { return (p.customer || "").trim().toLowerCase() === customerName.trim().toLowerCase(); });
+    if (matches.length === 0) return { segment: "", type: "", workType: "" };
+    matches.sort(function (a, b) { return b.id - a.id; });
+    return { segment: matches[0].segment || "", type: matches[0].type || "", workType: matches[0].workType || "" };
+  }
   var newRecords = valid.map(function (r, i) {
+    var defaults = lookupCustomerDefaults(r.customer);
     return {
       id: nextId + i,
-      customer: r.customer, segment: "", type: "", name: "", phone: "",
-      description: r.description, workType: "", requestedDate: r.requestedDate, deadline: "", sendQu: "",
+      customer: r.customer, segment: defaults.segment, type: defaults.type, name: "", phone: "",
+      description: r.description, workType: defaults.workType, requestedDate: r.requestedDate, deadline: "", sendQu: "",
       note: r.note, invoice: r.invoice,
       status: knownStatusNames.indexOf(r.status) !== -1 ? r.status : (r.status || (STATE.statuses[0] || {}).name || ""),
       sale: r.sale, month: ""
@@ -1255,7 +1262,7 @@ function renderSidebarFooter() {
   } else {
     authBlock = '<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
       '<div style="font-size:10.5px;color:#B7C4D6;margin-bottom:7px">โหมดดูอย่างเดียว</div>' +
-      '<button class="btn-primary" style="width:100%;justify-content:center;font-size:12px;padding:8px;background:' + COLORS.gold + '" onclick="tryUnlockEdit()">' + icon("edit", 13) + ' login</button></div>';
+      '<button class="btn-primary" style="width:100%;justify-content:center;font-size:12px;padding:8px;background:' + COLORS.gold + '" onclick="tryUnlockEdit()">' + icon("edit", 13) + ' Login เพื่อแก้ไข</button></div>';
   }
   var fbBlock;
   if (!STATE.firebaseUrl) {
@@ -1509,12 +1516,10 @@ function refreshKpiDetail() {
 
 var TH_MONTH_LABELS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 function monthKeyFromProject(p) {
-  var raw = p.sendQu || p.requestedDate;
-  if (!raw) return null;
-  var m = String(raw).match(/^(\d{4})-(\d{2})-\d{2}/);
-  if (!m) return null;
-  var yy = m[1], mm = parseInt(m[2], 10);
-  return { key: yy + "-" + m[2], label: TH_MONTH_LABELS[mm - 1] + " " + (parseInt(yy, 10) + 543).toString().slice(-2) };
+  if (p.month && MONTHS.indexOf(p.month) !== -1) {
+    return { key: p.month, label: p.month, sortIdx: MONTHS.indexOf(p.month) };
+  }
+  return null;
 }
 
 function computeSummaryBreakdown(dimension) {
@@ -1525,7 +1530,7 @@ function computeSummaryBreakdown(dimension) {
     var key, label;
     if (dimension === "month") {
       var mk = monthKeyFromProject(p);
-      if (!mk) { key = "ไม่ระบุ"; label = "ไม่ระบุวันที่"; } else { key = mk.key; label = mk.label; }
+      if (!mk) { key = "ไม่ระบุ"; label = "ไม่ระบุเดือน"; } else { key = mk.key; label = mk.label; }
     } else if (dimension === "customer") {
       key = p.customer || "(ไม่ระบุ)"; label = key;
     } else { // workType
@@ -1538,7 +1543,11 @@ function computeSummaryBreakdown(dimension) {
   });
   var arr = order.map(function (k) { return map[k]; });
   if (dimension === "month") {
-    arr.sort(function (a, b) { return a.key === "ไม่ระบุ" ? 1 : b.key === "ไม่ระบุ" ? -1 : a.key.localeCompare(b.key); });
+    arr.sort(function (a, b) {
+      if (a.key === "ไม่ระบุ") return 1;
+      if (b.key === "ไม่ระบุ") return -1;
+      return MONTHS.indexOf(a.key) - MONTHS.indexOf(b.key);
+    });
   } else {
     arr.sort(function (a, b) { return STATE.summarySortDir === "asc" ? a[STATE.summarySortKey] - b[STATE.summarySortKey] : b[STATE.summarySortKey] - a[STATE.summarySortKey]; });
   }
@@ -1736,7 +1745,7 @@ function refreshProjectsTable(d) {
   if (!wrap) return;
   var ui = STATE.projectsUI;
   var filtered = getFilteredSortedProjects(d);
-  var pageSize = 14;
+  var pageSize = 100;
   var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   if (ui.page > totalPages) ui.page = totalPages;
   var pageRows = filtered.slice((ui.page - 1) * pageSize, ui.page * pageSize);
@@ -1759,7 +1768,7 @@ function refreshProjectsTable(d) {
     var bg = isDirty ? "#FFF7E0" : (i % 2 ? COLORS.canvas : "#fff");
     var ev = function (field) { return effVal(p, field); };
     var statusChipColor = d.statusColorMap[ev("status")] || COLORS.muted;
-    var noteCell, customerCell, saleCell, statusCell, sendQuCell, workTypeCell, segTypeCell, actionsCell;
+    var noteCell, customerCell, saleCell, statusCell, sendQuCell, workTypeCell, segTypeCell, monthCell, actionsCell;
 
     if (editable) {
       var segOpts = SEGMENTS.map(function (s) { return '<option value="' + attr(s) + '"' + (ev("segment") === s ? " selected" : "") + '>' + esc(s) + '</option>'; }).join("");
@@ -1774,6 +1783,8 @@ function refreshProjectsTable(d) {
       workTypeCell = '<select class="cell-input" style="background:' + (ev("workType") === "M" ? "#E5EEFB" : "#FBF1DF") + ';color:' + (ev("workType") === "M" ? COLORS.blue : "#8A5A00") + ';font-weight:600;font-size:11.5px;border-radius:999px" onchange="stageEdit(' + p.id + ",'workType',this.value)\">" + wtOpts + '</select>';
       segTypeCell = '<select class="cell-input" style="font-size:12px;margin-bottom:2px" onchange="stageEdit(' + p.id + ",'segment',this.value)\">" + segOpts + '</select>' +
         '<select class="cell-input" style="font-size:11px;color:' + COLORS.muted + '" onchange="stageEdit(' + p.id + ",'type',this.value)\">" + typeOpts + '</select>';
+      var monthOptsCell = '<option value=""' + (!ev("month") ? " selected" : "") + '>-</option>' + MONTHS.map(function (m) { return '<option value="' + m + '"' + (ev("month") === m ? " selected" : "") + '>' + m + '</option>'; }).join("");
+      monthCell = '<select class="cell-input" style="font-size:11.5px" onchange="stageEdit(' + p.id + ",'month',this.value)\">" + monthOptsCell + '</select>';
       actionsCell = isDirty
         ? '<div style="display:flex;gap:4px">' +
           '<button class="icon-btn" title="บันทึก" style="color:' + COLORS.green + '" onclick="saveRowEdit(' + p.id + ')">' + icon("check", 15) + '</button>' +
@@ -1791,6 +1802,7 @@ function refreshProjectsTable(d) {
       sendQuCell = '<span style="font-size:11.5px;color:' + COLORS.muted + '">' + fmtDate(p.sendQu) + '</span>';
       workTypeCell = workTypeBadgeHtml(p.workType);
       segTypeCell = '<div style="font-size:12px">' + esc(p.segment) + '</div><div style="font-size:11px;color:' + COLORS.muted + '">' + esc(p.type) + '</div>';
+      monthCell = '<span style="font-size:11.5px;color:' + COLORS.muted + '">' + esc(p.month || "-") + '</span>';
       actionsCell = "";
     }
 
@@ -1803,11 +1815,12 @@ function refreshProjectsTable(d) {
       '<td class="td-cell">' + sendQuCell + '</td>' +
       '<td class="td-cell">' + workTypeCell + '</td>' +
       '<td class="td-cell">' + segTypeCell + '</td>' +
+      '<td class="td-cell">' + monthCell + '</td>' +
       '<td class="td-cell">' + actionsCell + '</td></tr>';
   }).join("");
 
   if (pageRows.length === 0) {
-    rowsHtml = '<tr><td class="td-cell" colspan="9" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>';
+    rowsHtml = '<tr><td class="td-cell" colspan="10" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>';
   }
 
   var pendingCount = Object.keys(STATE.pendingEdits).length;
@@ -1820,10 +1833,20 @@ function refreshProjectsTable(d) {
       '</div></div>'
     : "";
 
-  wrap.innerHTML = '<div class="card" style="padding:0;overflow:hidden">' + pendingBanner + '<div style="overflow-x:auto"><table><thead><tr>' +
+  var filteredCount = filtered.length;
+  var filteredValue = filtered.reduce(function (s, p) { return s + (p.sale || 0); }, 0);
+  var filterSummary = (ui.status || ui.workType || ui.q.trim())
+    ? '<div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:' + COLORS.canvas + ';border-bottom:1px solid ' + COLORS.line + ';font-size:12px">' +
+      icon("search", 13, COLORS.blue) +
+      '<span style="color:' + COLORS.text + '">ผลการค้นหา/กรอง: <strong>' + filteredCount + ' รายการ</strong></span>' +
+      '<span class="mono" style="color:' + COLORS.blue + ';font-weight:700">' + fmtTHB(filteredValue) + ' บาท</span>' +
+      '</div>'
+    : "";
+
+  wrap.innerHTML = '<div class="card" style="padding:0;overflow:hidden">' + pendingBanner + filterSummary + '<div style="overflow-x:auto"><table><thead><tr>' +
     th("เลขใบเสนอราคา", "note", 110) + th("ชื่อบริษัท", "customer", 130) + th("รายละเอียดงาน", "description") +
     th("ราคา (THB)", "sale", 100) + th("Status", "status", 140) + th("วันที่ส่งใบเสนอราคา", "sendQu", 120) +
-    '<th class="th-cell">ประเภทงาน</th><th class="th-cell">Segment / Type</th>' +
+    '<th class="th-cell">ประเภทงาน</th><th class="th-cell">Segment / Type</th><th class="th-cell">เดือน</th>' +
     '<th class="th-cell" style="width:76px"></th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>' +
     '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid ' + COLORS.line + '">' +
     '<span style="font-size:12px;color:' + COLORS.muted + '">หน้า ' + ui.page + ' จาก ' + totalPages + '</span>' +
@@ -2416,6 +2439,21 @@ function field(label, inputHtml, span) {
   return '<div style="grid-column:' + (span === 2 ? "span 2" : "span 1") + '"><label class="field-label">' + esc(label) + '</label>' + inputHtml + '</div>';
 }
 
+function autofillFromCustomer(customerName) {
+  customerName = (customerName || "").trim();
+  if (!customerName) return;
+  var matches = STATE.projects.filter(function (p) { return (p.customer || "").trim().toLowerCase() === customerName.toLowerCase(); });
+  if (matches.length === 0) return;
+  matches.sort(function (a, b) { return b.id - a.id; }); // most recently added first
+  var latest = matches[0];
+  var segEl = document.getElementById("project-form-segment");
+  var typeEl = document.getElementById("project-form-type");
+  var wtEl = document.getElementById("project-form-worktype");
+  if (segEl && latest.segment) segEl.value = latest.segment;
+  if (typeEl && latest.type) typeEl.value = latest.type;
+  if (wtEl && latest.workType) wtEl.value = latest.workType;
+}
+
 function submitProjectForm(ev) {
   ev.preventDefault();
   var f = ev.target;
@@ -2475,13 +2513,13 @@ function renderProjectFormModal() {
     '<div style="padding:18px 22px;overflow-y:auto;flex:1">' +
     '<div id="project-form-error" style="display:none;background:' + COLORS.redBg + ';color:' + COLORS.red + ';font-size:12.5px;padding:8px 12px;border-radius:8px;margin-bottom:14px"></div>' +
     '<div class="form-grid">' +
-    field("ลูกค้า *", '<input name="customer" class="field-input" list="customer-list" value="' + attr(f.customer) + '" placeholder="เช่น TOS, Nippon, MOC"/><datalist id="customer-list">' + customerList + '</datalist>', 2) +
-    field("Segment", '<select name="segment" class="field-input">' + segOpts + '</select>') +
-    field("Type", '<select name="type" class="field-input">' + typeOpts + '</select>') +
+    field("ลูกค้า *", '<input name="customer" id="project-form-customer" class="field-input" list="customer-list" value="' + attr(f.customer) + '" placeholder="เช่น TOS, Nippon, MOC" onchange="autofillFromCustomer(this.value)"/><datalist id="customer-list">' + customerList + '</datalist>', 2) +
+    field("Segment", '<select name="segment" id="project-form-segment" class="field-input">' + segOpts + '</select>') +
+    field("Type", '<select name="type" id="project-form-type" class="field-input">' + typeOpts + '</select>') +
     field("ชื่อผู้ติดต่อ", '<input name="name" class="field-input" value="' + attr(f.name) + '" placeholder="K.Name"/>') +
     field("เบอร์โทร", '<input name="phone" class="field-input" value="' + attr(f.phone) + '"/>') +
     field("รายละเอียดงาน *", '<textarea name="description" class="field-input" style="min-height:56px;resize:vertical">' + esc(f.description) + '</textarea>', 2) +
-    field("ประเภทงาน", '<select name="workType" class="field-input"><option value="M"' + (f.workType === "M" ? " selected" : "") + '>Machine (M)</option><option value="F"' + (f.workType === "F" ? " selected" : "") + '>Fabrication (F)</option></select>') +
+    field("ประเภทงาน", '<select name="workType" id="project-form-worktype" class="field-input"><option value="M"' + (f.workType === "M" ? " selected" : "") + '>Machine (M)</option><option value="F"' + (f.workType === "F" ? " selected" : "") + '>Fabrication (F)</option></select>') +
     field("Status", '<select name="status" class="field-input">' + statusOpts + '</select>') +
     field("Requested Date", '<input type="date" name="requestedDate" class="field-input" value="' + attr(f.requestedDate) + '"/>') +
     field("Deadline", '<input type="date" name="deadline" class="field-input" value="' + attr(f.deadline) + '"/>') +
