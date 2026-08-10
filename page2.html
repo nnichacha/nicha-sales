@@ -1306,10 +1306,9 @@ function renderVisitedSection(){
 
   const cardsHtml = shown.sort((a,b)=> a.info.name.localeCompare(b.info.name,'th')).map(v=>{
     const st = statusMeta[v.fb.status];
-    const popupColor = st && st.v ? colorMap[st.v] : '#6B7280';
+    const accentColor = st && st.v ? colorMap[st.v] : '#6B7280';
     const statusBadge = st && st.v ? `<div class="vc-status" style="background:${colorMap[st.v]}22; color:${colorMap[st.v]};">${st.label}</div>` : '<div class="vc-status vc-status-none">ยังไม่ระบุสถานะ</div>';
-    const diwOptionsHtml = STATUS_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===v.fb.status?'selected':''}>${o.label}</option>`).join('');
-    return `<div class="visited-card" data-id="${v.id}" style="--vc-accent:${popupColor};">
+    return `<div class="visited-card" data-id="${v.id}" style="--vc-accent:${accentColor};">
       <div class="vc-summary">
         <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <div class="vc-name">${v.info.name}</div>
@@ -1318,19 +1317,7 @@ function renderVisitedSection(){
           ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
         </div>
         ${statusBadge}
-        <div class="vc-expand-hint"><span>คลิกดูรายละเอียด</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
-      </div>
-      <div class="vc-details" style="border-color:${popupColor}; box-shadow:0 14px 34px rgba(0,0,0,0.55), 0 0 0 1px ${popupColor}33;">
-        <div class="vc-details-header" style="color:${popupColor};">${v.info.name}</div>
-        <div class="field">
-          <label>สถานะติดตาม</label>
-          <select class="vc-status-select">${diwOptionsHtml}</select>
-        </div>
-        <div class="vc-contact-row">
-          <input type="text" class="vc-input vc-contact" placeholder="ชื่อผู้ติดต่อ" value="${(v.fb.contactPerson||'').replace(/"/g,'&quot;')}">
-          <input type="text" class="vc-input vc-phone" placeholder="เบอร์ติดต่อ" value="${(v.fb.phone||'').replace(/"/g,'&quot;')}">
-        </div>
-        <textarea class="vc-note" placeholder="บันทึก Feedback / โน้ต...">${v.fb.note||''}</textarea>
+        <div class="vc-expand-hint"><span>คลิกดูรายละเอียด</span></div>
       </div>
     </div>`;
   }).join('');
@@ -1357,62 +1344,63 @@ function renderVisitedSection(){
   });
   body.querySelectorAll('.visited-card').forEach(card=>{
     const id = card.dataset.id;
-    const summaryEl = card.querySelector('.vc-summary');
-    const detailsEl = card.querySelector('.vc-details');
-    const contactEl = card.querySelector('.vc-contact');
-    const phoneEl = card.querySelector('.vc-phone');
-    const noteEl = card.querySelector('.vc-note');
-    const statusSelEl = card.querySelector('.vc-status-select');
+    const match = visited.find(v=>v.id===id);
+    card.querySelector('.vc-summary').addEventListener('click', ()=> openVcModal(match));
+  });
+}
 
-    summaryEl.addEventListener('click', ()=>{
-      const willOpen = !card.classList.contains('open');
-      // only one popup open at a time — close any others first
-      body.querySelectorAll('.visited-card.open').forEach(c=>{
-        if (c !== card){
-          c.classList.remove('open');
-          const hintSpan = c.querySelector('.vc-expand-hint span');
-          if (hintSpan) hintSpan.textContent = 'คลิกดูรายละเอียด';
-        }
-      });
-      card.classList.toggle('open', willOpen);
-      summaryEl.querySelector('.vc-expand-hint span').textContent = willOpen ? 'ซ่อนรายละเอียด' : 'คลิกดูรายละเอียด';
-    });
+// ---- shared white detail modal for visited-company cards ----
+function openVcModal(v){
+  const overlay = document.getElementById('vcModalOverlay');
+  const header = document.getElementById('vcModalHeader');
+  const loc = document.getElementById('vcModalLoc');
+  const statusSel = document.getElementById('vcModalStatus');
+  const contactEl = document.getElementById('vcModalContact');
+  const phoneEl = document.getElementById('vcModalPhone');
+  const noteEl = document.getElementById('vcModalNote');
+  const box = document.getElementById('vcModalBox');
 
-    async function persistVc(refreshUi){
-      const fb = await loadFeedback(id);
-      const updated = {...fb, contactPerson: contactEl.value.trim(), phone: phoneEl.value.trim(), note: noteEl.value, status: statusSelEl.value};
-      await saveFeedback(id, updated);
-      // only trigger the full row/summary refresh once the field has been left —
-      // refreshing while the user is still typing inside this same card would
-      // rebuild the DOM mid-keystroke and lose focus/cursor position
-      if (refreshUi) refreshFeedbackRowUI(id, updated);
-    }
-    contactEl.addEventListener('blur', ()=>persistVc(true));
-    phoneEl.addEventListener('blur', ()=>persistVc(true));
-    let vcNoteTimer;
-    noteEl.addEventListener('input', ()=>{ clearTimeout(vcNoteTimer); vcNoteTimer = setTimeout(()=>persistVc(false), 700); });
-    noteEl.addEventListener('blur', ()=>{ clearTimeout(vcNoteTimer); persistVc(true); });
-    statusSelEl.addEventListener('click', (e)=> e.stopPropagation());
-    statusSelEl.addEventListener('change', ()=>{
-      // update this card's own badge immediately, then sync everywhere else
-      persistVc(true);
-    });
-    detailsEl.addEventListener('click', (e)=> e.stopPropagation());
+  const colorMap = {'customer':'#34D399','new':'#38BDF8','goon':'#22C55E','no':'#EF4444','wait':'#F59E0B'};
+  const accentColor = v.fb.status ? (colorMap[v.fb.status]||'#C9A96E') : '#9CA3AF';
+  box.style.setProperty('--vc-modal-color', accentColor);
+
+  header.textContent = v.info.name;
+  loc.textContent = `ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}`;
+  statusSel.innerHTML = STATUS_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===v.fb.status?'selected':''}>${o.label}</option>`).join('');
+  contactEl.value = v.fb.contactPerson || '';
+  phoneEl.value = v.fb.phone || '';
+  noteEl.value = v.fb.note || '';
+
+  async function persistVcModal(refreshUi){
+    const fb = await loadFeedback(v.id);
+    const updated = {...fb, contactPerson: contactEl.value.trim(), phone: phoneEl.value.trim(), note: noteEl.value, status: statusSel.value};
+    await saveFeedback(v.id, updated);
+    if (refreshUi) refreshFeedbackRowUI(v.id, updated);
+  }
+  // replace node clones to drop any listeners left over from a previous card's modal session
+  const freshContact = contactEl.cloneNode(true); contactEl.replaceWith(freshContact);
+  const freshPhone = phoneEl.cloneNode(true); phoneEl.replaceWith(freshPhone);
+  const freshNote = noteEl.cloneNode(true); noteEl.replaceWith(freshNote);
+  const freshStatus = statusSel.cloneNode(true); statusSel.replaceWith(freshStatus);
+
+  freshContact.addEventListener('blur', ()=>persistVcModal(true));
+  freshPhone.addEventListener('blur', ()=>persistVcModal(true));
+  let vcNoteTimer;
+  freshNote.addEventListener('input', ()=>{ clearTimeout(vcNoteTimer); vcNoteTimer = setTimeout(()=>persistVcModal(false), 700); });
+  freshNote.addEventListener('blur', ()=>{ clearTimeout(vcNoteTimer); persistVcModal(true); });
+  freshStatus.addEventListener('change', ()=>{
+    const opt = STATUS_OPTIONS.find(o=>o.v===freshStatus.value);
+    box.style.setProperty('--vc-modal-color', freshStatus.value ? (colorMap[freshStatus.value]||'#C9A96E') : '#9CA3AF');
+    persistVcModal(true);
   });
 
-  // click anywhere outside an open card closes its popup
-  if (!body.dataset.outsideCloseWired){
-    body.dataset.outsideCloseWired = '1';
-    document.addEventListener('click', (e)=>{
-      if (e.target.closest('.visited-card')) return;
-      document.querySelectorAll('.visited-card.open').forEach(c=>{
-        c.classList.remove('open');
-        const hintSpan = c.querySelector('.vc-expand-hint span');
-        if (hintSpan) hintSpan.textContent = 'คลิกดูรายละเอียด';
-      });
-    });
-  }
+  overlay.classList.add('open');
 }
+
+function closeVcModal(){
+  document.getElementById('vcModalOverlay').classList.remove('open');
+}
+
 
 
 function gmapsLink(name, tam, amp){
