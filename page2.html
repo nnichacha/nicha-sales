@@ -686,7 +686,7 @@
 
   <div class="vc-modal-overlay" id="vcModalOverlay">
     <div class="vc-modal-box" id="vcModalBox">
-      <button class="vc-modal-close" id="vcModalClose">&times;</button>
+      <button class="vc-modal-close" id="vcModalClose" type="button">&times;</button>
       <div class="vc-modal-accent" id="vcModalAccent"></div>
       <div class="vc-modal-body">
         <div class="vc-modal-header" id="vcModalHeader"></div>
@@ -1994,6 +1994,19 @@ async function init(){
   visitedHead.addEventListener('click', ()=>{
     const isOpen = visitedBody.classList.toggle('open');
     visitedCaret.classList.toggle('open', isOpen);
+  });
+
+  document.addEventListener('click', (e)=>{
+    if (e.target.closest('#vcModalClose')){
+      e.preventDefault();
+      e.stopPropagation();
+      closeVcModal();
+      return;
+    }
+    if (e.target.id === 'vcModalOverlay') closeVcModal();
+  });
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape') closeVcModal();
   });
 
   const container = document.getElementById('districtContainer');
