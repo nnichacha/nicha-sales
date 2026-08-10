@@ -174,7 +174,7 @@
   .visited-caret.open{ transform:rotate(180deg); }
   .visited-body{ display:none; padding:4px 20px 20px; }
   .visited-body.open{ display:block; }
-  .visited-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:10px; }
+  .visited-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:10px; }
   .visited-card{
     background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--green); border-radius:8px;
     padding:12px 14px; position:relative;
@@ -184,13 +184,26 @@
   .visited-card .vc-loc{ display:flex; align-items:center; gap:5px; margin-top:8px; font-size:10.5px; color:var(--muted); }
   .visited-card .vc-loc svg{ width:11px; height:11px; stroke:var(--muted); flex-shrink:0; }
   .visited-card .vc-status{ display:inline-block; margin-top:7px; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:2px 8px; border-radius:8px; }
+  .visited-card .vc-status.vc-status-none{ background:rgba(255,255,255,0.06); color:var(--muted); }
+  .vc-contact-row{ display:flex; gap:6px; margin-top:9px; }
+  .vc-input{
+    flex:1; min-width:0; background:var(--panel); border:1px solid var(--line); border-radius:5px; padding:5px 7px;
+    color:var(--text); font-family:'Sarabun',sans-serif; font-size:11px;
+  }
+  .vc-input:focus{ outline:none; border-color:var(--gold); }
+  .vc-note{
+    width:100%; margin-top:7px; background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:6px 8px;
+    color:var(--text); font-family:'Sarabun',sans-serif; font-size:11px; min-height:36px; resize:vertical;
+  }
+  .vc-note:focus{ outline:none; border-color:var(--gold); }
   .visited-empty{ padding:30px 10px; text-align:center; color:var(--muted); font-size:12.5px; }
-  .visited-filter-row{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-  .visited-filter-btn{
+  .visited-filter-row{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .visited-filter-btn, .visited-status-btn{
     background:var(--panel2); border:1px solid var(--line); border-radius:16px; padding:5px 14px; font-size:11px;
     color:var(--muted); cursor:pointer; font-family:'Kanit',sans-serif; font-weight:500;
   }
   .visited-filter-btn.active{ background:var(--green-dim); border-color:var(--green); color:#6EE7B7; }
+  .visited-status-btn.active{ font-weight:700; }
   .kpi{ background:var(--panel); padding:16px 18px; }
   .kpi .l{ font-family:'Kanit',sans-serif; font-size:10.5px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
   .kpi .v{ font-family:'Kanit',sans-serif; font-weight:700; font-size:26px; color:var(--gold); margin-top:4px; }
@@ -1150,7 +1163,7 @@ function refreshContactSummaryFromCache(){
     if (fb.status && statusCounts[fb.status] !== undefined) statusCounts[fb.status]++;
   });
 
-  const colorMap = {'new':'#38BDF8','goon':'var(--green)','no':'var(--red)','wait':'var(--amber)'};
+  const colorMap = {'customer':'#34D399','new':'#38BDF8','goon':'var(--green)','no':'var(--red)','wait':'var(--amber)'};
   const statusChips = STATUS_OPTIONS.filter(o=>o.v).map(o=>
     `<div class="cs-chip">${o.label} <b style="color:${colorMap[o.v]||'var(--text)'}">${statusCounts[o.v]||0}</b></div>`
   ).join('');
@@ -1166,6 +1179,7 @@ function refreshContactSummaryFromCache(){
 }
 
 let visitedFilterDist = 'all';
+let visitedFilterStatus = 'all';
 
 function renderVisitedSection(){
   const body = document.getElementById('visitedBody');
@@ -1182,11 +1196,22 @@ function renderVisitedSection(){
   meta.textContent = `${visited.length} แห่ง`;
 
   const districts = [...new Set(Object.keys(SITE_DATA))];
-  const filterRow = `<div class="visited-filter-row">
-    <button class="visited-filter-btn ${visitedFilterDist==='all'?'active':''}" data-dist="all">ทั้งหมด (${visited.length})</button>
+  const distFilterRow = `<div class="visited-filter-row">
+    <button class="visited-filter-btn ${visitedFilterDist==='all'?'active':''}" data-dist="all">ทุกอำเภอ (${visited.length})</button>
     ${districts.map(d=>{
       const n = visited.filter(v=>v.info.amphoe===d).length;
       return `<button class="visited-filter-btn ${visitedFilterDist===d?'active':''}" data-dist="${d}">${d} (${n})</button>`;
+    }).join('')}
+  </div>`;
+
+  const statusMeta = Object.fromEntries(STATUS_OPTIONS.map(o=>[o.v, o]));
+  const colorMap = {'customer':'#34D399','new':'#38BDF8','goon':'var(--green)','no':'var(--red)','wait':'var(--amber)'};
+  const statusFilterChoices = STATUS_OPTIONS.filter(o=>o.v);
+  const statusFilterRow = `<div class="visited-filter-row">
+    <button class="visited-status-btn ${visitedFilterStatus==='all'?'active':''}" data-status="all">ทุกสถานะ (${visited.length})</button>
+    ${statusFilterChoices.map(o=>{
+      const n = visited.filter(v=>v.fb.status===o.v).length;
+      return `<button class="visited-status-btn ${visitedFilterStatus===o.v?'active':''}" data-status="${o.v}" style="${visitedFilterStatus===o.v?`background:${colorMap[o.v]}22; border-color:${colorMap[o.v]}; color:${colorMap[o.v]};`:''}">${o.label} (${n})</button>`;
     }).join('')}
   </div>`;
 
@@ -1195,14 +1220,13 @@ function renderVisitedSection(){
     return;
   }
 
-  const shown = visitedFilterDist==='all' ? visited : visited.filter(v=>v.info.amphoe===visitedFilterDist);
-  const statusMeta = Object.fromEntries(STATUS_OPTIONS.map(o=>[o.v, o]));
-  const colorMap = {'new':'#38BDF8','goon':'var(--green)','no':'var(--red)','wait':'var(--amber)'};
+  let shown = visitedFilterDist==='all' ? visited : visited.filter(v=>v.info.amphoe===visitedFilterDist);
+  shown = visitedFilterStatus==='all' ? shown : shown.filter(v=>v.fb.status===visitedFilterStatus);
 
   const cardsHtml = shown.sort((a,b)=> a.info.name.localeCompare(b.info.name,'th')).map(v=>{
     const st = statusMeta[v.fb.status];
-    const statusBadge = st && st.v ? `<div class="vc-status" style="background:${colorMap[st.v]}22; color:${colorMap[st.v]};">${st.label}</div>` : '';
-    return `<div class="visited-card">
+    const statusBadge = st && st.v ? `<div class="vc-status" style="background:${colorMap[st.v]}22; color:${colorMap[st.v]};">${st.label}</div>` : '<div class="vc-status vc-status-none">ยังไม่ระบุสถานะ</div>';
+    return `<div class="visited-card" data-id="${v.id}">
       <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
       <div class="vc-name">${v.info.name}</div>
       <div class="vc-loc">
@@ -1210,10 +1234,15 @@ function renderVisitedSection(){
         ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
       </div>
       ${statusBadge}
+      <div class="vc-contact-row">
+        <input type="text" class="vc-input vc-contact" placeholder="ชื่อผู้ติดต่อ" value="${(v.fb.contactPerson||'').replace(/"/g,'&quot;')}">
+        <input type="text" class="vc-input vc-phone" placeholder="เบอร์ติดต่อ" value="${(v.fb.phone||'').replace(/"/g,'&quot;')}">
+      </div>
+      <textarea class="vc-note" placeholder="บันทึก Feedback / โน้ต...">${v.fb.note||''}</textarea>
     </div>`;
   }).join('');
 
-  body.innerHTML = filterRow + `<div class="visited-grid">${cardsHtml}</div>`;
+  body.innerHTML = distFilterRow + statusFilterRow + `<div class="visited-grid">${cardsHtml}</div>`;
 
   body.querySelectorAll('.visited-filter-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -1223,6 +1252,35 @@ function renderVisitedSection(){
       if (b2) b2.classList.add('open');
       document.getElementById('visitedCaret').classList.add('open');
     });
+  });
+  body.querySelectorAll('.visited-status-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      visitedFilterStatus = btn.dataset.status;
+      renderVisitedSection();
+      const b2 = document.getElementById('visitedBody');
+      if (b2) b2.classList.add('open');
+      document.getElementById('visitedCaret').classList.add('open');
+    });
+  });
+  body.querySelectorAll('.visited-card').forEach(card=>{
+    const id = card.dataset.id;
+    const contactEl = card.querySelector('.vc-contact');
+    const phoneEl = card.querySelector('.vc-phone');
+    const noteEl = card.querySelector('.vc-note');
+    async function persistVc(refreshUi){
+      const fb = await loadFeedback(id);
+      const updated = {...fb, contactPerson: contactEl.value.trim(), phone: phoneEl.value.trim(), note: noteEl.value};
+      await saveFeedback(id, updated);
+      // only trigger the full row/summary refresh once the field has been left —
+      // refreshing while the user is still typing inside this same card would
+      // rebuild the DOM mid-keystroke and lose focus/cursor position
+      if (refreshUi) refreshFeedbackRowUI(id, updated);
+    }
+    contactEl.addEventListener('blur', ()=>persistVc(true));
+    phoneEl.addEventListener('blur', ()=>persistVc(true));
+    let vcNoteTimer;
+    noteEl.addEventListener('input', ()=>{ clearTimeout(vcNoteTimer); vcNoteTimer = setTimeout(()=>persistVc(false), 700); });
+    noteEl.addEventListener('blur', ()=>{ clearTimeout(vcNoteTimer); persistVc(true); });
   });
 }
 
