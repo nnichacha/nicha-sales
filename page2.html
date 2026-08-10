@@ -1247,9 +1247,10 @@ function renderVisitedSection(){
 
   const cardsHtml = shown.sort((a,b)=> a.info.name.localeCompare(b.info.name,'th')).map(v=>{
     const st = statusMeta[v.fb.status];
+    const popupColor = st && st.v ? colorMap[st.v] : '#6B7280';
     const statusBadge = st && st.v ? `<div class="vc-status" style="background:${colorMap[st.v]}22; color:${colorMap[st.v]};">${st.label}</div>` : '<div class="vc-status vc-status-none">ยังไม่ระบุสถานะ</div>';
     const diwOptionsHtml = STATUS_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===v.fb.status?'selected':''}>${o.label}</option>`).join('');
-    return `<div class="visited-card" data-id="${v.id}">
+    return `<div class="visited-card" data-id="${v.id}" style="--vc-accent:${popupColor};">
       <div class="vc-summary">
         <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <div class="vc-name">${v.info.name}</div>
@@ -1260,7 +1261,8 @@ function renderVisitedSection(){
         ${statusBadge}
         <div class="vc-expand-hint"><span>คลิกดูรายละเอียด</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
       </div>
-      <div class="vc-details">
+      <div class="vc-details" style="border-color:${popupColor}; box-shadow:0 14px 34px rgba(0,0,0,0.55), 0 0 0 1px ${popupColor}33;">
+        <div class="vc-details-header" style="color:${popupColor};">${v.info.name}</div>
         <div class="field">
           <label>สถานะติดตาม</label>
           <select class="vc-status-select">${diwOptionsHtml}</select>
