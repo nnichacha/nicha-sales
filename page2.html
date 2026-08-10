@@ -177,8 +177,9 @@
   .visited-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:10px; }
   .visited-card{
     background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--green); border-radius:8px;
-    overflow:hidden; transition:border-color .15s ease;
+    position:relative; transition:border-color .15s ease;
   }
+  .visited-card.open{ z-index:30; }
   .visited-card:hover{ border-color:var(--gold); }
   .visited-card .vc-summary{ padding:12px 14px; position:relative; cursor:pointer; }
   .visited-card .vc-name{ font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; color:#fff; line-height:1.4; padding-right:20px; }
@@ -196,7 +197,9 @@
   .visited-card.open .vc-expand-hint svg{ transform:rotate(180deg); }
   .visited-card.open .vc-expand-hint{ opacity:1; }
   .vc-details{
-    display:none; padding:0 14px 14px; border-top:1px dashed var(--line); margin-top:2px; padding-top:12px;
+    display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:40;
+    background:var(--panel2); border:1.5px solid var(--gold); border-radius:9px; padding:12px 14px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.55);
   }
   .visited-card.open .vc-details{ display:block; }
   .vc-details .field label{ font-size:10px; }
@@ -1301,8 +1304,17 @@ function renderVisitedSection(){
     const statusSelEl = card.querySelector('.vc-status-select');
 
     summaryEl.addEventListener('click', ()=>{
-      const isOpen = card.classList.toggle('open');
-      summaryEl.querySelector('.vc-expand-hint span').textContent = isOpen ? 'ซ่อนรายละเอียด' : 'คลิกดูรายละเอียด';
+      const willOpen = !card.classList.contains('open');
+      // only one popup open at a time — close any others first
+      body.querySelectorAll('.visited-card.open').forEach(c=>{
+        if (c !== card){
+          c.classList.remove('open');
+          const hintSpan = c.querySelector('.vc-expand-hint span');
+          if (hintSpan) hintSpan.textContent = 'คลิกดูรายละเอียด';
+        }
+      });
+      card.classList.toggle('open', willOpen);
+      summaryEl.querySelector('.vc-expand-hint span').textContent = willOpen ? 'ซ่อนรายละเอียด' : 'คลิกดูรายละเอียด';
     });
 
     async function persistVc(refreshUi){
@@ -1324,7 +1336,21 @@ function renderVisitedSection(){
       // update this card's own badge immediately, then sync everywhere else
       persistVc(true);
     });
+    detailsEl.addEventListener('click', (e)=> e.stopPropagation());
   });
+
+  // click anywhere outside an open card closes its popup
+  if (!body.dataset.outsideCloseWired){
+    body.dataset.outsideCloseWired = '1';
+    document.addEventListener('click', (e)=>{
+      if (e.target.closest('.visited-card')) return;
+      document.querySelectorAll('.visited-card.open').forEach(c=>{
+        c.classList.remove('open');
+        const hintSpan = c.querySelector('.vc-expand-hint span');
+        if (hintSpan) hintSpan.textContent = 'คลิกดูรายละเอียด';
+      });
+    });
+  }
 }
 
 
