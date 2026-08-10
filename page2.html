@@ -1394,11 +1394,15 @@ function openVcModal(v){
     persistVcModal(true);
   });
 
+  overlay.style.display = '';
   overlay.classList.add('open');
 }
 
 function closeVcModal(){
-  document.getElementById('vcModalOverlay').classList.remove('open');
+  const overlay = document.getElementById('vcModalOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  overlay.style.display = 'none';
 }
 
 
@@ -1996,14 +2000,14 @@ async function init(){
     visitedCaret.classList.toggle('open', isOpen);
   });
 
-  document.addEventListener('click', (e)=>{
-    if (e.target.closest('#vcModalClose')){
-      e.preventDefault();
-      e.stopPropagation();
-      closeVcModal();
-      return;
-    }
-    if (e.target.id === 'vcModalOverlay') closeVcModal();
+  const vcModalCloseBtn = document.getElementById('vcModalClose');
+  const vcModalOverlayEl = document.getElementById('vcModalOverlay');
+  vcModalCloseBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    closeVcModal();
+  });
+  vcModalOverlayEl.addEventListener('click', function(e){
+    if (e.target === vcModalOverlayEl) closeVcModal();
   });
   document.addEventListener('keydown', (e)=>{
     if (e.key === 'Escape') closeVcModal();
