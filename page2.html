@@ -176,11 +176,11 @@
   .visited-body.open{ display:block; }
   .visited-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:10px; }
   .visited-card{
-    background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--green); border-radius:8px;
+    background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--vc-accent, var(--green)); border-radius:8px;
     position:relative; transition:border-color .15s ease;
   }
   .visited-card.open{ z-index:30; }
-  .visited-card:hover{ border-color:var(--gold); }
+  .visited-card:hover{ box-shadow:0 0 0 1px var(--line), 0 4px 14px rgba(0,0,0,0.35); }
   .visited-card .vc-summary{ padding:12px 14px; position:relative; cursor:pointer; }
   .visited-card .vc-name{ font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; color:#fff; line-height:1.4; padding-right:20px; }
   .visited-card .vc-check{ position:absolute; top:12px; right:12px; width:16px; height:16px; color:var(--green); }
@@ -198,10 +198,13 @@
   .visited-card.open .vc-expand-hint{ opacity:1; }
   .vc-details{
     display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:40;
-    background:var(--panel2); border:1.5px solid var(--gold); border-radius:9px; padding:12px 14px;
-    box-shadow:0 14px 34px rgba(0,0,0,0.55);
+    background:var(--panel2); border:1.5px solid var(--vc-accent, var(--gold)); border-radius:9px; padding:12px 14px;
   }
   .visited-card.open .vc-details{ display:block; }
+  .vc-details-header{
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; padding-bottom:8px; margin-bottom:10px;
+    border-bottom:1px dashed var(--line);
+  }
   .vc-details .field label{ font-size:10px; }
   .vc-status-select{
     width:100%; background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:6px 8px;
@@ -226,6 +229,42 @@
   }
   .visited-filter-btn.active{ background:var(--green-dim); border-color:var(--green); color:#6EE7B7; }
   .visited-status-btn.active{ font-weight:700; }
+
+  /* ---- visited card detail modal: white, clean, rectangular ---- */
+  .vc-modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(11,18,32,0.72); z-index:200;
+    align-items:center; justify-content:center; padding:24px;
+  }
+  .vc-modal-overlay.open{ display:flex; }
+  .vc-modal-box{
+    background:#FFFFFF; border-radius:12px; width:100%; max-width:440px; position:relative;
+    box-shadow:0 24px 60px rgba(0,0,0,0.45); overflow:hidden;
+  }
+  .vc-modal-accent{ height:6px; background:var(--vc-modal-color, var(--gold)); }
+  .vc-modal-close{
+    position:absolute; top:12px; right:14px; background:#F1F3F6; border:none; width:28px; height:28px; border-radius:50%;
+    color:#4B5563; font-size:18px; line-height:1; cursor:pointer; z-index:2;
+  }
+  .vc-modal-close:hover{ background:#E5E7EB; color:#111827; }
+  .vc-modal-body{ padding:26px 24px 24px; }
+  .vc-modal-header{ font-family:'Kanit',sans-serif; font-weight:700; font-size:16px; color:#111827; padding-right:24px; line-height:1.4; }
+  .vc-modal-loc{ font-size:12px; color:#6B7280; margin-top:6px; margin-bottom:18px; }
+  .vc-modal-body .field label{ font-size:11px; color:#6B7280; font-family:'Kanit',sans-serif; font-weight:600; }
+  .vc-modal-body .vc-status-select{
+    width:100%; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:7px; padding:8px 10px;
+    color:#111827; font-family:'Sarabun',sans-serif; font-size:13px; cursor:pointer;
+  }
+  .vc-modal-body .vc-contact-row{ display:flex; gap:8px; margin-top:12px; }
+  .vc-modal-body .vc-input{
+    flex:1; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:7px; padding:8px 10px;
+    color:#111827; font-family:'Sarabun',sans-serif; font-size:13px;
+  }
+  .vc-modal-body .vc-input:focus, .vc-modal-body .vc-status-select:focus{ outline:none; border-color:var(--vc-modal-color, var(--gold)); }
+  .vc-modal-body .vc-note{
+    width:100%; margin-top:12px; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:7px; padding:9px 11px;
+    color:#111827; font-family:'Sarabun',sans-serif; font-size:13px; min-height:80px; resize:vertical;
+  }
+  .vc-modal-body .vc-note:focus{ outline:none; border-color:var(--vc-modal-color, var(--gold)); }
   .kpi{ background:var(--panel); padding:16px 18px; }
   .kpi .l{ font-family:'Kanit',sans-serif; font-size:10.5px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
   .kpi .v{ font-family:'Kanit',sans-serif; font-weight:700; font-size:26px; color:var(--gold); margin-top:4px; }
@@ -643,6 +682,26 @@
       <div class="visited-caret" id="visitedCaret">▾</div>
     </div>
     <div class="visited-body" id="visitedBody"></div>
+  </div>
+
+  <div class="vc-modal-overlay" id="vcModalOverlay">
+    <div class="vc-modal-box" id="vcModalBox">
+      <button class="vc-modal-close" id="vcModalClose">&times;</button>
+      <div class="vc-modal-accent" id="vcModalAccent"></div>
+      <div class="vc-modal-body">
+        <div class="vc-modal-header" id="vcModalHeader"></div>
+        <div class="vc-modal-loc" id="vcModalLoc"></div>
+        <div class="field">
+          <label>สถานะติดตาม</label>
+          <select class="vc-status-select" id="vcModalStatus"></select>
+        </div>
+        <div class="vc-contact-row">
+          <input type="text" class="vc-input" id="vcModalContact" placeholder="ชื่อผู้ติดต่อ">
+          <input type="text" class="vc-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
+        </div>
+        <textarea class="vc-note" id="vcModalNote" placeholder="บันทึก Feedback / โน้ต..."></textarea>
+      </div>
+    </div>
   </div>
   <div class="override-banner" id="overrideChangeBanner" style="display:none;">
     <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
