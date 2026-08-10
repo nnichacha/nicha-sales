@@ -4,6 +4,14 @@
 <meta charset="UTF-8" />
 <title>Sales_Nicha — ระบบติดตามงานขาย EMT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#0B1F35" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Sales_Nicha" />
+<link rel="icon" href="icon-192.png" type="image/png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -1295,7 +1303,11 @@ function renderSidebarFooter() {
   if (STATE.firebaseUrl && STATE.lastSyncedAt) {
     lastSyncLine = '<div style="font-size:10px;color:#6E82A0;margin-top:3px">อัปเดตล่าสุด: ' + fmtDateTime(STATE.lastSyncedAt) + '</div>';
   }
+  var installBtn = (typeof deferredInstallPrompt !== "undefined" && deferredInstallPrompt)
+    ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#1B1400;font-size:11.5px;font-weight:700;border-radius:6px;padding:8px 8px;background:' + COLORS.gold + '" onclick="installApp()">' + icon("download", 13) + ' ติดตั้งเป็นแอป</button>'
+    : "";
   el.innerHTML = authBlock +
+    installBtn +
     '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD">' +
     (STATE.saving ? icon("loader", 12) + " กำลังบันทึก…" : icon("check", 12, COLORS.green) + " บันทึกลงเครื่องนี้แล้ว") + '</div>' +
     fbBlock + lastSyncLine +
@@ -2775,6 +2787,25 @@ function init() {
   }, 45000);
 }
 init();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("service-worker.js").catch(function () { /* PWA install just won't be offered; app still works normally */ });
+  });
+}
+
+var deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", function (e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  renderSidebarFooter();
+});
+function installApp() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(function () { deferredInstallPrompt = null; renderSidebarFooter(); });
+}
+window.addEventListener("appinstalled", function () { deferredInstallPrompt = null; renderSidebarFooter(); });
 </script>
 </body>
 </html>
