@@ -396,22 +396,33 @@
   .re-edit{ font-size:11px !important; padding:5px 12px !important; }
   .report-empty{ padding:40px 20px; text-align:center; color:var(--muted); font-size:13px; }
 
-  .pq-list{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
-  .pq-card{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--amber); border-radius:10px; padding:14px 18px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+  .pq-list{ margin-top:14px; display:flex; flex-direction:column; gap:12px; }
+  .pq-card{
+    background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--amber); border-radius:10px;
+    padding:16px 20px; display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap;
+  }
   .pq-card.pq-sent{ border-left-color:var(--green); }
   .pq-card.pq-overdue{ border-left-color:var(--red); }
   .pq-card .pq-main{ flex:1; min-width:240px; }
-  .pq-card .pq-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; }
-  .pq-card .pq-customer{ font-size:12px; color:#B7C0CC; margin-top:3px; }
-  .pq-card .pq-detail{ font-size:12px; color:var(--text); margin-top:7px; line-height:1.6; white-space:pre-wrap; background:rgba(255,255,255,0.03); padding:7px 10px; border-radius:6px; }
-  .pq-card .pq-dates{ display:flex; gap:14px; margin-top:8px; flex-wrap:wrap; }
-  .pq-date-chip{ font-size:11px; font-family:'Kanit',sans-serif; }
-  .pq-date-chip b{ color:var(--text); font-weight:600; }
-  .pq-status{ font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:700; padding:3px 10px; border-radius:9px; white-space:nowrap; }
-  .pq-status.st-pending{ background:var(--amber-dim); color:var(--amber); }
-  .pq-status.st-overdue{ background:var(--red-dim); color:var(--red); }
+  .pq-card .pq-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:15px; color:#FFFFFF; line-height:1.4; }
+  .pq-card .pq-customer{ font-size:12.5px; color:#C7D0DC; margin-top:5px; line-height:1.5; }
+  .pq-card .pq-detail{
+    font-size:12.5px; color:#EDF0F4; margin-top:10px; line-height:1.7; white-space:pre-wrap;
+    background:rgba(255,255,255,0.05); padding:9px 12px; border-radius:7px;
+  }
+  .pq-card .pq-dates{ display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; }
+  .pq-date-chip{ font-size:11.5px; font-family:'Kanit',sans-serif; color:#AEB7C4; }
+  .pq-date-chip b{ color:#FFFFFF; font-weight:600; }
+  .pq-note{
+    margin-top:10px; font-size:12.5px; color:#EDF0F4; line-height:1.7; white-space:pre-wrap;
+    background:rgba(245,158,11,0.08); border-left:3px solid var(--amber); padding:9px 12px; border-radius:0 7px 7px 0;
+  }
+  .pq-note-label{ display:block; font-family:'Kanit',sans-serif; font-weight:700; font-size:10px; letter-spacing:0.5px; color:var(--amber); text-transform:uppercase; margin-bottom:3px; }
+  .pq-status{ font-size:11px; font-family:'Kanit',sans-serif; font-weight:700; padding:4px 12px; border-radius:9px; white-space:nowrap; }
+  .pq-status.st-pending{ background:var(--amber-dim); color:#FCD34D; }
+  .pq-status.st-overdue{ background:var(--red-dim); color:#FCA5A5; }
   .pq-status.st-sent{ background:var(--green-dim); color:#6EE7B7; }
-  .pq-actions{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+  .pq-actions{ display:flex; flex-direction:column; gap:7px; align-items:flex-end; }
   .re-activity-tag, .rd-tag, .act-badge{ font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:3px 10px; border-radius:9px; display:inline-flex; align-items:center; gap:4px; }
 
   .report-date-actions{ display:flex; gap:8px; }
@@ -692,7 +703,11 @@
         <label>รายละเอียดงานที่ขอราคา</label>
         <textarea id="pqDetail" placeholder="ระบุรายละเอียดงาน/สเปกที่ลูกค้าขอราคา..." style="min-height:60px;"></textarea>
       </div>
-      <div class="report-form-grid" style="margin-top:10px; grid-template-columns:repeat(2,1fr);">
+      <div class="report-form-grid" style="margin-top:10px; grid-template-columns:repeat(3,1fr);">
+        <div class="field">
+          <label>วันที่ลูกค้าขอราคา</label>
+          <input type="date" id="pqRequestDate">
+        </div>
         <div class="field">
           <label>วันที่ต้องส่งราคาให้ลูกค้า</label>
           <input type="date" id="pqDueDate">
@@ -701,6 +716,10 @@
           <label>วันที่ส่งราคาให้ลูกค้า</label>
           <input type="date" id="pqSentDate">
         </div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>Note — ติดอะไรอยู่</label>
+        <textarea id="pqNote" placeholder="เช่น รอราคาจากซัพพลายเออร์ / รอลูกค้ายืนยันสเปก / รอเช็คสต็อก..." style="min-height:44px;"></textarea>
       </div>
       <div class="rf-actions">
         <button class="btn-primary" id="pqSubmit">บันทึกรายการ</button>
@@ -2426,8 +2445,10 @@ async function init(){
   const pqPhone = document.getElementById('pqPhone');
   const pqCompany = document.getElementById('pqCompany');
   const pqDetail = document.getElementById('pqDetail');
+  const pqRequestDate = document.getElementById('pqRequestDate');
   const pqDueDate = document.getElementById('pqDueDate');
   const pqSentDate = document.getElementById('pqSentDate');
+  const pqNote = document.getElementById('pqNote');
   const pqSubmit = document.getElementById('pqSubmit');
   const pqCancelEdit = document.getElementById('pqCancelEdit');
   const pqFilterStatus = document.getElementById('pqFilterStatus');
@@ -2471,9 +2492,11 @@ async function init(){
           <div class="pq-customer">ลูกค้า: ${q.customer||'—'} ${q.phone?('· โทร '+q.phone):''}</div>
           ${q.detail ? `<div class="pq-detail">${q.detail}</div>` : ''}
           <div class="pq-dates">
+            <div class="pq-date-chip">ลูกค้าขอราคา: <b>${q.requestDate||'—'}</b></div>
             <div class="pq-date-chip">ต้องส่ง: <b>${q.dueDate||'—'}</b></div>
             <div class="pq-date-chip">ส่งราคาให้ลูกค้า: <b>${q.sentDate||'ยังไม่ได้ส่ง'}</b></div>
           </div>
+          ${q.note ? `<div class="pq-note"><span class="pq-note-label">Note</span>${q.note}</div>` : ''}
         </div>
         <div class="pq-actions">
           <span class="pq-status st-${st}">${statusLabel[st]}</span>
@@ -2505,8 +2528,10 @@ async function init(){
     pqPhone.value = q.phone || '';
     pqCompany.value = q.company || '';
     pqDetail.value = q.detail || '';
+    pqRequestDate.value = q.requestDate || '';
     pqDueDate.value = q.dueDate || '';
     pqSentDate.value = q.sentDate || '';
+    pqNote.value = q.note || '';
     document.querySelector('#page3 .report-form-title').textContent = 'แก้ไขรายการรอราคา';
     pqSubmit.textContent = 'บันทึกการแก้ไข';
     pqCancelEdit.style.display = '';
@@ -2519,7 +2544,7 @@ async function init(){
     pqSubmit.textContent = 'บันทึกรายการ';
     pqCancelEdit.style.display = 'none';
     pqCustomer.value = ''; pqPhone.value = ''; pqCompany.value = '';
-    pqDetail.value = ''; pqDueDate.value = ''; pqSentDate.value = '';
+    pqDetail.value = ''; pqRequestDate.value = ''; pqDueDate.value = ''; pqSentDate.value = ''; pqNote.value = '';
   }
 
   pqCancelEdit.addEventListener('click', exitQuoteEditMode);
@@ -2532,15 +2557,18 @@ async function init(){
       phone: pqPhone.value.trim(),
       company,
       detail: pqDetail.value.trim(),
+      requestDate: pqRequestDate.value,
       dueDate: pqDueDate.value,
       sentDate: pqSentDate.value,
+      note: pqNote.value.trim(),
     };
     if (editingQuoteId){
       await updatePendingQuote(editingQuoteId, fields);
       exitQuoteEditMode();
     } else {
       await addPendingQuote({id:'q'+Date.now()+Math.floor(Math.random()*1000), ...fields, createdAt:new Date().toISOString()});
-      pqCustomer.value=''; pqPhone.value=''; pqCompany.value=''; pqDetail.value=''; pqDueDate.value=''; pqSentDate.value='';
+      pqCustomer.value=''; pqPhone.value=''; pqCompany.value=''; pqDetail.value='';
+      pqRequestDate.value=''; pqDueDate.value=''; pqSentDate.value=''; pqNote.value='';
     }
     renderPendingQuotes();
   });
