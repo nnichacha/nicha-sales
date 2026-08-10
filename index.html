@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>Sales_Nicha — ระบบติดตามงานขาย EMT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#0B1F35" />
 <meta name="mobile-web-app-capable" content="yes" />
@@ -124,6 +124,54 @@
   .sidebar-btn:hover { background: rgba(255,255,255,0.06); }
   .sidebar-btn.active { background: rgba(91,155,213,0.14); color: #fff; font-weight: 600; }
   .sidebar-btn.active::before { content: ""; position: absolute; left: -16px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: #C9A227; }
+  /* ---- mobile / small screen support (phones incl. iPhone 17 Pro Max @440pt) ---- */
+  #mobile-menu-btn {
+    position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px; z-index: 520;
+    width: 42px; height: 42px; border-radius: 10px; border: none;
+    background: #0B1F35; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    align-items: center; justify-content: center; cursor: pointer;
+  }
+  #mobile-menu-overlay { display: none; }
+  @media (max-width: 860px) {
+    body { overflow-x: hidden; }
+    #mobile-menu-btn { display: flex !important; }
+    #app-sidebar {
+      position: fixed !important; top: 0; left: 0; height: 100vh !important;
+      width: 84vw !important; max-width: 300px !important;
+      transform: translateX(-105%); transition: transform .25s ease;
+      z-index: 510; padding-top: calc(22px + env(safe-area-inset-top)) !important;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    }
+    #app-sidebar.mobile-open { transform: translateX(0); box-shadow: 10px 0 30px rgba(0,0,0,0.45); }
+    #mobile-menu-overlay.show {
+      display: block; position: fixed; inset: 0; background: rgba(6,12,20,0.55);
+      z-index: 505; backdrop-filter: blur(1px);
+    }
+    #main-content {
+      padding: 20px 14px 90px !important;
+      padding-top: calc(64px + env(safe-area-inset-top)) !important;
+      padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+      width: 100%;
+    }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .dash-row-2col, .dash-row-3col { grid-template-columns: 1fr !important; }
+    .dash-row-2col > *, .dash-row-3col > *, .kpi-grid > * { min-width: 0 !important; }
+    .card { min-width: 0 !important; }
+    .card svg { max-width: 100%; }
+    .modal-panel { width: calc(100vw - 24px) !important; max-width: 480px !important; max-height: 88vh; }
+    .form-grid { grid-template-columns: 1fr !important; }
+    table { font-size: 12px; }
+    .th-cell, .td-cell { padding: 8px 8px !important; }
+    .dash-hero { padding: 20px 18px 18px !important; }
+    .dash-hero h1 { font-size: 21px !important; }
+  }
+  @media (max-width: 480px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .kpi-card { min-height: 88px !important; padding: 13px 14px 12px !important; }
+    .kpi-card .disp { font-size: 20px !important; }
+    #main-content { padding-left: 10px !important; padding-right: 10px !important; }
+    .card { padding: 14px !important; }
+  }
 </style>
 </head>
 <body>
@@ -1249,8 +1297,10 @@ function renderApp() {
     '<button class="sidebar-btn" onclick="openStatusManager()">' + icon("settings", 17) + '<span>จัดการสถานะ</span></button>';
 
   app.innerHTML =
-    '<div style="display:flex;min-height:100vh;background:' + COLORS.canvas + ';color:' + COLORS.text + '">' +
-    '<aside class="blueprint-grid" style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:2px solid rgba(201,162,39,0.35)">' +
+    '<div class="app-shell" style="display:flex;min-height:100vh;background:' + COLORS.canvas + ';color:' + COLORS.text + '">' +
+    '<button id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="เมนู" style="display:none">' + icon("list", 20, "#fff") + '</button>' +
+    '<div id="mobile-menu-overlay" onclick="toggleMobileMenu(false)"></div>' +
+    '<aside id="app-sidebar" class="blueprint-grid" style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:2px solid rgba(201,162,39,0.35)">' +
     '<div style="display:flex;align-items:center;gap:10px;padding:0 4px 20px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
     '<img src="' + LOGO_DATA_URI + '" alt="EMT Machinery Service" style="height:40px;width:auto;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.35)"/>' +
     '<div><div class="disp" style="font-size:14.5px;line-height:1.2">Sales_Nicha</div><div style="font-size:11px;color:#8FA3BD;margin-top:1px">Personal Tracker</div></div></div>' +
@@ -1358,6 +1408,17 @@ function setTab(tab) {
   STATE.tab = tab;
   var derived = computeDerived();
   renderApp();
+  toggleMobileMenu(false);
+}
+
+function toggleMobileMenu(force) {
+  var aside = document.getElementById("app-sidebar");
+  var overlay = document.getElementById("mobile-menu-overlay");
+  if (!aside || !overlay) return;
+  var show = typeof force === "boolean" ? force : !aside.classList.contains("mobile-open");
+  aside.classList.toggle("mobile-open", show);
+  overlay.classList.toggle("show", show);
+  document.body.style.overflow = show ? "hidden" : "";
 }
 
 function renderToast() {
@@ -1683,7 +1744,7 @@ function renderDashboard(d) {
   var wonJobs = d.byStatus.filter(function (s) { return s.category === "Won"; }).reduce(function (a, s) { return a + s.count; }, 0);
   var lostJobs = d.byStatus.filter(function (s) { return s.category === "Lost"; }).reduce(function (a, s) { return a + s.count; }, 0);
   var pendingJobs = d.byStatus.filter(function (s) { return s.category === "Pending"; }).reduce(function (a, s) { return a + s.count; }, 0);
-  var kpiRow = '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:10px">' +
+  var kpiRow = '<div class="kpi-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:10px">' +
     kpiCardHtml("Pipeline รวม", fmtTHB(d.kpis.totalQuoted), d.kpis.totalJobs + " งานทั้งหมด — คลิกดูแยกสถานะ", "navy", "trending", "toggleKpiDetail('all')") +
     kpiCardHtml("Won", fmtTHB(d.kpis.won), wonJobs + " งาน — คลิกดูแยกสถานะ", "green", "check", "toggleKpiDetail('Won')") +
     kpiCardHtml("Lost", fmtTHB(d.kpis.lost), lostJobs + " งาน — คลิกดูแยกสถานะ", "red", "x", "toggleKpiDetail('Lost')") +
@@ -1693,7 +1754,7 @@ function renderDashboard(d) {
     '</div>' +
     '<div id="kpi-detail-wrap" style="margin-bottom:22px">' + buildKpiDetailInner(d) + '</div>';
 
-  var row1 = '<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px">' +
+  var row1 = '<div class="dash-row-2col" style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px">' +
     '<div class="card">' + cardTitleHtml("trending", "ยอดขาย Won รายเดือน (THB)") + svgLineChart(d.monthlyTrend, "month", "value", COLORS.blue, 230) + '</div>' +
     '<div class="card" style="background:#0B1220;border-color:#1F2937;border-top-color:#C9A227">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
@@ -1705,7 +1766,7 @@ function renderDashboard(d) {
     '</div>' +
     '</div>';
 
-  var row2 = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">' +
+  var row2 = '<div class="dash-row-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">' +
     '<div class="card">' + cardTitleHtml("wrench", "Machine vs Fabrication (Won)") + '<div id="wt-chart-wrap">' + buildWtCardInner() + '</div></div>' +
     '<div class="card">' + cardTitleHtml("trophy", "Top 5 ลูกค้า (Won)") + '<div id="top5-chart-wrap">' + buildTop5CardInner() + '</div></div>' +
     '<div class="card">' + cardTitleHtml("users", "Won ตาม Segment") + '<div id="seg-chart-wrap">' + buildSegCardInner() + '</div></div>' +
@@ -2102,7 +2163,7 @@ function renderCommission(d) {
         '</div>';
     }).join("") + '</div>';
 
-  var summaryStrip = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">' +
+  var summaryStrip = '<div class="dash-row-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">' +
     kpiCardHtml("รวมทั้งหมด (4 ไตรมาส)", fmtTHB(totalValue), c.closedGroups.reduce(function (s, g) { return s + g.jobs; }, 0) + " งาน", "navy", "wallet") +
     kpiCardHtml("ชำระแล้ว", fmtTHB(totalPaid), "", "green", "check") +
     kpiCardHtml("ยังไม่ชำระ", fmtTHB(totalUnpaid), "", "amber", "alert") +
