@@ -41,6 +41,39 @@
   .kpi-card::after { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
   .kpi-rivet { position: absolute; width: 5px; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.35); box-shadow: 0 1px 1px rgba(0,0,0,0.4) inset; }
   .kpi-shine { position: absolute; top: -60%; left: -20%; width: 60%; height: 220%; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.10) 50%, transparent 60%); pointer-events: none; }
+  /* ---- 3D quarterly presentation cards ---- */
+  .q3d-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; perspective: 1400px; align-items: end; padding-top: 22px; }
+  .q3d-card {
+    position: relative; border-radius: 18px; padding: 22px 18px 20px; cursor: pointer; min-height: 176px;
+    border: 1px solid rgba(255,255,255,0.18); overflow: hidden; z-index: 1;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    transform-style: preserve-3d; transition: transform .32s cubic-bezier(.34,1.56,.64,1), box-shadow .32s ease, opacity .32s ease, filter .32s ease;
+    will-change: transform;
+  }
+  .q3d-grid.has-active .q3d-card:not(.active) { transform: scale(0.92) translateY(0); opacity: .6; filter: saturate(.7); }
+  .q3d-card.active {
+    transform: scale(1.1) translateY(-14px) !important; z-index: 5;
+    box-shadow: 0 26px 50px rgba(0,0,0,0.45), 0 0 0 3px rgba(255,255,255,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    opacity: 1 !important; filter: none !important;
+  }
+  .q3d-shine { position: absolute; inset: 0; pointer-events: none; opacity: .9; transition: background .05s linear; }
+  .q3d-bar-bg { position: absolute; right: 14px; top: 16px; bottom: 16px; width: 6px; border-radius: 99px; background: rgba(255,255,255,0.22); overflow: hidden; display: flex; align-items: flex-end; }
+  .q3d-bar-fill { width: 100%; border-radius: 99px; background: #fff !important; transition: height .5s cubic-bezier(.34,1.56,.64,1); }
+  .q3d-content { position: relative; z-index: 2; padding-right: 16px; }
+  .q3d-value { font-size: 22px; transition: font-size .3s ease; }
+  .q3d-card.active .q3d-value { font-size: 27px; }
+  .q3d-detail {
+    margin-top: 18px; padding: 18px 20px; border-radius: 14px; background: #111827; border: 1px solid #232D3D;
+    animation: q3dFadeIn .22s ease;
+  }
+  @keyframes q3dFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .q3d-detail-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 22px; }
+  .q3d-detail-title { font-size: 10.5px; letter-spacing: .5px; text-transform: uppercase; color: #7C8798; font-weight: 700; margin-bottom: 8px; }
+  @media (max-width: 860px) {
+    .q3d-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .q3d-detail-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+    .q3d-card.active { transform: scale(1.04) translateY(-6px) !important; }
+  }
   /* ---- universal hover-glow / click-bounce for interactive elements ---- */
   .kpi-card[onclick], .btn-primary, .btn-secondary, .btn-gold, .btn-ghost, .icon-btn,
   .sidebar-btn, .district-tab, .dr-chip, table tbody tr[onclick], .dr-btn-gold {
@@ -312,6 +345,7 @@ var STATE = {
   firebasePushTimer: null,
   editUnlocked: false,
   quarterPaid: {},
+  q3dSelected: null,
   projectsUI: { q: "", status: "", workType: "", sortKey: "sendQu", sortDir: "desc", page: 1 },
   customersUI: { q: "", sortKey: "won", sortDir: "desc" }
 };
@@ -1402,6 +1436,7 @@ function renderMain(derived) {
   if (STATE.tab === "projects") refreshProjectsTable(derived);
   if (STATE.tab === "customers") refreshCustomersTable(derived);
   if (STATE.tab === "dailyreport") refreshDailyReportList();
+  if (STATE.tab === "dashboard") window.setTimeout(attachQ3DTilt, 30);
 }
 
 function setTab(tab) {
@@ -1689,6 +1724,161 @@ function buildSummaryBreakdownInner() {
     '<table><thead><tr><th class="th-cell" style="position:sticky;top:0">' + labelHeader + '</th>' + sortableHeaders + '</tr></thead><tbody>' + bodyRows + '</tbody></table></div>';
 }
 
+var CAL_QUARTERS = [
+  { key: "Q1", label: "ไตรมาส 1", sub: "ม.ค. – มี.ค.", months: ["Jan", "Feb", "Mar"] },
+  { key: "Q2", label: "ไตรมาส 2", sub: "เม.ย. – มิ.ย.", months: ["Apr", "May", "Jun"] },
+  { key: "Q3", label: "ไตรมาส 3", sub: "ก.ค. – ก.ย.", months: ["Jul", "Aug", "Sep"] },
+  { key: "Q4", label: "ไตรมาส 4", sub: "ต.ค. – ธ.ค.", months: ["Oct", "Nov", "Dec"] }
+];
+
+function computeCalQuarterData() {
+  var d = computeDerived();
+  var won = d.withCat.filter(function (p) { return p.category === "Won"; });
+  return CAL_QUARTERS.map(function (q) {
+    var rows = won.filter(function (p) { return q.months.indexOf(p.month) !== -1; });
+    var byCompany = {}, byType = { M: 0, F: 0, "-": 0 }, byMonth = {};
+    q.months.forEach(function (m) { byMonth[m] = { value: 0, count: 0 }; });
+    rows.forEach(function (p) {
+      var c = p.customer || "(ไม่ระบุ)";
+      if (!byCompany[c]) byCompany[c] = { value: 0, count: 0 };
+      byCompany[c].value += p.sale || 0;
+      byCompany[c].count += 1;
+      var wt = p.workType === "M" ? "M" : p.workType === "F" ? "F" : "-";
+      byType[wt] += p.sale || 0;
+      if (byMonth[p.month]) { byMonth[p.month].value += p.sale || 0; byMonth[p.month].count += 1; }
+    });
+    var companyArr = Object.keys(byCompany).map(function (k) { return { name: k, value: byCompany[k].value, count: byCompany[k].count }; })
+      .sort(function (a, b) { return b.value - a.value; });
+    var total = rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0);
+    return { key: q.key, label: q.label, sub: q.sub, months: q.months, total: total, count: rows.length, byCompany: companyArr, byType: byType, byMonth: byMonth };
+  });
+}
+
+function toggleQ3D(key) {
+  STATE.q3dSelected = STATE.q3dSelected === key ? null : key;
+  refreshQ3DCard();
+}
+function refreshQ3DCard() {
+  var wrap = document.getElementById("q3d-wrap");
+  if (!wrap) return;
+  wrap.innerHTML = buildQ3DCardInner();
+  window.setTimeout(attachQ3DTilt, 30);
+}
+function attachQ3DTilt() {
+  var cards = document.querySelectorAll(".q3d-card");
+  cards.forEach(function (card) {
+    if (card._tiltAttached) return;
+    card._tiltAttached = true;
+    card.addEventListener("mousemove", function (e) {
+      var rect = card.getBoundingClientRect();
+      var x = e.clientX - rect.left, y = e.clientY - rect.top;
+      var rotY = ((x - rect.width / 2) / (rect.width / 2)) * 9;
+      var rotX = -((y - rect.height / 2) / (rect.height / 2)) * 9;
+      card.style.transform = "perspective(900px) rotateX(" + rotX.toFixed(2) + "deg) rotateY(" + rotY.toFixed(2) + "deg) scale3d(1.03,1.03,1.03) translateZ(6px)";
+      var shine = card.querySelector(".q3d-shine");
+      if (shine) shine.style.background = "radial-gradient(circle at " + ((x / rect.width) * 100).toFixed(0) + "% " + ((y / rect.height) * 100).toFixed(0) + "%, rgba(255,255,255,0.22), transparent 55%)";
+    });
+    card.addEventListener("mouseleave", function () {
+      card.style.transform = "perspective(900px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+    });
+  });
+}
+
+function buildQ3DCardInner() {
+  var quarters = computeCalQuarterData();
+  var maxVal = Math.max.apply(null, [1].concat(quarters.map(function (q) { return q.total; })));
+  var qGradients = [
+    "linear-gradient(155deg,#1E3A8A 0%,#3B82F6 100%)",
+    "linear-gradient(155deg,#0F766E 0%,#10B981 100%)",
+    "linear-gradient(155deg,#C2410C 0%,#F97316 100%)",
+    "linear-gradient(155deg,#5B21B6 0%,#8B5CF6 100%)"
+  ];
+  var anyActive = !!STATE.q3dSelected;
+
+  var cardsHtml = '<div class="q3d-grid' + (anyActive ? " has-active" : "") + '">' + quarters.map(function (q, i) {
+    var active = STATE.q3dSelected === q.key;
+    var heightPct = Math.max(8, (q.total / maxVal) * 100);
+    return '<div class="q3d-card' + (active ? " active" : "") + '" onclick="toggleQ3D(\'' + q.key + '\')" style="background:' + qGradients[i] + '">' +
+      '<span class="q3d-shine"></span>' +
+      '<div class="q3d-bar-bg"><div class="q3d-bar-fill" style="height:' + heightPct + '%"></div></div>' +
+      '<div class="q3d-content">' +
+      '<div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.85);font-weight:700">' + esc(q.label) + '</div>' +
+      '<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:1px">' + esc(q.sub) + '</div>' +
+      '<div class="disp q3d-value" style="color:#fff;margin-top:10px;text-shadow:0 2px 10px rgba(0,0,0,0.35)">' + fmtTHB(q.total) + '</div>' +
+      '<div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px">' + q.count + ' งาน</div>' +
+      '<div style="margin-top:12px;font-size:10px;color:#fff;font-weight:700;display:flex;align-items:center;gap:4px;opacity:0.9">' +
+      (active ? icon("chevronRight", 11) + ' กำลังแสดงรายละเอียด' : 'คลิกดูรายละเอียด ' + icon("chevronRight", 11)) + '</div>' +
+      '</div></div>';
+  }).join("") + '</div>';
+
+  var detailHtml = "";
+  if (STATE.q3dSelected) {
+    var sel = quarters.filter(function (q) { return q.key === STATE.q3dSelected; })[0];
+    var selIdx = quarters.indexOf(sel);
+    var qAccentSolid = ["#3B82F6", "#10B981", "#F97316", "#8B5CF6"];
+    var accent = qAccentSolid[selIdx];
+    var topCompanies = sel.byCompany.slice(0, 8);
+    var restCompanies = sel.byCompany.slice(8);
+    var companyRows = topCompanies.map(function (c) {
+      var pct = sel.total ? (c.value / sel.total * 100) : 0;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06)">' +
+        '<span style="font-size:11.5px;color:#E5E7EB;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(c.name) + '</span>' +
+        '<span class="mono" style="font-size:9.5px;color:#7C8798">' + c.count + ' งาน</span>' +
+        '<span class="mono" style="font-size:11.5px;color:#fff;font-weight:700;min-width:70px;text-align:right">' + fmtTHB(c.value) + '</span></div>';
+    }).join("") || '<div style="font-size:12px;color:#7C8798;padding:8px 0">ไม่มีข้อมูล</div>';
+    if (restCompanies.length) {
+      var restVal = restCompanies.reduce(function (s, c) { return s + c.value; }, 0);
+      companyRows += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;color:#7C8798"><span style="font-size:11px;flex:1">อื่นๆ (' + restCompanies.length + ' ราย)</span><span class="mono" style="font-size:11px">' + fmtTHB(restVal) + '</span></div>';
+    }
+
+    var typeTotal = sel.byType.M + sel.byType.F + sel.byType["-"];
+    var typeRows = [
+      { label: "Machine (M)", value: sel.byType.M, color: COLORS.blue },
+      { label: "Fabrication (F)", value: sel.byType.F, color: COLORS.coral },
+    ].concat(sel.byType["-"] > 0 ? [{ label: "ไม่ระบุ", value: sel.byType["-"], color: COLORS.muted }] : [])
+      .map(function (t) {
+        var pct = typeTotal ? (t.value / typeTotal * 100) : 0;
+        return '<div style="margin-bottom:10px">' +
+          '<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px">' +
+          '<span style="color:#E5E7EB">' + t.label + '</span><span class="mono" style="color:#fff;font-weight:700">' + fmtTHB(t.value) + '</span></div>' +
+          '<div style="height:8px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden">' +
+          '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + t.color + ';border-radius:99px"></div></div>' +
+          '<div style="font-size:9.5px;color:#7C8798;margin-top:2px">' + pct.toFixed(1) + '%</div></div>';
+      }).join("");
+
+    var monthSeries = sel.months.map(function (m) { return { label: m, value: sel.byMonth[m].value, count: sel.byMonth[m].count }; });
+    var monthRows = monthSeries.map(function (m) {
+      var pct = sel.total ? (m.value / sel.total * 100) : 0;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06)">' +
+        '<span style="font-size:11.5px;color:#E5E7EB;width:38px">' + m.label + '</span>' +
+        '<div style="flex:1;height:7px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden"><div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + accent + ';border-radius:99px"></div></div>' +
+        '<span class="mono" style="font-size:11px;color:#fff;font-weight:700;min-width:64px;text-align:right">' + fmtTHB(m.value) + '</span></div>';
+    }).join("");
+
+    detailHtml = '<div class="q3d-detail">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">' +
+      '<div><span class="disp" style="font-size:16px;color:#fff">' + esc(sel.label) + ' — ' + esc(sel.sub) + '</span>' +
+      '<div style="font-size:11.5px;color:#7C8798;margin-top:2px">รวม ' + fmtTHB(sel.total) + ' บาท จาก ' + sel.count + ' งาน</div></div>' +
+      '<button onclick="toggleQ3D(\'' + sel.key + '\')" style="background:rgba(255,255,255,0.08);border:none;color:#B7C4D6;border-radius:8px;padding:6px 12px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px">' + icon("x", 12) + ' ปิด</button>' +
+      '</div>' +
+      '<div class="q3d-detail-grid">' +
+      '<div><div class="q3d-detail-title">รายบริษัท</div>' + companyRows + '</div>' +
+      '<div><div class="q3d-detail-title">ประเภทงาน</div>' + (typeTotal ? typeRows : '<div style="font-size:12px;color:#7C8798">ไม่มีข้อมูล</div>') + '</div>' +
+      '<div><div class="q3d-detail-title">แยกรายเดือน</div>' + monthRows + '</div>' +
+      '</div></div>';
+  }
+
+  return cardsHtml + detailHtml;
+}
+
+function buildQ3DSection() {
+  return '<div class="card" style="margin-top:16px;background:#0B1220;border-color:#1F2937;border-top-color:' + COLORS.gold + '">' +
+    '<div style="display:flex;align-items:center;gap:7px;margin-bottom:16px">' + icon("trophy", 15, COLORS.gold) +
+    '<span class="disp" style="font-size:14.5px;color:#fff">สรุปยอดขายรายไตรมาส (ปฏิทิน)</span>' +
+    '<span style="font-size:10.5px;color:#7C8798;margin-left:4px">Q1=ม.ค.-มี.ค. · Q2=เม.ย.-มิ.ย. · Q3=ก.ค.-ก.ย. · Q4=ต.ค.-ธ.ค.</span></div>' +
+    '<div id="q3d-wrap">' + buildQ3DCardInner() + '</div></div>';
+}
+
 function buildSummaryBreakdownCard() {
   return '<div class="card" style="margin-top:16px;border-top-color:' + COLORS.blue + '">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">' +
@@ -1783,10 +1973,11 @@ function renderDashboard(d) {
       (canEdit() ? '<button class="icon-btn" style="padding:2px 8px;margin-left:6px;border:1px solid ' + COLORS.line + ';border-radius:6px;font-size:11px;color:' + COLORS.blue + '" onclick="manualSyncNow()">รีเฟรช</button>' : '') +
       '</div>';
   }
+  var rowQ3D = buildQ3DSection();
   var row3 = buildForecastCard(d);
   var row4 = buildSummaryBreakdownCard();
 
-  return heroHtml + updatedBanner + kpiRow + row1 + row2 + row3 + row4;
+  return heroHtml + updatedBanner + kpiRow + row1 + row2 + rowQ3D + row3 + row4;
 }
 
 /* ============================== PROJECTS VIEW ============================== */
