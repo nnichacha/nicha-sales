@@ -282,6 +282,14 @@
     color:#111827; font-family:'Sarabun',sans-serif; font-size:13px; min-height:80px; resize:vertical;
   }
   .vc-modal-body .vc-note:focus{ outline:none; border-color:var(--vc-modal-color, var(--gold)); }
+  .vc-modal-save{
+    width:100%; margin-top:14px; background:var(--vc-modal-color, #38BDF8); color:#0B1220; border:none;
+    border-radius:8px; padding:11px; font-family:'Kanit',sans-serif; font-weight:700; font-size:13px;
+    cursor:pointer; transition:opacity .15s ease, transform .1s ease;
+  }
+  .vc-modal-save:hover{ opacity:0.88; }
+  .vc-modal-save:active{ transform:scale(0.98); }
+  .vc-modal-save.saved{ background:#22C55E; color:#fff; }
   .kpi{ background:var(--panel); padding:16px 18px; }
   .kpi .l{ font-family:'Kanit',sans-serif; font-size:10.5px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
   .kpi .v{ font-family:'Kanit',sans-serif; font-weight:700; font-size:26px; color:var(--gold); margin-top:4px; }
@@ -779,6 +787,10 @@
   .district-tabs{gap:10px;margin-top:24px}.district-tab{border-radius:11px;background:linear-gradient(145deg,rgba(19,31,46,.96),rgba(13,21,32,.96));padding:13px 17px}.district-tab.active{box-shadow:inset 0 0 0 1px rgba(214,181,111,.22),0 8px 18px rgba(0,0,0,.15)}.district-block{border:1px solid rgba(43,58,75,.72);border-radius:15px;padding:0 20px 20px;background:rgba(13,21,32,.46);margin-top:14px}.district-head{margin-top:0;padding-top:20px}.road-card,.company-table-wrap,.visited-section,.report-form-wrap,.report-list-wrap,.pq-card{border-radius:13px}.visited-section{background:linear-gradient(145deg,rgba(34,197,94,.075),rgba(16,25,38,.92) 42%)}
   @media(max-width:760px){.page{padding:18px 14px 56px}.masthead{padding:23px 18px}.home-link{position:static;margin-bottom:17px;width:max-content}.territory-map{grid-template-columns:1fr}.territory-side{border-left:0;border-top:1px solid #2f4356}.territory-map-main{min-height:300px}.rayong-map{width:108%;height:225px;top:66px}.rayong-map .label{font-size:12px}.map-tip{bottom:12px;left:12px;font-size:9.5px}h1{font-size:27px}}
   .estate-zones{margin-top:16px;border:1px solid #30465b;border-radius:15px;background:linear-gradient(145deg,rgba(18,33,49,.96),rgba(10,18,29,.96));overflow:hidden;box-shadow:0 15px 34px rgba(0,0,0,.15)}.estate-zones-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 23px 16px;border-bottom:1px solid rgba(104,148,177,.24)}.estate-zones-title{font-family:'Kanit',sans-serif;color:#fff;font-size:17px;font-weight:700}.estate-zones-desc{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:3px}.estate-zones-note{font-size:10.5px;color:var(--gold-lt);background:rgba(214,181,111,.10);border:1px solid rgba(214,181,111,.24);padding:6px 9px;border-radius:6px;white-space:nowrap}.estate-zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px;padding:16px 20px}.estate-zone{position:relative;text-align:left;padding:10px 11px;border-radius:8px;border:1px solid #30465b;background:rgba(4,11,18,.34);color:#d9e6ee;font-family:'Kanit',sans-serif;font-size:12px;cursor:pointer;transition:.18s}.estate-zone:hover,.estate-zone.active{transform:translateY(-2px);border-color:var(--gold);background:rgba(214,181,111,.11);color:#fff}.estate-zone small{display:block;color:#86a0b3;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:3px}.estate-zone .zone-badge{position:absolute;right:8px;top:8px;min-width:18px;text-align:center;color:var(--gold);font-family:'Sarabun',sans-serif;font-size:10px}.estate-zone-detail{display:none;margin:0 20px 19px;padding:14px 16px;border-radius:10px;background:rgba(5,12,20,.55);border:1px solid rgba(74,121,151,.35)}.estate-zone-detail.open{display:block}.estate-zone-detail-title{font-family:'Kanit',sans-serif;color:#fff;font-size:14px;font-weight:700;margin-bottom:8px}.estate-location-list{display:flex;flex-wrap:wrap;gap:7px}.estate-location{border:1px solid #2e4a60;border-radius:6px;background:#101e2c;padding:6px 9px;color:#b7cad7;font-size:11px;cursor:pointer}.estate-location:hover{border-color:#61c7ef;color:#fff}.estate-location b{color:#71cbed;font-weight:600}.estate-empty{font-size:11px;color:var(--muted)}@media(max-width:760px){.estate-zones-head{padding:17px;display:block}.estate-zones-note{display:inline-block;margin-top:10px}.estate-zone-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}.estate-zone-detail{margin:0 12px 13px}}
+  .estate-zones-collapse{ display:none; }
+  .estate-zones-collapse.open{ display:block; }
+  .estate-zones-caret{ color:var(--muted); font-size:15px; transition:transform .2s ease; flex-shrink:0; }
+  .estate-zones-caret.open{ transform:rotate(180deg); }
   .company-controls{margin-top:16px!important;padding:16px 18px!important;border:1px solid #30465b!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(17,31,46,.96),rgba(10,19,29,.96))!important;box-shadow:0 12px 28px rgba(0,0,0,.14)}.company-controls .search-box{min-width:300px}@media(max-width:760px){.company-controls{padding:12px!important}.company-controls .search-box{min-width:100%}}
   .company-directory{margin-top:14px;border:1px solid #30465b;border-radius:14px;background:rgba(10,19,29,.92);overflow:hidden}.company-directory-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;border-bottom:1px solid rgba(100,148,179,.25)}.company-directory-title{font-family:'Kanit',sans-serif;font-size:15px;color:#fff;font-weight:700}.company-directory-count{font-size:11px;color:var(--gold-lt);background:rgba(214,181,111,.11);border:1px solid rgba(214,181,111,.22);padding:3px 8px;border-radius:12px}.company-directory-list{max-height:410px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:#2d4354}.company-directory-item{display:block;padding:9px 12px;background:#101d2a;color:#e5f0f5;font-family:'Kanit',sans-serif;font-size:11.5px;line-height:1.35}.company-directory-item small{display:block;color:#87a1b2;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:2px}.company-directory-empty{padding:28px;color:var(--muted);font-size:12px;text-align:center}.company-directory-list::-webkit-scrollbar{width:8px}.company-directory-list::-webkit-scrollbar-thumb{background:#3b566a;border-radius:8px}
 </style>
@@ -923,6 +935,7 @@
           <input type="text" class="vc-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
         </div>
         <textarea class="vc-note" id="vcModalNote" placeholder="บันทึก Feedback / โน้ต..."></textarea>
+        <button class="vc-modal-save" id="vcModalSave" type="button">บันทึกการเปลี่ยนแปลง</button>
       </div>
     </div>
   </div>
@@ -1607,17 +1620,21 @@ function openVcModal(v){
   phoneEl.value = v.fb.phone || '';
   noteEl.value = v.fb.note || '';
 
-  async function persistVcModal(refreshUi){
-    const fb = await loadFeedback(v.id);
-    const updated = {...fb, contactPerson: contactEl.value.trim(), phone: phoneEl.value.trim(), note: noteEl.value, status: statusSel.value};
-    await saveFeedback(v.id, updated);
-    if (refreshUi) refreshFeedbackRowUI(v.id, updated);
-  }
   // replace node clones to drop any listeners left over from a previous card's modal session
   const freshContact = contactEl.cloneNode(true); contactEl.replaceWith(freshContact);
   const freshPhone = phoneEl.cloneNode(true); phoneEl.replaceWith(freshPhone);
   const freshNote = noteEl.cloneNode(true); noteEl.replaceWith(freshNote);
   const freshStatus = statusSel.cloneNode(true); statusSel.replaceWith(freshStatus);
+  const saveBtn = document.getElementById('vcModalSave');
+  const freshSave = saveBtn.cloneNode(true); saveBtn.replaceWith(freshSave);
+
+  async function persistVcModal(refreshUi){
+    const fb = await loadFeedback(v.id);
+    const updated = {...fb, contactPerson: freshContact.value.trim(), phone: freshPhone.value.trim(), note: freshNote.value, status: freshStatus.value};
+    await saveFeedback(v.id, updated);
+    if (refreshUi) refreshFeedbackRowUI(v.id, updated);
+    return updated;
+  }
 
   freshContact.addEventListener('blur', ()=>persistVcModal(true));
   freshPhone.addEventListener('blur', ()=>persistVcModal(true));
@@ -1628,6 +1645,14 @@ function openVcModal(v){
     const opt = STATUS_OPTIONS.find(o=>o.v===freshStatus.value);
     box.style.setProperty('--vc-modal-color', freshStatus.value ? (colorMap[freshStatus.value]||'#C9A96E') : '#9CA3AF');
     persistVcModal(true);
+  });
+  freshSave.addEventListener('click', async ()=>{
+    clearTimeout(vcNoteTimer);
+    freshSave.textContent = 'กำลังบันทึก...';
+    await persistVcModal(true);
+    freshSave.textContent = 'บันทึกแล้ว ✓';
+    freshSave.classList.add('saved');
+    setTimeout(()=>{ freshSave.textContent = 'บันทึกการเปลี่ยนแปลง'; freshSave.classList.remove('saved'); }, 1500);
   });
 
   overlay.style.display = '';
@@ -3066,8 +3091,15 @@ init();
     anchor.insertAdjacentElement('afterend',card);
     if (typeof bindEditableTexts === 'function') bindEditableTexts(card);
     function selectArea(name){
-      card.querySelectorAll('[data-territory]').forEach(el=>el.classList.toggle('active',el.dataset.territory===name));
-      if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(name);
+      const el = card.querySelector(`[data-territory="${name}"]`);
+      const alreadyOpen = el && el.classList.contains('active');
+      if (alreadyOpen){
+        card.querySelectorAll('[data-territory]').forEach(x=>x.classList.remove('active'));
+        if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(null);
+      } else {
+        card.querySelectorAll('[data-territory]').forEach(x=>x.classList.toggle('active',x.dataset.territory===name));
+        if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(name);
+      }
       // no auto-scroll — the user scrolls down themselves to see the revealed data
     }
     card.addEventListener('click',e=>{const item=e.target.closest('[data-territory]');if(item)selectArea(item.dataset.territory);});
@@ -3117,9 +3149,15 @@ init();
     if(!page1 || document.getElementById('estateZones')) return;
     const panel=document.createElement('section');panel.className='estate-zones';panel.id='estateZones';
     const available=new Set();Object.values(SITE_DATA).forEach(d=>d.sections.forEach(s=>s.companies.forEach(c=>available.add(normalise(c.estate)))));
-    panel.innerHTML=`<div class="estate-zones-head"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">เลือกชื่อนิคมเพื่อดูอำเภอและตำบลที่เกี่ยวข้อง แล้วกดตำแหน่งเพื่อเปิดข้อมูลย่อย</div></div><div class="estate-zones-note">แก้ไขชื่อนิคมได้ในคอลัมน์ “นิคม”</div></div><div class="estate-zone-grid">${CATALOGUE.map(name=>{const locations=collectLocations(name);const total=locations.reduce((n,x)=>n+x.count,0);return `<button class="estate-zone" data-estate="${name}">${name}<span class="zone-badge">${total||'—'}</span><small>${locations.length?`${locations.length} ตำบล`:(available.has(name)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small></button>`}).join('')}</div><div class="estate-zone-detail" id="estateZoneDetail"></div>`;
+    panel.innerHTML=`<div class="estate-zones-head" id="estateZonesHead" style="cursor:pointer;"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">เลือกชื่อนิคมเพื่อดูอำเภอและตำบลที่เกี่ยวข้อง แล้วกดตำแหน่งเพื่อเปิดข้อมูลย่อย</div></div><div style="display:flex; align-items:center; gap:10px;"><div class="estate-zones-note">แก้ไขชื่อนิคมได้ในคอลัมน์ “นิคม”</div><div class="estate-zones-caret" id="estateZonesCaret">▾</div></div></div><div class="estate-zones-collapse" id="estateZonesCollapse"><div class="estate-zone-grid">${CATALOGUE.map(name=>{const locations=collectLocations(name);const total=locations.reduce((n,x)=>n+x.count,0);return `<button class="estate-zone" data-estate="${name}">${name}<span class="zone-badge">${total||'—'}</span><small>${locations.length?`${locations.length} ตำบล`:(available.has(name)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small></button>`}).join('')}</div><div class="estate-zone-detail" id="estateZoneDetail"></div></div>`;
     page1.appendChild(panel);
     const detail=panel.querySelector('#estateZoneDetail');
+    const collapseWrap = panel.querySelector('#estateZonesCollapse');
+    const caret = panel.querySelector('#estateZonesCaret');
+    panel.querySelector('#estateZonesHead').addEventListener('click', ()=>{
+      const isOpen = collapseWrap.classList.toggle('open');
+      caret.classList.toggle('open', isOpen);
+    });
     panel.addEventListener('click',e=>{
       const zone=e.target.closest('.estate-zone'); if(!zone) return;
       const estate=zone.dataset.estate; const locations=collectLocations(estate);
