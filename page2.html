@@ -415,6 +415,14 @@
   .tambon-panel.active{ display:block; }
   .tambon-panel.jump-highlight{ box-shadow:0 0 0 2px var(--gold); }
 
+  .tambon-chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .tambon-chip{
+    background:var(--panel2); border:1px solid var(--line); border-radius:16px; padding:7px 15px; font-size:11.5px;
+    color:var(--muted); cursor:pointer; font-family:'Kanit',sans-serif; font-weight:500; transition:.15s;
+  }
+  .tambon-chip:hover{ border-color:var(--gold); color:var(--gold-lt); }
+  .tambon-chip.active{ background:var(--gold-dim); border-color:var(--gold); color:var(--gold-lt); font-weight:700; }
+
   .day-list{ display:flex; flex-direction:column; gap:10px; }
   .day-card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
   .day-card-head{
@@ -2077,8 +2085,12 @@ async function buildDistrictBlock(dist, data, num){
   panelWrap.className = 'tambon-panel-wrap';
   panelWrap.id = `${distId}-panelwrap`;
 
+  const tambonChips = document.createElement('div');
+  tambonChips.className = 'tambon-chip-row';
+
   const contentWrap = document.createElement('div');
   contentWrap.appendChild(legend);
+  contentWrap.appendChild(tambonChips);
   contentWrap.appendChild(panelWrap);
 
   block.appendChild(head);
@@ -2088,6 +2100,16 @@ async function buildDistrictBlock(dist, data, num){
   data.chain.forEach((t,i)=>{ tIndexMap[t] = i; });
 
   const labelPrefix = data.noRoad ? 'นิคม' : 'ตำบล';
+
+  const allChip = document.createElement('button');
+  allChip.className = 'tambon-chip active';
+  allChip.textContent = `ทั้งหมด (${data.total_companies})`;
+  allChip.addEventListener('click', ()=>{
+    tambonChips.querySelectorAll('.tambon-chip').forEach(c=> c.classList.remove('active'));
+    allChip.classList.add('active');
+    panelWrap.querySelectorAll('.tambon-panel').forEach(p=> p.classList.add('active'));
+  });
+  tambonChips.appendChild(allChip);
 
   for (let i=0; i<data.sections.length; i++){
     const section = data.sections[i];
@@ -2100,6 +2122,17 @@ async function buildDistrictBlock(dist, data, num){
     panel.id = `${distId}-panel-${idx}`;
     panel.appendChild(card);
     panelWrap.appendChild(panel);
+
+    const chip = document.createElement('button');
+    chip.className = 'tambon-chip';
+    chip.textContent = `${labelPrefix}${section.tambon} (${section.companies.length})`;
+    chip.addEventListener('click', ()=>{
+      tambonChips.querySelectorAll('.tambon-chip').forEach(c=> c.classList.remove('active'));
+      chip.classList.add('active');
+      panelWrap.querySelectorAll('.tambon-panel').forEach(p=> p.classList.toggle('active', p===panel));
+      // no auto-scroll — the list updates in place, the user scrolls down themselves
+    });
+    tambonChips.appendChild(chip);
   }
 
   return block;
@@ -2226,7 +2259,10 @@ async function init(){
     districtBlocks.forEach(x=>{
       const isMatch = x.dist === name;
       x.block.classList.toggle('hidden', !isMatch);
-      if (isMatch) x.block.querySelectorAll('.tambon-panel').forEach(p=> p.classList.add('active'));
+      if (isMatch){
+        x.block.querySelectorAll('.tambon-panel').forEach(p=> p.classList.add('active'));
+        x.block.querySelectorAll('.tambon-chip').forEach((c,i)=> c.classList.toggle('active', i===0));
+      }
     });
   };
 
@@ -3026,13 +3062,13 @@ init();
     if (!areas.length) return;
     const areaButtons = areas.map(([name,data],i)=>`<button class="territory-item ${i===0?'active':''}" data-territory="${name}"><span>${name}</span><span class="territory-count">${data.total_companies.toLocaleString()} แห่ง</span></button>`).join('');
     const card = document.createElement('section'); card.className='territory-map'; card.id='territoryMap';
-    card.innerHTML=`<div class="territory-map-main"><div class="territory-kicker">INTERACTIVE TERRITORY MAP</div><div class="territory-title">แผนที่พื้นที่ปฏิบัติการ · ระยอง</div><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district active" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg><div class="map-tip"><i></i><span>คลิกอำเภอเพื่อ <b>ยกพื้นที่ขึ้น</b> และเปิดข้อมูล</span></div></div><aside class="territory-side"><h3>เลือกพื้นที่ปฏิบัติการ</h3><p>คลิกพื้นที่บนแผนที่หรือรายการ เพื่อไปยังข้อมูลบริษัทในอำเภอนั้น</p><div class="territory-list">${areaButtons}</div><div class="territory-legend"><span><i></i>พื้นที่ให้บริการ</span><span><i class="blue"></i>พื้นที่ที่เลือก</span></div></aside>`;
+    card.innerHTML=`<div class="territory-map-main"><div class="territory-kicker">INTERACTIVE TERRITORY MAP</div><div class="territory-title" contenteditable="true" spellcheck="false" data-editkey="territoryTitle">แผนที่พื้นที่ปฏิบัติการ · ระยอง</div><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district active" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg><div class="map-tip"><i></i><span>คลิกอำเภอเพื่อ <b>ยกพื้นที่ขึ้น</b> และเปิดข้อมูล</span></div></div><aside class="territory-side"><h3>เลือกพื้นที่ปฏิบัติการ</h3><p>คลิกพื้นที่บนแผนที่หรือรายการ เพื่อไปยังข้อมูลบริษัทในอำเภอนั้น</p><div class="territory-list">${areaButtons}</div><div class="territory-legend"><span><i></i>พื้นที่ให้บริการ</span><span><i class="blue"></i>พื้นที่ที่เลือก</span></div></aside>`;
     anchor.insertAdjacentElement('afterend',card);
+    if (typeof bindEditableTexts === 'function') bindEditableTexts(card);
     function selectArea(name){
       card.querySelectorAll('[data-territory]').forEach(el=>el.classList.toggle('active',el.dataset.territory===name));
       if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(name);
-      const block=document.querySelector(`.district-block[data-dist="${name}"]`);
-      if(block){setTimeout(()=>block.scrollIntoView({behavior:'smooth',block:'start'}),30);}
+      // no auto-scroll — the user scrolls down themselves to see the revealed data
     }
     card.addEventListener('click',e=>{const item=e.target.closest('[data-territory]');if(item)selectArea(item.dataset.territory);});
   }
@@ -3077,12 +3113,12 @@ init();
     return found;
   }
   function mountEstateZones(){
-    const anchor=document.getElementById('territoryMap');
-    if(!anchor || document.getElementById('estateZones')) return;
+    const page1=document.getElementById('page1');
+    if(!page1 || document.getElementById('estateZones')) return;
     const panel=document.createElement('section');panel.className='estate-zones';panel.id='estateZones';
     const available=new Set();Object.values(SITE_DATA).forEach(d=>d.sections.forEach(s=>s.companies.forEach(c=>available.add(normalise(c.estate)))));
     panel.innerHTML=`<div class="estate-zones-head"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">เลือกชื่อนิคมเพื่อดูอำเภอและตำบลที่เกี่ยวข้อง แล้วกดตำแหน่งเพื่อเปิดข้อมูลย่อย</div></div><div class="estate-zones-note">แก้ไขชื่อนิคมได้ในคอลัมน์ “นิคม”</div></div><div class="estate-zone-grid">${CATALOGUE.map(name=>{const locations=collectLocations(name);const total=locations.reduce((n,x)=>n+x.count,0);return `<button class="estate-zone" data-estate="${name}">${name}<span class="zone-badge">${total||'—'}</span><small>${locations.length?`${locations.length} ตำบล`:(available.has(name)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small></button>`}).join('')}</div><div class="estate-zone-detail" id="estateZoneDetail"></div>`;
-    anchor.insertAdjacentElement('afterend',panel);
+    page1.appendChild(panel);
     const detail=panel.querySelector('#estateZoneDetail');
     panel.addEventListener('click',e=>{
       const zone=e.target.closest('.estate-zone'); if(!zone) return;
@@ -3094,7 +3130,7 @@ init();
     });
     detail.addEventListener('click',e=>{const location=e.target.closest('[data-district]');if(!location)return;const name=location.dataset.district;if(typeof window.selectDistrictArea==='function')window.selectDistrictArea(name);const block=document.querySelector(`.district-block[data-dist="${name}"]`);if(block){setTimeout(()=>block.scrollIntoView({behavior:'smooth',block:'start'}),20);}});
   }
-  setTimeout(()=>{normaliseEstateData();mountEstateZones();},900);
+  setTimeout(()=>{normaliseEstateData();mountEstateZones();},1400);
 })();
 </script>
 <script>
