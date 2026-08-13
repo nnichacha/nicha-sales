@@ -763,6 +763,16 @@
   .kpi .v{ font-size:16px; }
   .filter-select{ flex:1 1 100%; }
 }
+
+  .territory-map{margin-top:16px;display:grid;grid-template-columns:1fr 310px;border:1px solid #2f4356;border-radius:15px;overflow:hidden;background:linear-gradient(140deg,#0d1b29,#0b141f);box-shadow:0 15px 34px rgba(0,0,0,.18)}
+  .territory-map-main{min-height:390px;position:relative;padding:23px 27px;overflow:hidden;background:radial-gradient(circle at 47% 48%,rgba(43,138,190,.20),transparent 39%),linear-gradient(135deg,#102c47,#07101f 78%)}.territory-map-main:before{content:"";position:absolute;inset:0;opacity:.27;background-image:linear-gradient(rgba(105,181,223,.17) 1px,transparent 1px),linear-gradient(90deg,rgba(105,181,223,.17) 1px,transparent 1px);background-size:20px 20px;transform:perspective(450px) rotateX(56deg) scale(1.4);transform-origin:center 76%;}.territory-map-main:after{content:"";position:absolute;width:470px;height:190px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.68),transparent 67%);left:50%;top:61%;transform:translateX(-50%);pointer-events:none}.territory-kicker{font-family:'Kanit',sans-serif;font-weight:600;font-size:11px;letter-spacing:1.8px;color:var(--gold);position:relative;z-index:4}.territory-title{font-family:'Kanit',sans-serif;color:#fff;font-weight:700;font-size:20px;margin-top:4px;position:relative;z-index:4}
+  .rayong-map{position:absolute;z-index:3;width:min(670px,81%);height:300px;left:48%;top:68px;transform:translateX(-50%);filter:drop-shadow(0 22px 17px rgba(0,0,0,.52));}.rayong-map .district{cursor:pointer;transform-box:fill-box;transform-origin:center;transition:transform .36s cubic-bezier(.2,.8,.2,1),filter .36s}.rayong-map .top{fill:#173d59;stroke:#5ab8e8;stroke-width:1.2;transition:fill .28s,stroke .28s}.rayong-map .side{fill:#09263e;stroke:#236c92;stroke-width:1}.rayong-map .grid{fill:url(#districtGrid);opacity:.5;pointer-events:none}.rayong-map .label{fill:#eef8ff;font-family:'Kanit',sans-serif;font-size:16px;font-weight:700;text-anchor:middle;paint-order:stroke;stroke:#071420;stroke-width:3px;stroke-linejoin:round;pointer-events:none}.rayong-map .district:hover,.rayong-map .district.active{transform:translateY(-16px);filter:drop-shadow(0 18px 10px rgba(0,0,0,.50))}.rayong-map .district:hover .top{fill:#226690;stroke:#8bd9ff}.rayong-map .district.active .top{fill:#287ba8;stroke:#d7b56e;stroke-width:1.6}.rayong-map .district.active .side{fill:#0d3652;stroke:#d7b56e}.map-tip{position:absolute;z-index:5;bottom:18px;left:27px;display:flex;align-items:center;gap:8px;color:#b4c8d8;font-size:11px;background:rgba(4,12,20,.56);border:1px solid rgba(99,168,205,.25);padding:8px 11px;border-radius:7px;backdrop-filter:blur(6px)}.map-tip i{width:7px;height:7px;background:#60c7f0;border-radius:50%;box-shadow:0 0 9px #60c7f0}.map-tip b{color:var(--gold-lt);font-weight:600}
+  .territory-side{padding:22px;background:linear-gradient(180deg,rgba(22,35,52,.96),rgba(13,22,33,.98));border-left:1px solid #2f4356}.territory-side h3{font-family:'Kanit',sans-serif;font-size:15px;color:#fff;margin:0 0 4px}.territory-side p{font-size:11.5px;color:var(--muted);line-height:1.55;margin:0 0 13px}.territory-list{display:flex;flex-direction:column;gap:6px}.territory-item{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 10px;border:1px solid #2c4052;border-radius:7px;background:rgba(5,11,18,.28);font-family:'Kanit',sans-serif;color:#b9c9d5;font-size:11.5px;cursor:pointer;transition:.18s}.territory-item:hover,.territory-item.active{color:#fff;border-color:var(--gold);background:rgba(214,181,111,.10)}.territory-count{color:var(--gold);font-family:'Sarabun',sans-serif;font-weight:600;font-size:10px}.territory-legend{display:flex;gap:13px;margin-top:12px;color:var(--muted);font-size:10px}.territory-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:4px}.territory-legend i.blue{background:#38bdf8}
+  .district-tabs{gap:10px;margin-top:24px}.district-tab{border-radius:11px;background:linear-gradient(145deg,rgba(19,31,46,.96),rgba(13,21,32,.96));padding:13px 17px}.district-tab.active{box-shadow:inset 0 0 0 1px rgba(214,181,111,.22),0 8px 18px rgba(0,0,0,.15)}.district-block{border:1px solid rgba(43,58,75,.72);border-radius:15px;padding:0 20px 20px;background:rgba(13,21,32,.46);margin-top:14px}.district-head{margin-top:0;padding-top:20px}.road-card,.company-table-wrap,.visited-section,.report-form-wrap,.report-list-wrap,.pq-card{border-radius:13px}.visited-section{background:linear-gradient(145deg,rgba(34,197,94,.075),rgba(16,25,38,.92) 42%)}
+  @media(max-width:760px){.page{padding:18px 14px 56px}.masthead{padding:23px 18px}.home-link{position:static;margin-bottom:17px;width:max-content}.territory-map{grid-template-columns:1fr}.territory-side{border-left:0;border-top:1px solid #2f4356}.territory-map-main{min-height:300px}.rayong-map{width:108%;height:225px;top:66px}.rayong-map .label{font-size:12px}.map-tip{bottom:12px;left:12px;font-size:9.5px}h1{font-size:27px}}
+  .estate-zones{margin-top:16px;border:1px solid #30465b;border-radius:15px;background:linear-gradient(145deg,rgba(18,33,49,.96),rgba(10,18,29,.96));overflow:hidden;box-shadow:0 15px 34px rgba(0,0,0,.15)}.estate-zones-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 23px 16px;border-bottom:1px solid rgba(104,148,177,.24)}.estate-zones-title{font-family:'Kanit',sans-serif;color:#fff;font-size:17px;font-weight:700}.estate-zones-desc{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:3px}.estate-zones-note{font-size:10.5px;color:var(--gold-lt);background:rgba(214,181,111,.10);border:1px solid rgba(214,181,111,.24);padding:6px 9px;border-radius:6px;white-space:nowrap}.estate-zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px;padding:16px 20px}.estate-zone{position:relative;text-align:left;padding:10px 11px;border-radius:8px;border:1px solid #30465b;background:rgba(4,11,18,.34);color:#d9e6ee;font-family:'Kanit',sans-serif;font-size:12px;cursor:pointer;transition:.18s}.estate-zone:hover,.estate-zone.active{transform:translateY(-2px);border-color:var(--gold);background:rgba(214,181,111,.11);color:#fff}.estate-zone small{display:block;color:#86a0b3;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:3px}.estate-zone .zone-badge{position:absolute;right:8px;top:8px;min-width:18px;text-align:center;color:var(--gold);font-family:'Sarabun',sans-serif;font-size:10px}.estate-zone-detail{display:none;margin:0 20px 19px;padding:14px 16px;border-radius:10px;background:rgba(5,12,20,.55);border:1px solid rgba(74,121,151,.35)}.estate-zone-detail.open{display:block}.estate-zone-detail-title{font-family:'Kanit',sans-serif;color:#fff;font-size:14px;font-weight:700;margin-bottom:8px}.estate-location-list{display:flex;flex-wrap:wrap;gap:7px}.estate-location{border:1px solid #2e4a60;border-radius:6px;background:#101e2c;padding:6px 9px;color:#b7cad7;font-size:11px;cursor:pointer}.estate-location:hover{border-color:#61c7ef;color:#fff}.estate-location b{color:#71cbed;font-weight:600}.estate-empty{font-size:11px;color:var(--muted)}@media(max-width:760px){.estate-zones-head{padding:17px;display:block}.estate-zones-note{display:inline-block;margin-top:10px}.estate-zone-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}.estate-zone-detail{margin:0 12px 13px}}
+  .company-controls{margin-top:16px!important;padding:16px 18px!important;border:1px solid #30465b!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(17,31,46,.96),rgba(10,19,29,.96))!important;box-shadow:0 12px 28px rgba(0,0,0,.14)}.company-controls .search-box{min-width:300px}@media(max-width:760px){.company-controls{padding:12px!important}.company-controls .search-box{min-width:100%}}
+  .company-directory{margin-top:14px;border:1px solid #30465b;border-radius:14px;background:rgba(10,19,29,.92);overflow:hidden}.company-directory-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;border-bottom:1px solid rgba(100,148,179,.25)}.company-directory-title{font-family:'Kanit',sans-serif;font-size:15px;color:#fff;font-weight:700}.company-directory-count{font-size:11px;color:var(--gold-lt);background:rgba(214,181,111,.11);border:1px solid rgba(214,181,111,.22);padding:3px 8px;border-radius:12px}.company-directory-list{max-height:410px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:#2d4354}.company-directory-item{display:block;padding:9px 12px;background:#101d2a;color:#e5f0f5;font-family:'Kanit',sans-serif;font-size:11.5px;line-height:1.35}.company-directory-item small{display:block;color:#87a1b2;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:2px}.company-directory-empty{padding:28px;color:var(--muted);font-size:12px;text-align:center}.company-directory-list::-webkit-scrollbar{width:8px}.company-directory-list::-webkit-scrollbar-thumb{background:#3b566a;border-radius:8px}
 </style>
 </head>
 <body>
@@ -887,22 +897,6 @@
       <div class="visited-caret" id="visitedCaret">▾</div>
     </div>
     <div class="visited-body" id="visitedBody"></div>
-  </div>
-
-  <div class="visited-section" id="estateZoneSection" style="margin-top:14px;">
-    <div class="visited-head" id="estateZoneHead">
-      <div class="visited-head-left">
-        <div class="visited-icon" style="background:var(--gold-dim); border-color:var(--gold);">
-          <svg viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="var(--gold)"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        </div>
-        <div>
-          <div class="visited-title">เรียกดูตามนิคมอุตสาหกรรม</div>
-          <div class="visited-meta" id="estateZoneMeta">0 นิคม</div>
-        </div>
-      </div>
-      <div class="visited-caret" id="estateZoneCaret">▾</div>
-    </div>
-    <div class="visited-body" id="estateZoneBody"></div>
   </div>
 
   <div class="vc-modal-overlay" id="vcModalOverlay">
@@ -1496,102 +1490,6 @@ function refreshContactSummaryFromCache(){
 
 let visitedFilterDist = 'all';
 let visitedFilterStatus = 'all';
-let openEstateZone = null;
-
-function buildEstateIndex(){
-  const index = {};
-  ESTATE_OPTIONS.forEach(o=>{ index[o.code] = {companies:[], locations:new Set()}; });
-  Object.entries(SITE_DATA).forEach(([dist, d])=>{
-    d.sections.forEach(s=> s.companies.forEach(c=>{
-      const key = c.estate && index[c.estate] ? c.estate : null;
-      if (!key) return;
-      index[key].companies.push({...c, amphoe:dist});
-      index[key].locations.add(`${s.tambon}|${dist}`);
-    }));
-  });
-  return index;
-}
-
-function refreshEstateZoneView(){
-  renderEstateZoneView();
-}
-
-function renderEstateZoneView(){
-  const body = document.getElementById('estateZoneBody');
-  const meta = document.getElementById('estateZoneMeta');
-  if (!body) return;
-
-  const index = buildEstateIndex();
-  const withData = ESTATE_OPTIONS.filter(o => index[o.code].companies.length > 0);
-  meta.textContent = `${withData.length} นิคมมีข้อมูล / ${ESTATE_OPTIONS.length} นิคมทั้งหมด`;
-
-  if (withData.length === 0){
-    body.innerHTML = `<div class="visited-empty">ยังไม่มีบริษัทที่ระบุนิคมไว้ — เลือกนิคมในตารางบริษัทแต่ละแถวก่อน แล้วจะขึ้นสรุปที่นี่</div>`;
-    return;
-  }
-
-  const cardsHtml = ESTATE_OPTIONS.map(o=>{
-    const info = index[o.code];
-    const n = info.companies.length;
-    const isOpen = openEstateZone === o.code;
-    const locs = [...info.locations].map(l=>{
-      const [tambon, amphoe] = l.split('|');
-      return `ตำบล${tambon} · อำเภอ${amphoe}`;
-    });
-    const companyListHtml = info.companies
-      .slice().sort((a,b)=> a.name.localeCompare(b.name,'th'))
-      .map(c=>`<div class="ez-company" data-id="${c.id}">
-        <span class="ez-company-name">${c.name}</span>
-        <span class="ez-company-loc">ตำบล${c.tambon} · อำเภอ${c.amphoe}</span>
-      </div>`).join('');
-    return `<div class="ez-card ${n===0?'ez-empty':''}" data-estate="${o.code}">
-      <div class="ez-card-head">
-        <div><div class="ez-card-name">${o.code}</div><div class="ez-card-fullname">${o.full}</div></div>
-        <div class="ez-card-count">${n} บริษัท</div>
-      </div>
-      ${n>0 ? `<div class="ez-card-loc">${locs.join(' · ')}</div>` : ''}
-      ${isOpen && n>0 ? `<div class="ez-company-list">${companyListHtml}</div>` : ''}
-    </div>`;
-  }).join('');
-
-  body.innerHTML = `<div class="ez-grid">${cardsHtml}</div>`;
-
-  body.querySelectorAll('.ez-card').forEach(card=>{
-    const code = card.dataset.estate;
-    if (index[code].companies.length === 0) return;
-    card.querySelector('.ez-card-head').addEventListener('click', ()=>{
-      openEstateZone = openEstateZone === code ? null : code;
-      renderEstateZoneView();
-    });
-  });
-  body.querySelectorAll('.ez-company').forEach(row=>{
-    row.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      const id = row.dataset.id;
-      const trRow = document.querySelector(`tr[data-id="${id}"]`);
-      const info = companyIdToInfo[id];
-      if (info){
-        const distBlock = document.querySelector(`.district-block[data-dist="${info.amphoe}"]`);
-        if (distBlock && distBlock.classList.contains('hidden')){
-          distBlock.classList.remove('hidden');
-          document.getElementById('districtEmptyState').style.display = 'none';
-        }
-      }
-      setTimeout(()=>{
-        const r = document.querySelector(`tr[data-id="${id}"]`);
-        if (r){
-          const panel = r.closest('.tambon-panel');
-          if (panel) panel.classList.add('active');
-          r.scrollIntoView({behavior:'smooth', block:'center'});
-          r.style.transition = 'box-shadow .3s ease';
-          r.style.boxShadow = 'inset 0 0 0 2px var(--gold)';
-          setTimeout(()=>{ r.style.boxShadow = ''; }, 1800);
-        }
-      }, 150);
-    });
-  });
-}
-
 function renderVisitedSection(){
   const body = document.getElementById('visitedBody');
   const meta = document.getElementById('visitedMeta');
@@ -2025,7 +1923,6 @@ async function renderCompanyRow(c, dist){
     c.estate = val;
     persistFieldEdit(c.id, {estate: val});
     refreshEstateFilterOptions();
-    refreshEstateZoneView();
   });
 
   function persist(){
@@ -2148,245 +2045,6 @@ async function buildTambonSection(dist, section, distId, tIndex, labelPrefix){
   });
 
   return card;
-}
-
-
-// as they were, nothing else disappears.
-const PRECISE_MAP = {"districts": {"viewbox": {"x": -280.0, "y": -249.81600000000003, "w": 1560.0, "h": 1391.832}, "items": [{"name": "ปลวกแดง", "path": "M 804.3,241.0 L 788.3,229.7 L 781.7,188.1 L 729.7,127.6 L 699.4,117.2 L 649.3,52.0 L 632.3,47.3 L 613.4,28.4 L 584.1,54.8 L 566.2,54.8 L 548.2,71.8 L 543.5,88.8 L 503.8,81.3 L 474.5,50.1 L 460.3,48.2 L 434.8,73.7 L 397.0,47.3 L 374.3,49.1 L 373.3,64.3 L 345.9,94.5 L 353.5,112.5 L 330.8,127.6 L 285.4,110.6 L 265.6,111.5 L 296.8,177.7 L 294.0,190.0 L 284.5,178.6 L 278.8,189.0 L 271.3,174.8 L 263.7,177.7 L 257.1,208.9 L 216.4,181.5 L 190.0,188.1 L 160.7,161.6 L 146.5,168.2 L 114.4,147.4 L 72.8,193.8 L 87.0,205.1 L 109.6,198.5 L 130.4,259.9 L 149.3,270.3 L 121.9,311.9 L 118.1,380.9 L 151.2,380.9 L 187.1,336.5 L 201.3,349.7 L 249.5,360.1 L 254.3,397.0 L 294.9,400.7 L 309.1,414.9 L 329.9,416.8 L 314.7,440.4 L 331.8,451.8 L 324.2,455.6 L 339.3,457.4 L 326.1,473.5 L 345.9,501.9 L 380.0,494.3 L 400.8,503.8 L 418.7,474.5 L 485.8,496.2 L 501.9,479.2 L 521.7,477.3 L 537.8,445.2 L 553.9,431.9 L 546.3,398.8 L 569.9,380.9 L 601.1,399.8 L 610.6,375.2 L 605.9,356.3 L 622.9,352.5 L 635.2,326.1 L 671.1,315.7 L 687.1,288.3 L 718.3,314.7 L 713.6,334.6 L 731.6,343.1 L 729.7,356.3 L 750.5,362.0 L 772.2,334.6 L 791.1,345.0 L 813.8,305.3 L 804.3,281.6 Z", "anchor": [436.6, 265.6], "label_pos": [383.6, 114.7], "text_anchor": "end"}, {"name": "บ้านค่าย", "path": "M 966.0,347.8 L 903.6,328.9 L 894.1,335.5 L 865.8,314.7 L 850.7,314.7 L 826.1,287.3 L 809.1,282.6 L 816.6,306.2 L 793.0,346.9 L 772.2,338.4 L 747.6,364.8 L 725.9,356.3 L 728.7,344.0 L 710.8,335.5 L 715.5,315.7 L 687.1,292.0 L 673.0,317.6 L 637.1,328.0 L 624.8,354.4 L 608.7,359.1 L 613.4,375.2 L 602.1,402.6 L 570.9,384.7 L 549.1,398.8 L 556.7,432.9 L 540.6,445.2 L 521.7,480.1 L 502.8,481.1 L 485.8,499.0 L 419.7,477.3 L 397.0,517.0 L 406.4,522.7 L 396.0,541.6 L 403.6,545.3 L 405.5,559.5 L 414.9,542.5 L 419.7,563.3 L 398.9,567.1 L 392.2,549.1 L 391.3,565.2 L 381.9,568.0 L 374.3,583.1 L 370.5,612.4 L 397.0,622.8 L 406.4,653.1 L 403.6,681.4 L 427.2,707.0 L 435.7,751.4 L 449.0,767.4 L 442.3,773.1 L 517.0,812.8 L 553.9,823.2 L 572.8,852.5 L 571.8,862.0 L 590.7,861.0 L 617.2,800.5 L 637.1,793.9 L 664.5,769.3 L 696.6,724.9 L 742.0,708.8 L 775.0,710.7 L 800.6,696.6 L 800.6,658.8 L 810.0,647.4 L 801.5,629.5 L 828.0,577.5 L 848.8,586.9 L 839.3,568.0 L 841.2,508.5 L 870.5,517.0 L 908.3,507.5 L 933.8,522.7 L 958.4,464.1 L 914.0,464.1 L 875.2,437.6 L 875.2,419.6 L 894.1,399.8 L 947.1,375.2 Z", "anchor": [647.7, 523.6], "label_pos": [789.3, 598.0], "text_anchor": "start"}, {"name": "นิคมพัฒนา", "path": "M 119.1,383.7 L 113.4,402.6 L 98.3,413.0 L 96.4,438.5 L 84.1,451.8 L 86.0,477.3 L 60.5,522.7 L 68.1,537.8 L 66.2,567.1 L 34.0,611.5 L 73.7,599.2 L 125.7,632.3 L 155.0,627.6 L 159.7,634.2 L 190.0,611.5 L 202.3,618.1 L 209.8,630.4 L 231.6,635.1 L 232.5,652.1 L 246.7,661.6 L 243.9,676.7 L 274.1,703.2 L 270.3,721.1 L 276.0,731.5 L 311.9,731.5 L 342.2,753.3 L 377.1,770.3 L 390.4,757.0 L 432.9,751.4 L 424.4,707.0 L 400.8,682.4 L 403.6,653.1 L 395.1,625.7 L 367.7,613.4 L 371.5,583.1 L 380.0,566.1 L 372.4,567.1 L 369.6,560.5 L 362.9,567.1 L 356.3,565.2 L 356.3,546.3 L 362.9,541.6 L 376.2,543.4 L 379.0,556.7 L 383.7,558.6 L 383.7,544.4 L 392.2,543.4 L 402.6,523.6 L 393.2,518.9 L 398.9,505.6 L 380.0,497.1 L 344.0,503.8 L 322.3,472.6 L 333.6,458.4 L 309.1,457.4 L 326.1,451.8 L 311.0,440.4 L 326.1,417.7 L 308.1,417.7 L 294.9,403.6 L 274.1,404.5 L 265.6,397.0 L 253.3,400.7 L 247.6,362.0 L 201.3,352.5 L 188.1,340.2 L 153.1,382.8 Z", "anchor": [275.3, 551.3], "label_pos": [130.4, 619.1], "text_anchor": "end"}]}, "tambons": {"ปลวกแดง": {"viewbox": {"x": -240.0, "y": -155.424, "w": 1480.0, "h": 958.4480000000001}, "items": [{"name": "หนองไร่", "path": "M 534.1,122.5 L 531.6,139.1 L 567.8,188.8 L 669.2,228.4 L 675.2,248.0 L 689.8,247.5 L 696.3,232.4 L 718.4,234.4 L 820.3,272.6 L 833.8,288.2 L 809.7,353.4 L 847.4,386.0 L 841.4,411.7 L 864.0,420.7 L 860.9,438.8 L 889.1,446.8 L 917.2,410.6 L 940.3,425.2 L 970.4,371.5 L 958.3,343.4 L 957.8,291.2 L 937.2,277.1 L 929.2,224.9 L 863.0,147.1 L 821.3,131.5 L 760.0,50.7 L 738.5,45.2 L 714.9,21.1 L 678.7,54.7 L 655.6,55.2 L 631.5,76.8 L 626.5,116.0 L 591.4,102.4 L 565.8,120.5 Z", "anchor": [767.8, 233.1], "label_pos": [900.4, 188.2], "text_anchor": "start"}, {"name": "ตาสิทธิ์", "path": "M 273.6,126.5 L 292.7,181.7 L 313.8,198.3 L 332.8,234.9 L 357.9,204.8 L 385.5,216.4 L 410.6,200.3 L 414.2,226.4 L 435.7,252.5 L 443.3,228.9 L 478.9,232.9 L 468.9,244.5 L 483.4,259.0 L 524.6,255.5 L 554.7,219.4 L 551.2,172.2 L 529.1,137.6 L 532.6,122.0 L 565.8,119.0 L 590.9,100.9 L 625.5,114.0 L 626.0,98.9 L 575.3,87.9 L 542.7,50.2 L 521.1,46.2 L 490.0,79.3 L 438.8,44.7 L 410.1,48.7 L 410.1,67.3 L 375.0,106.4 L 386.0,128.0 L 352.9,149.6 L 299.2,125.5 Z", "anchor": [454.3, 154.0], "label_pos": [418.0, 18.8], "text_anchor": "end"}, {"name": "มาบยางพร", "path": "M 29.6,232.4 L 49.7,248.0 L 77.3,239.0 L 86.8,255.0 L 102.9,317.3 L 127.0,329.3 L 91.4,382.5 L 87.9,470.9 L 131.0,469.4 L 175.2,413.7 L 193.3,430.2 L 313.8,455.8 L 348.4,411.7 L 398.1,407.6 L 411.1,420.2 L 470.4,385.0 L 489.5,388.6 L 472.9,373.0 L 450.8,377.5 L 437.2,366.5 L 381.5,379.0 L 361.4,358.9 L 349.4,360.9 L 345.9,329.3 L 321.8,319.8 L 310.2,284.1 L 274.1,258.5 L 234.9,253.5 L 211.3,214.9 L 179.2,223.9 L 141.6,189.8 L 123.5,198.3 L 82.3,171.7 Z", "anchor": [250.3, 330.8], "label_pos": [110.4, 334.7], "text_anchor": "end"}, {"name": "ละหาร", "path": "M 552.7,174.2 L 556.2,219.4 L 526.1,256.0 L 606.9,319.3 L 596.4,355.9 L 637.6,390.6 L 639.1,408.6 L 609.4,435.7 L 616.5,479.4 L 632.0,490.5 L 659.6,470.4 L 700.8,494.5 L 712.9,460.3 L 706.3,439.3 L 726.4,436.3 L 743.5,400.1 L 790.7,386.0 L 808.2,352.4 L 832.3,287.7 L 820.3,274.1 L 718.9,235.9 L 697.3,233.9 L 690.3,249.0 L 674.7,249.5 L 668.7,229.9 L 569.8,191.3 Z", "anchor": [672.8, 343.1], "label_pos": [812.0, 358.6], "text_anchor": "start"}, {"name": "ปลวกแดง", "path": "M 214.9,216.9 L 235.4,252.0 L 274.1,257.0 L 311.7,283.6 L 322.8,318.8 L 347.4,328.3 L 349.9,358.9 L 361.9,357.4 L 382.0,377.5 L 437.2,365.0 L 450.8,376.0 L 473.4,371.5 L 493.0,389.6 L 513.6,400.6 L 523.1,421.2 L 542.2,416.7 L 608.4,452.8 L 607.9,435.7 L 637.6,408.6 L 636.5,391.6 L 594.9,356.4 L 604.4,318.8 L 525.1,257.0 L 483.4,260.5 L 466.9,244.5 L 475.9,232.9 L 443.8,230.4 L 435.7,255.0 L 412.7,226.9 L 410.1,202.3 L 385.5,217.9 L 358.4,206.3 L 332.8,237.0 L 313.8,201.3 L 311.2,226.9 L 297.7,210.8 L 292.2,225.9 L 282.1,206.8 L 269.6,212.4 L 264.6,250.0 Z", "anchor": [417.1, 299.0], "label_pos": [283.0, 258.8], "text_anchor": "end"}, {"name": "แม่น้ำคู้", "path": "M 609.4,454.8 L 542.2,418.2 L 522.1,422.7 L 513.6,402.1 L 492.5,390.6 L 473.4,386.6 L 411.1,421.7 L 397.6,409.1 L 348.9,413.2 L 314.3,457.3 L 256.0,445.8 L 259.0,491.5 L 275.1,486.5 L 285.6,496.5 L 311.2,494.5 L 329.3,513.6 L 355.9,514.6 L 334.8,543.7 L 357.4,559.7 L 337.3,564.8 L 366.5,565.3 L 348.9,583.8 L 377.0,624.0 L 418.2,613.0 L 445.8,626.0 L 467.9,588.9 L 555.2,616.5 L 573.8,594.4 L 599.9,591.9 L 621.0,549.7 L 641.6,533.6 L 631.0,492.5 L 615.5,480.4 Z", "anchor": [436.0, 507.5], "label_pos": [390.0, 639.7], "text_anchor": "end"}]}, "นิคมพัฒนา": {"viewbox": {"x": -240.0, "y": -256.488, "w": 1480.0, "h": 1581.676}, "items": [{"name": "พนานิคม", "path": "M 233.9,136.3 L 223.2,179.2 L 188.3,203.9 L 230.2,251.6 L 559.0,448.5 L 637.3,300.4 L 680.8,305.8 L 725.9,295.6 L 684.5,267.7 L 723.2,214.6 L 677.0,214.1 L 644.3,179.7 L 597.1,182.9 L 577.8,164.7 L 547.7,174.4 L 540.2,85.8 L 427.0,61.2 L 396.5,31.7 L 314.4,133.6 Z", "anchor": [505.7, 201.7], "label_pos": [508.3, 52.1], "text_anchor": "middle"}, {"name": "มะขามคู่", "path": "M 187.8,206.6 L 183.5,262.3 L 155.0,294.0 L 159.9,350.3 L 130.9,409.9 L 99.8,458.7 L 118.0,495.2 L 112.1,563.3 L 32.2,670.6 L 133.0,639.0 L 249.5,713.5 L 261.8,715.1 L 321.4,703.9 L 332.1,721.6 L 400.8,667.4 L 430.3,680.8 L 558.5,449.6 L 229.1,252.7 Z", "anchor": [227.5, 514.1], "label_pos": [78.3, 503.1], "text_anchor": "end"}, {"name": "นิคมพัฒนา", "path": "M 742.5,307.4 L 636.8,303.1 L 561.2,449.6 L 430.3,683.0 L 445.3,710.9 L 496.2,717.8 L 551.0,750.0 L 541.8,704.4 L 586.9,686.7 L 635.2,601.9 L 754.3,672.8 L 815.5,669.5 L 826.2,597.1 L 898.6,458.7 L 875.5,451.2 L 891.6,420.6 L 840.1,396.5 L 763.9,416.3 L 710.3,340.1 Z", "anchor": [684.4, 544.1], "label_pos": [833.8, 552.0], "text_anchor": "start"}, {"name": "มาบข่า", "path": "M 496.8,720.5 L 498.4,760.2 L 531.7,779.5 L 523.1,814.9 L 595.5,878.8 L 584.8,914.7 L 599.8,945.3 L 683.5,944.2 L 753.8,994.7 L 839.6,1037.0 L 866.4,1003.8 L 968.9,989.8 L 946.9,884.7 L 892.2,826.7 L 900.2,764.5 L 876.1,688.9 L 816.5,671.2 L 753.2,673.8 L 635.2,604.1 L 588.0,687.8 L 543.5,705.0 L 551.5,752.7 Z", "anchor": [702.1, 820.1], "label_pos": [788.5, 942.3], "text_anchor": "start"}]}, "บ้านค่าย": {"viewbox": {"x": -240.0, "y": -234.93599999999998, "w": 1480.0, "h": 1448.772}, "items": [{"name": "หนองบัว", "path": "M 969.9,133.5 L 865.5,101.9 L 852.9,112.4 L 807.2,79.3 L 784.6,80.3 L 745.5,36.6 L 715.4,29.1 L 730.4,65.8 L 691.3,133.0 L 662.1,115.0 L 625.5,159.1 L 589.9,147.6 L 594.9,126.0 L 566.8,115.0 L 574.3,82.8 L 528.1,42.7 L 505.0,84.8 L 447.3,101.4 L 427.2,145.1 L 402.6,149.1 L 410.6,174.7 L 395.1,218.4 L 342.9,188.2 L 309.2,213.4 L 322.3,264.6 L 332.8,274.6 L 317.8,302.2 L 348.4,383.0 L 333.3,417.7 L 339.4,484.4 L 398.1,492.0 L 485.4,430.2 L 514.1,393.1 L 566.3,375.0 L 585.3,348.9 L 639.6,333.8 L 658.1,235.9 L 710.3,220.4 L 706.8,244.0 L 718.9,257.0 L 806.7,256.5 L 824.3,272.1 L 824.3,246.5 L 853.9,215.9 L 938.8,175.7 Z", "anchor": [594.9, 210.2], "label_pos": [639.9, 77.6], "text_anchor": "start"}, {"name": "บางบุตร", "path": "M 956.3,312.7 L 885.5,314.8 L 806.7,258.0 L 718.4,258.5 L 705.3,244.5 L 708.8,221.9 L 659.6,236.9 L 640.6,335.3 L 586.8,349.9 L 567.3,376.0 L 514.6,394.6 L 486.9,430.7 L 399.1,493.0 L 338.4,486.9 L 319.3,526.6 L 323.3,591.9 L 313.3,603.4 L 347.9,613.4 L 414.2,596.4 L 426.2,604.9 L 500.0,567.3 L 531.6,565.8 L 577.3,592.9 L 598.9,571.8 L 623.5,583.3 L 659.6,554.7 L 708.3,576.3 L 748.0,495.5 L 784.1,512.5 L 767.6,477.9 L 770.6,384.5 L 810.2,400.6 L 873.5,384.5 L 916.2,410.1 Z", "anchor": [617.3, 450.8], "label_pos": [750.3, 407.0], "text_anchor": "start"}, {"name": "หนองละลอก", "path": "M 322.3,266.6 L 296.7,285.6 L 269.1,339.9 L 237.4,341.9 L 215.9,369.5 L 106.4,334.8 L 69.8,400.6 L 85.3,407.1 L 35.6,502.0 L 28.6,549.7 L 68.8,562.2 L 85.8,614.4 L 115.5,623.0 L 166.7,680.2 L 203.8,699.3 L 218.4,734.9 L 289.7,747.0 L 310.7,605.4 L 321.8,591.4 L 317.8,535.1 L 321.8,519.1 L 319.8,509.0 L 315.3,509.5 L 315.3,518.6 L 311.2,509.0 L 320.8,505.5 L 324.3,513.5 L 337.9,485.4 L 331.8,417.7 L 346.9,384.0 L 316.3,302.2 L 331.3,275.6 Z", "anchor": [239.3, 488.7], "label_pos": [99.3, 488.4], "text_anchor": "end"}, {"name": "ชากบก", "path": "M 722.4,602.9 L 708.8,577.8 L 660.6,556.2 L 623.5,584.8 L 599.4,573.3 L 577.3,594.4 L 536.1,567.3 L 500.0,568.8 L 424.7,607.4 L 390.1,651.6 L 380.5,683.7 L 381.5,688.2 L 378.0,691.8 L 366.0,732.9 L 402.1,750.5 L 456.8,751.0 L 541.2,727.4 L 613.0,701.8 L 665.7,704.3 L 710.8,678.7 L 707.3,621.0 Z", "anchor": [540.3, 648.4], "label_pos": [574.7, 784.1], "text_anchor": "start"}, {"name": "บ้านค่าย", "path": "M 415.2,597.9 L 350.9,614.9 L 312.2,605.4 L 293.7,747.0 L 297.2,751.5 L 298.7,747.5 L 303.2,749.0 L 304.2,756.5 L 306.7,754.0 L 306.7,748.5 L 310.2,748.5 L 311.7,758.5 L 307.2,761.0 L 305.2,781.1 L 321.3,788.6 L 349.9,767.6 L 350.9,731.9 L 365.0,731.4 L 377.0,691.3 L 375.5,689.2 L 369.5,689.2 L 369.5,683.2 L 367.0,679.2 L 368.5,677.2 L 371.5,677.2 L 373.5,679.7 L 374.0,686.2 L 376.5,683.7 L 376.5,678.2 L 379.0,677.2 L 380.5,679.7 L 389.1,650.6 L 424.2,606.4 Z", "anchor": [347.9, 705.1], "label_pos": [267.3, 819.5], "text_anchor": "end"}, {"name": "ตาขัน", "path": "M 540.2,728.9 L 458.3,752.0 L 402.1,752.0 L 364.5,733.9 L 352.9,732.4 L 351.4,768.1 L 321.3,790.1 L 305.7,782.6 L 302.7,783.6 L 260.5,863.4 L 319.3,881.5 L 346.4,925.2 L 343.9,947.3 L 352.9,934.7 L 378.0,939.7 L 420.2,842.9 L 449.3,834.8 L 496.5,792.2 Z", "anchor": [375.9, 821.4], "label_pos": [326.9, 952.5], "text_anchor": "end"}]}}};
-
-let currentMapDistrict = null;
-let currentMapTambon = null;
-
-const MAP_SVG_DEFS = `
-  <linearGradient id="activeBevel" x1="15%" y1="10%" x2="85%" y2="95%">
-    <stop offset="0%" stop-color="#3F86D6"/>
-    <stop offset="45%" stop-color="#1B4F85"/>
-    <stop offset="100%" stop-color="#0B2E52"/>
-  </linearGradient>
-  <filter id="softDrop" x="-60%" y="-60%" width="220%" height="220%">
-    <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000000" flood-opacity="0.45"/>
-  </filter>
-  <filter id="softDropStrong" x="-80%" y="-80%" width="260%" height="260%">
-    <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#000000" flood-opacity="0.55"/>
-  </filter>
-`;
-
-const DISTRICT_FIT_TRANSFORM = {"ปลวกแดง": {"scale": 0.7388, "tx": 73.9, "ty": 27.1}, "บ้านค่าย": {"scale": 0.5932, "tx": 372.1, "ty": 282.7}, "นิคมพัฒนา": {"scale": 0.4003, "tx": 33.1, "ty": 341.3}};
-
-let currentOpenDistrict = null;
-let currentActiveTambon = null;
-
-function buildDistrictMap(districtBlocks, onSelectDistrict){
-  const stage = document.getElementById('districtMapStage');
-  if (!stage) return;
-  renderPersistentMap(stage, districtBlocks);
-}
-
-function computeAreaSummary(dist, tambonName){
-  const data = SITE_DATA[dist];
-  if (!data) return null;
-  let sections = data.sections;
-  if (tambonName) sections = sections.filter(s=>s.tambon===tambonName);
-  let target=0, nontarget=0, unknown=0;
-  sections.forEach(s=> s.companies.forEach(c=>{
-    if (c.diwStatus==='target') target++;
-    else if (c.diwStatus==='nontarget') nontarget++;
-    else unknown++;
-  }));
-  return {target, nontarget, unknown, total: target+nontarget+unknown};
-}
-
-function showMapSummary(title, stats, note){
-  const el = document.getElementById('dmSummary');
-  if (!el) return;
-  if (!stats){ el.style.display = 'none'; return; }
-  el.style.display = '';
-  el.innerHTML = `
-    <div class="dm-summary-title">${title}</div>
-    <div class="dm-summary-stats">
-      <div class="dms-item"><b>${stats.total}</b><span>บริษัททั้งหมด</span></div>
-      <div class="dms-item dms-target"><b>${stats.target}</b><span>เป้าหมาย</span></div>
-      <div class="dms-item dms-nontarget"><b>${stats.nontarget}</b><span>ไม่เกี่ยวข้อง</span></div>
-      <div class="dms-item dms-unknown"><b>${stats.unknown}</b><span>ยังไม่ทราบ</span></div>
-    </div>
-    <div class="dm-summary-note">${note || 'เลื่อนลงไปดูรายชื่อบริษัททั้งหมดได้ด้านล่าง'}</div>
-  `;
-}
-
-function buildZoneGroup(svgNS, item, extraClass, dataAttr, dataVal){
-  const group = document.createElementNS(svgNS, 'g');
-  group.setAttribute('class', extraClass + '-zone');
-  group.dataset[dataAttr] = dataVal;
-
-  const glowWrap = document.createElementNS(svgNS, 'g');
-  glowWrap.setAttribute('class', 'glow-wrap');
-
-  const fillPath = document.createElementNS(svgNS, 'path');
-  fillPath.setAttribute('d', item.path);
-  fillPath.setAttribute('class', 'glow-fill');
-  glowWrap.appendChild(fillPath);
-
-  group.appendChild(glowWrap);
-
-  // leader-line callout: hidden by default, revealed on hover — a thin glowing
-  // line from the shape out to its name, sitting in the surrounding empty space
-  if (item.anchor && item.label_pos){
-    const callout = document.createElementNS(svgNS, 'g');
-    callout.setAttribute('class', 'zone-callout');
-
-    const bendX = item.anchor[0] + (item.label_pos[0]-item.anchor[0]) * 0.55;
-    const bendY = item.anchor[1] + (item.label_pos[1]-item.anchor[1]) * 0.15;
-    const line = document.createElementNS(svgNS, 'polyline');
-    line.setAttribute('points', `${item.anchor[0]},${item.anchor[1]} ${bendX},${bendY} ${item.label_pos[0]},${item.label_pos[1]}`);
-    line.setAttribute('class', 'zone-callout-line');
-    callout.appendChild(line);
-
-    const dot = document.createElementNS(svgNS, 'circle');
-    dot.setAttribute('cx', item.anchor[0]); dot.setAttribute('cy', item.anchor[1]); dot.setAttribute('r', 4);
-    dot.setAttribute('class', 'zone-callout-dot');
-    callout.appendChild(dot);
-
-    const labelX = item.label_pos[0] + (item.text_anchor==='start' ? 8 : item.text_anchor==='end' ? -8 : 0);
-    const label = document.createElementNS(svgNS, 'text');
-    label.setAttribute('x', labelX); label.setAttribute('y', item.label_pos[1]);
-    label.setAttribute('class', 'zone-callout-label ' + (extraClass==='district' ? 'district-callout-label' : 'tambon-callout-label'));
-    label.setAttribute('text-anchor', item.text_anchor || 'middle');
-    label.textContent = item.name;
-    callout.appendChild(label);
-
-    group.appendChild(callout);
-  }
-
-  return group;
-}
-
-function renderPersistentMap(stage, districtBlocks){
-  stage.innerHTML = '';
-  currentOpenDistrict = null;
-  currentActiveTambon = null;
-  document.getElementById('dmHint').textContent = 'คลิกอำเภอบนแผนที่เพื่อดูข้อมูล — คลิกซ้ำเพื่อย่อกลับ';
-  document.getElementById('dmBack').style.display = 'none';
-  document.getElementById('dmMapHeaderBar').style.display = 'none';
-  showMapSummary(null, null);
-  districtBlocks.forEach(x=> x.block.classList.add('hidden'));
-  document.getElementById('districtEmptyState').style.display = '';
-
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const vb = PRECISE_MAP.districts.viewbox;
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${vb.w} ${vb.h}`);
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  svg.classList.add('precise-map-svg');
-
-  const defs = document.createElementNS(svgNS, 'defs');
-  defs.innerHTML = MAP_SVG_DEFS;
-  svg.appendChild(defs);
-
-  PRECISE_MAP.districts.items.forEach(item=>{
-    const group = buildZoneGroup(svgNS, item, 'district', 'dist', item.name);
-
-    // nested tambon sub-map, scaled + positioned to sit inside this district's own shape
-    const tambonData = PRECISE_MAP.tambons[item.name];
-    const fitT = DISTRICT_FIT_TRANSFORM[item.name];
-    let nestedGroup = null;
-    if (tambonData && fitT){
-      nestedGroup = document.createElementNS(svgNS, 'g');
-      nestedGroup.setAttribute('class', 'nested-tambon-group');
-      nestedGroup.setAttribute('transform', `translate(${fitT.tx},${fitT.ty}) scale(${fitT.scale})`);
-      nestedGroup.style.opacity = '0';
-      nestedGroup.style.pointerEvents = 'none';
-
-      tambonData.items.forEach(tItem=>{
-        const tGroup = buildZoneGroup(svgNS, tItem, 'tambon', 'tambon', tItem.name);
-        tGroup.addEventListener('mouseenter', (e)=>{ e.stopPropagation(); tGroup.classList.add('hovered'); });
-        tGroup.addEventListener('mouseleave', (e)=>{ e.stopPropagation(); tGroup.classList.remove('hovered'); });
-        tGroup.addEventListener('click', (e)=>{
-          e.stopPropagation();
-          const isSame = currentActiveTambon === tItem.name;
-          nestedGroup.querySelectorAll('.tambon-zone').forEach(g=> g.classList.remove('active'));
-          if (isSame){
-            currentActiveTambon = null;
-            const stats = computeAreaSummary(item.name);
-            showMapSummary(`สรุปข้อมูล — อำเภอ${item.name}`, stats);
-          } else {
-            currentActiveTambon = tItem.name;
-            tGroup.classList.add('active');
-            scrollToTambonPanel(item.name, districtBlocks, tItem.name);
-            const stats = computeAreaSummary(item.name, tItem.name);
-            showMapSummary(`สรุปข้อมูล — ตำบล${tItem.name} (อำเภอ${item.name})`, stats);
-          }
-        });
-        nestedGroup.appendChild(tGroup);
-      });
-
-      group.appendChild(nestedGroup);
-    }
-
-    group.addEventListener('mouseenter', ()=>{ if (currentOpenDistrict !== item.name) group.classList.add('hovered'); });
-    group.addEventListener('mouseleave', ()=> group.classList.remove('hovered'));
-    group.addEventListener('click', ()=>{
-      const willOpen = currentOpenDistrict !== item.name;
-      svg.querySelectorAll('.district-zone').forEach(g=>{
-        g.classList.remove('district-open', 'hovered');
-        const ng = g.querySelector('.nested-tambon-group');
-        if (ng){ ng.style.opacity = '0'; ng.style.pointerEvents = 'none'; }
-        const lbl = g.querySelector('.district-shape-label');
-        if (lbl) lbl.style.opacity = '';
-      });
-      districtBlocks.forEach(x=> x.block.classList.add('hidden'));
-
-      if (willOpen){
-        currentOpenDistrict = item.name;
-        currentActiveTambon = null;
-        group.classList.add('district-open');
-        if (nestedGroup){ nestedGroup.style.opacity = '1'; nestedGroup.style.pointerEvents = 'auto'; }
-        const lbl = group.querySelector('.district-shape-label');
-        if (lbl) lbl.style.opacity = '0';
-        document.getElementById('districtEmptyState').style.display = 'none';
-        const match = districtBlocks.find(x=>x.dist===item.name);
-        if (match){
-          match.block.classList.remove('hidden');
-          // show the full factory list for the whole district right away —
-          // clicking a tambon on the map narrows/highlights, it doesn't gate visibility
-          match.block.querySelectorAll('.tambon-panel').forEach(p=> p.classList.add('active'));
-        }
-        document.getElementById('dmHint').textContent = `กำลังดู: อำเภอ${item.name} — คลิกตำบลในแผนที่เพื่อเลื่อนไปดูตำบลนั้นโดยตรง`;
-        const stats = computeAreaSummary(item.name);
-        showMapSummary(`สรุปข้อมูล — อำเภอ${item.name}`, stats);
-      } else {
-        currentOpenDistrict = null;
-        currentActiveTambon = null;
-        document.getElementById('dmHint').textContent = 'คลิกอำเภอบนแผนที่เพื่อดูข้อมูล — คลิกซ้ำเพื่อย่อกลับ';
-        document.getElementById('districtEmptyState').style.display = '';
-        showMapSummary(null, null);
-      }
-    });
-
-    svg.appendChild(group);
-  });
-
-  stage.appendChild(svg);
-}
-
-function scrollToTambonPanel(dist, districtBlocks, tambonName){
-  const match = districtBlocks.find(x=>x.dist===dist);
-  if (!match) return;
-  let found = false;
-  match.block.querySelectorAll('.tambon-panel').forEach(p=>{
-    const titleEl = p.querySelector('.dtitle');
-    if (titleEl && titleEl.textContent.includes(tambonName)){
-      found = true;
-      p.scrollIntoView({behavior:'smooth', block:'start'});
-      p.classList.add('jump-highlight');
-      setTimeout(()=> p.classList.remove('jump-highlight'), 1200);
-    }
-  });
-  if (!found){
-    const hint = document.getElementById('dmHint');
-    const original = hint.textContent;
-    hint.textContent = `ยังไม่มีข้อมูลบริษัทสำหรับตำบล${tambonName}`;
-    setTimeout(()=>{ hint.textContent = original; }, 2200);
-  }
 }
 
 
@@ -2536,15 +2194,6 @@ async function init(){
     visitedCaret.classList.toggle('open', isOpen);
   });
 
-  const estateZoneHead = document.getElementById('estateZoneHead');
-  const estateZoneBody = document.getElementById('estateZoneBody');
-  const estateZoneCaret = document.getElementById('estateZoneCaret');
-  estateZoneHead.addEventListener('click', ()=>{
-    const isOpen = estateZoneBody.classList.toggle('open');
-    estateZoneCaret.classList.toggle('open', isOpen);
-  });
-  renderEstateZoneView();
-
   const vcModalCloseBtn = document.getElementById('vcModalClose');
   const vcModalOverlayEl = document.getElementById('vcModalOverlay');
   vcModalCloseBtn.addEventListener('click', function(e){
@@ -2560,37 +2209,6 @@ async function init(){
 
   const container = document.getElementById('districtContainer');
 
-  const mapWrap = document.createElement('div');
-  mapWrap.className = 'district-map-wrap';
-  mapWrap.innerHTML = `
-    <div class="district-map-head">
-      <div class="dm-title-row">
-        <button class="dm-back-btn" id="dmBack" style="display:none;">← กลับไปแผนที่อำเภอ</button>
-        <div class="dm-title">แผนที่พื้นที่ปฏิบัติงาน</div>
-      </div>
-      <div class="dm-hint" id="dmHint">คลิกอำเภอบนแผนที่เพื่อดูข้อมูล</div>
-      <div class="dm-summary" id="dmSummary" style="display:none;"></div>
-    </div>
-    <div class="dm-map-header-bar" id="dmMapHeaderBar" style="display:none;">
-      <span class="dmhb-corner dmhb-corner-l"></span>
-      <span class="dmhb-title"></span>
-      <span class="dmhb-corner dmhb-corner-r"></span>
-    </div>
-    <div class="district-map-stage district-map-stage-lg" id="districtMapStage"></div>
-  `;
-  container.appendChild(mapWrap);
-  const toolbarEl = document.querySelector('.toolbar');
-  if (toolbarEl) container.appendChild(toolbarEl); // move search/filter toolbar to sit below the map
-
-  const districtEmptyState = document.createElement('div');
-  districtEmptyState.id = 'districtEmptyState';
-  districtEmptyState.className = 'tambon-empty-state';
-  districtEmptyState.style.marginTop = '20px';
-  districtEmptyState.innerHTML = `
-    <svg viewBox="0 0 24 24" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/></svg>
-    <div>เลือกอำเภอบนแผนที่ด้านบนเพื่อดูข้อมูล</div>`;
-  container.appendChild(districtEmptyState);
-
   let num = 1;
   const districtBlocks = [];
   for (const [dist, data] of Object.entries(SITE_DATA)) {
@@ -2602,27 +2220,15 @@ async function init(){
     num++;
   }
 
-  buildDistrictMap(districtBlocks, null);
-
-  document.addEventListener('click', (e)=>{
-    if (!currentOpenDistrict) return;
-    if (e.target.closest('.district-map-wrap')) return;
-    // clicked outside the map entirely — collapse back to the initial state
-    const svg = document.querySelector('#districtMapStage svg');
-    if (svg){
-      svg.querySelectorAll('.district-zone').forEach(g=>{
-        g.classList.remove('district-open', 'hovered');
-        const ng = g.querySelector('.nested-tambon-group');
-        if (ng){ ng.style.opacity = '0'; ng.style.pointerEvents = 'none'; }
-      });
-    }
-    districtBlocks.forEach(x=> x.block.classList.add('hidden'));
-    currentOpenDistrict = null;
-    currentActiveTambon = null;
-    document.getElementById('dmHint').textContent = 'คลิกอำเภอบนแผนที่เพื่อดูข้อมูล — คลิกซ้ำเพื่อย่อกลับ';
-    document.getElementById('districtEmptyState').style.display = '';
-    showMapSummary(null, null);
-  });
+  // expose a simple global helper the map script (added separately) uses to
+  // show one district's full company list and hide the others
+  window.selectDistrictArea = function(name){
+    districtBlocks.forEach(x=>{
+      const isMatch = x.dist === name;
+      x.block.classList.toggle('hidden', !isMatch);
+      if (isMatch) x.block.querySelectorAll('.tambon-panel').forEach(p=> p.classList.add('active'));
+    });
+  };
 
   // safety re-render: ensures the summary/visited section reflect every row's
   // feedback once all rows have finished loading, closing any timing gap
@@ -2663,7 +2269,6 @@ async function init(){
         const block = dc.closest('.district-block');
         if (block && block.classList.contains('hidden')){
           block.classList.remove('hidden');
-          document.getElementById('districtEmptyState').style.display = 'none';
         }
         if (panel){
           panel.classList.add('active');
@@ -2724,7 +2329,6 @@ async function init(){
         const distBlock = document.querySelector(`.district-block[data-dist="${info.amphoe}"]`);
         if (distBlock && distBlock.classList.contains('hidden')){
           distBlock.classList.remove('hidden');
-          document.getElementById('districtEmptyState').style.display = 'none';
         }
         // find and reveal the actual row, highlight it briefly
         setTimeout(()=>{
@@ -3412,5 +3016,134 @@ async function init(){
 init();
 })();
 </script>
+<script>
+/* Compact territory overview: it only navigates to existing district tabs and never alters stored data. */
+(() => {
+  function mountTerritoryMap(){
+    const anchor = document.getElementById('contactSummary');
+    if (!anchor || document.getElementById('territoryMap') || typeof SITE_DATA === 'undefined') return;
+    const areas = Object.entries(SITE_DATA);
+    if (!areas.length) return;
+    const areaButtons = areas.map(([name,data],i)=>`<button class="territory-item ${i===0?'active':''}" data-territory="${name}"><span>${name}</span><span class="territory-count">${data.total_companies.toLocaleString()} แห่ง</span></button>`).join('');
+    const card = document.createElement('section'); card.className='territory-map'; card.id='territoryMap';
+    card.innerHTML=`<div class="territory-map-main"><div class="territory-kicker">INTERACTIVE TERRITORY MAP</div><div class="territory-title">แผนที่พื้นที่ปฏิบัติการ · ระยอง</div><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district active" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg><div class="map-tip"><i></i><span>คลิกอำเภอเพื่อ <b>ยกพื้นที่ขึ้น</b> และเปิดข้อมูล</span></div></div><aside class="territory-side"><h3>เลือกพื้นที่ปฏิบัติการ</h3><p>คลิกพื้นที่บนแผนที่หรือรายการ เพื่อไปยังข้อมูลบริษัทในอำเภอนั้น</p><div class="territory-list">${areaButtons}</div><div class="territory-legend"><span><i></i>พื้นที่ให้บริการ</span><span><i class="blue"></i>พื้นที่ที่เลือก</span></div></aside>`;
+    anchor.insertAdjacentElement('afterend',card);
+    function selectArea(name){
+      card.querySelectorAll('[data-territory]').forEach(el=>el.classList.toggle('active',el.dataset.territory===name));
+      if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(name);
+      const block=document.querySelector(`.district-block[data-dist="${name}"]`);
+      if(block){setTimeout(()=>block.scrollIntoView({behavior:'smooth',block:'start'}),30);}
+    }
+    card.addEventListener('click',e=>{const item=e.target.closest('[data-territory]');if(item)selectArea(item.dataset.territory);});
+  }
+  setTimeout(mountTerritoryMap,700);
+})();
+</script>
+<script>
+/* Estate catalogue and zone navigator. Existing editable estate fields remain the source of truth. */
+(() => {
+  const ESTATE_NAMES = {
+    'WHA EIP':'WHA EIP', 'ASIA':'ASIA', 'PDI':'PDI', 'RIL':'RIL', 'Smart Park':'Smart Park', 'LCME':'LCME', 'EGCO':'EGCO',
+    'อมตะซิตี้ (ระยอง)':'AMATA City Rayong', 'AMATA City Rayong':'AMATA City Rayong',
+    'อีสเทิร์นซีบอร์ด (ระยอง)':'ESR', 'ESR':'ESR',
+    'ดับบลิวเอชเอ อีสเทิร์นซีบอร์ด 3':'WHA ESE', 'WHA ESIE 1 (ปลวกแดง)':'WHA ESE', 'WHA ESE':'WHA ESE',
+    'ดับบลิวเอชเอ อีสเทิร์นซีบอร์ด 4':'WHA ESE 4', 'WHA ESE 4':'WHA ESE 4',
+    'ดับบลิวเอชเอระยอง 36':'WHA RY 36', 'WHA RY 36':'WHA RY 36',
+    'WHA ESIE 2 (ชล)':'WIE Rayong', 'WIE Rayong':'WIE Rayong',
+    'นิคมอุตสาหกรรมซีพีจีซี':'CPGC', 'CPGC':'CPGC', 'ปิ่นทอง 6':'Pinthong 6', 'Pinthong 6':'Pinthong 6'
+  };
+  const CATALOGUE = ['ASIA','PDI','RIL','Smart Park','LCME','EGCO','AMATA City Rayong','ESR','WHA ESE','WHA ESE 4','WHA RY 36','WIE Rayong','CPGC','Pinthong 6','WHA EIP','นอกนิคม'];
+  const normalise = value => ESTATE_NAMES[String(value||'').trim()] || String(value||'').trim();
+
+  function normaliseEstateData(){
+    if (typeof SITE_DATA === 'undefined') return;
+    Object.values(SITE_DATA).forEach(d=>d.sections.forEach(s=>s.companies.forEach(c=>{ c.estate=normalise(c.estate); })));
+    try{
+      const overrides=JSON.parse(localStorage.getItem('companyOverrides')||'{"edits":{}}');
+      let changed=false;
+      Object.values(overrides.edits||{}).forEach(edit=>{ if(edit.estate){ const next=normalise(edit.estate); if(next!==edit.estate){edit.estate=next;changed=true;} } });
+      if(changed) localStorage.setItem('companyOverrides',JSON.stringify(overrides));
+    }catch(e){}
+    document.querySelectorAll('.estate-select').forEach(el=>{ const next=normalise(el.value); if(next && next!==el.value){el.value=next; const row=el.closest('tr'); if(row)row.dataset.estate=next.toLowerCase();} });
+    if(typeof refreshEstateFilterOptions==='function') refreshEstateFilterOptions();
+  }
+
+  function collectLocations(estate){
+    const found=[];
+    Object.entries(SITE_DATA).forEach(([district,data])=>data.sections.forEach(section=>{
+      const count=section.companies.filter(c=>normalise(c.estate)===estate).length;
+      if(count) found.push({district,tambon:section.tambon,count});
+    }));
+    return found;
+  }
+  function mountEstateZones(){
+    const anchor=document.getElementById('territoryMap');
+    if(!anchor || document.getElementById('estateZones')) return;
+    const panel=document.createElement('section');panel.className='estate-zones';panel.id='estateZones';
+    const available=new Set();Object.values(SITE_DATA).forEach(d=>d.sections.forEach(s=>s.companies.forEach(c=>available.add(normalise(c.estate)))));
+    panel.innerHTML=`<div class="estate-zones-head"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">เลือกชื่อนิคมเพื่อดูอำเภอและตำบลที่เกี่ยวข้อง แล้วกดตำแหน่งเพื่อเปิดข้อมูลย่อย</div></div><div class="estate-zones-note">แก้ไขชื่อนิคมได้ในคอลัมน์ “นิคม”</div></div><div class="estate-zone-grid">${CATALOGUE.map(name=>{const locations=collectLocations(name);const total=locations.reduce((n,x)=>n+x.count,0);return `<button class="estate-zone" data-estate="${name}">${name}<span class="zone-badge">${total||'—'}</span><small>${locations.length?`${locations.length} ตำบล`:(available.has(name)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small></button>`}).join('')}</div><div class="estate-zone-detail" id="estateZoneDetail"></div>`;
+    anchor.insertAdjacentElement('afterend',panel);
+    const detail=panel.querySelector('#estateZoneDetail');
+    panel.addEventListener('click',e=>{
+      const zone=e.target.closest('.estate-zone'); if(!zone) return;
+      const estate=zone.dataset.estate; const locations=collectLocations(estate);
+      panel.querySelectorAll('.estate-zone').forEach(x=>x.classList.toggle('active',x===zone));
+      const filter=document.getElementById('filterEstate'); if(filter){filter.value=estate.toLowerCase();filter.dispatchEvent(new Event('change'));}
+      detail.classList.add('open');
+      detail.innerHTML=`<div class="estate-zone-detail-title">${estate}</div>${locations.length?`<div class="estate-location-list">${locations.map(x=>`<button class="estate-location" data-district="${x.district}">อำเภอ<b>${x.district}</b> · ตำบล<b>${x.tambon}</b> <span>(${x.count})</span></button>`).join('')}</div>`:'<div class="estate-empty">ยังไม่พบรายการบริษัทในโซนนี้ — สามารถระบุชื่อนิคมให้บริษัทได้จากคอลัมน์ “นิคม”</div>'}`;
+    });
+    detail.addEventListener('click',e=>{const location=e.target.closest('[data-district]');if(!location)return;const name=location.dataset.district;if(typeof window.selectDistrictArea==='function')window.selectDistrictArea(name);const block=document.querySelector(`.district-block[data-dist="${name}"]`);if(block){setTimeout(()=>block.scrollIntoView({behavior:'smooth',block:'start'}),20);}});
+  }
+  setTimeout(()=>{normaliseEstateData();mountEstateZones();},900);
+})();
+</script>
+<script>
+/* Keep company search and filters with the company information view, directly below the map. */
+(() => {
+  function moveCompanyControls(){
+    const toolbar=document.querySelector('.masthead > .toolbar');
+    const map=document.getElementById('territoryMap');
+    if(!toolbar || !map || toolbar.dataset.moved==='true') return;
+    toolbar.dataset.moved='true';
+    toolbar.classList.add('company-controls');
+    map.insertAdjacentElement('afterend',toolbar);
+    // Company information always opens unfiltered so every factory is visible.
+    const search=document.getElementById('searchInput');
+    const filters=['filterDiw','filterEstate','filterRelation','filterContacted'].map(id=>document.getElementById(id));
+    if(search) search.value='';
+    filters.forEach(el=>{ if(el) el.value=''; });
+    const estate=document.getElementById('filterEstate');
+    if(estate) estate.dispatchEvent(new Event('change'));
+  }
+  setTimeout(moveCompanyControls,1200);
+})();
+</script>
+<script>
+/* Always-visible company directory: a dependable overview for all factory names. */
+(() => {
+  function mountCompanyDirectory(){
+    const toolbar=document.querySelector('.company-controls');
+    if(!toolbar || document.getElementById('companyDirectory') || !window.SITE_DATA) return;
+    const records=[];
+    Object.entries(window.SITE_DATA).forEach(([district,data])=>data.sections.forEach(section=>section.companies.forEach(company=>records.push({...company,district}))));
+    const directory=document.createElement('section');directory.className='company-directory';directory.id='companyDirectory';
+    directory.innerHTML='<div class="company-directory-head"><div class="company-directory-title">รายชื่อโรงงานทั้งหมด</div><div class="company-directory-count"></div></div><div class="company-directory-list"></div>';
+    toolbar.insertAdjacentElement('afterend',directory);
+    const list=directory.querySelector('.company-directory-list'); const count=directory.querySelector('.company-directory-count');
+    const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function render(){
+      const q=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+      const estate=(document.getElementById('filterEstate')?.value||'').trim().toLowerCase();
+      const diw=(document.getElementById('filterDiw')?.value||'').trim();
+      const shown=records.filter(c=>(!q || `${c.name} ${c.tambon} ${c.district}`.toLowerCase().includes(q)) && (!estate || String(c.estate||'').toLowerCase()===estate) && (!diw || c.diwStatus===diw));
+      count.textContent=`${shown.length.toLocaleString()} / ${records.length.toLocaleString()} โรงงาน`;
+      list.innerHTML=shown.length?shown.map(c=>`<div class="company-directory-item">${escape(c.name)}<small>อำเภอ${escape(c.district)} · ตำบล${escape(c.tambon)} · ${escape(c.estate||'นอกนิคม')}</small></div>`).join(''):'<div class="company-directory-empty">ไม่พบรายชื่อโรงงานตามเงื่อนไขที่เลือก</div>';
+    }
+    ['searchInput','filterEstate','filterDiw','filterRelation','filterContacted'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener(id==='searchInput'?'input':'change',render);}});
+    render();
+  }
+  setTimeout(mountCompanyDirectory,1650);
+})();
+
 </body>
 </html>
