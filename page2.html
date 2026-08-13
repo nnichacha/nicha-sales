@@ -508,6 +508,10 @@
     border-radius:8px; padding:10px 14px; margin-bottom:12px;
   }
   .bulk-import-hint b{ color:var(--gold-lt); }
+  .bulk-import-result{ display:none; margin-top:12px; padding:10px 14px; border-radius:8px; font-size:12.5px; font-family:'Kanit',sans-serif; font-weight:600; }
+  .bulk-import-result.show{ display:block; }
+  .bulk-import-result.ok{ background:var(--green-dim); color:#6EE7B7; border:1px solid var(--green); }
+  .bulk-import-result.warn{ background:var(--red-dim); color:#FCA5A5; border:1px solid var(--red); }
   .report-form-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:15px; color:#fff; margin-bottom:14px; }
   .report-form-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
   .field{ display:flex; flex-direction:column; gap:5px; }
@@ -1007,17 +1011,26 @@
     <div class="report-form-wrap" id="bulkImportPanel" style="display:none; margin-top:14px;">
       <div class="report-form-title">นำเข้าหลายรายการพร้อมกัน</div>
       <div class="bulk-import-hint">
-        พิมพ์หรือวางข้อมูลบรรทัดละ 1 รายการ แต่ละช่อง<b>คั่นด้วย Tab</b> (ก็อปจาก Excel วางได้เลย) หรือ<b>คอมมา (,)</b> ก็ได้<br>
-        ลำดับช่อง: <b>วันที่ | เวลา | ชื่อลูกค้า/ผู้ติดต่อ | ชื่อบริษัท | Visit / ไม่ Visit | กิจกรรม (คั่นด้วย ;) | Feedback</b><br>
-        ช่องไหนไม่มีข้อมูล ใส่ <b>-</b> แทนได้ หรือเว้นว่างไว้ก็ได้ ระบบจะเติม "-" ให้อัตโนมัติ (ยกเว้นชื่อบริษัทต้องมี)
+        <b>พิมพ์แบบระบุหัวข้อได้เลย</b> (ก็อปวางจากที่พิมพ์ไว้ในโน้ต/แชทได้ตรงๆ) แต่ละรายการขึ้นต้นด้วย "บริษัท:" เสมอ ไม่ต้องเว้นบรรทัดคั่นระหว่างรายการก็ได้ ระบบจะรู้เองว่าเจอ "บริษัท:" ใหม่ = ขึ้นรายการใหม่<br>
+        หัวข้อที่รู้จัก: <b>บริษัท / ผู้ติดต่อ / กิจกรรม / เวลา / วันที่ / รายละเอียด / Visit</b> — หัวข้อไหนไม่ใส่ก็ได้ ระบบเติมให้เอง (วันที่=วันนี้, เวลา=ตอนนี้, ไม่ระบุ Visit=ถือว่ายังไม่ได้ Visit)<br>
+        <b>หรือจะพิมพ์แบบตาราง</b> คั่นด้วย Tab/Comma ก็ยังใช้ได้เหมือนเดิม (วันที่|เวลา|ผู้ติดต่อ|บริษัท|Visit|กิจกรรม|Feedback)
       </div>
-      <textarea id="bulkImportInput" placeholder="2026-08-13&#9;09:30&#9;คุณสมชาย&#9;บริษัท เอบีซี จำกัด&#9;Visit&#9;แนะนำตัว;ใบเสนอราคา&#9;ลูกค้าสนใจสินค้า
-2026-08-13&#9;-&#9;-&#9;บริษัท ดีอีเอฟ จำกัด&#9;ไม่ Visit&#9;ติดตามงาน&#9;โทรติดตามเฉยๆ" style="min-height:140px; font-family:monospace; font-size:12px;"></textarea>
+      <textarea id="bulkImportInput" placeholder="บริษัท: QUANTUM SPT
+ผู้ติดต่อ: Khun Supattra
+กิจกรรม: ทำใบเสนอราคา
+เวลา: 08:00
+รายละเอียด: ทำใบเสนอราคางาน C-STAND SUPPORT
+
+บริษัท: บริษัท ตัวอย่าง จำกัด
+ผู้ติดต่อ: Survey
+กิจกรรม: อื่นๆ
+เวลา: 09:30
+รายละเอียด: รายละเอียดยาวๆ ต่อกันหลายบรรทัดก็ได้ ระบบจะรวมเป็นก้อนเดียวให้เอง" style="min-height:160px; font-family:monospace; font-size:12px;"></textarea>
       <div class="rf-actions">
         <button class="btn-primary" id="bulkImportSubmit">นำเข้าข้อมูล</button>
         <button class="filter-select" id="bulkImportCancel" style="cursor:pointer;">ยกเลิก</button>
       </div>
-      <div id="bulkImportResult" style="margin-top:10px; font-size:12px; color:var(--muted);"></div>
+      <div id="bulkImportResult" class="bulk-import-result"></div>
     </div>
 
     <div class="activity-legend" id="activityLegend"></div>
@@ -2703,12 +2716,12 @@ async function init(){
   rfBulkToggle.addEventListener('click', ()=>{
     const isOpen = bulkImportPanel.style.display !== 'none';
     bulkImportPanel.style.display = isOpen ? 'none' : '';
-    bulkImportResult.textContent = '';
+    bulkImportResult.className = 'bulk-import-result';
   });
   document.getElementById('bulkImportCancel').addEventListener('click', ()=>{
     bulkImportPanel.style.display = 'none';
     bulkImportInput.value = '';
-    bulkImportResult.textContent = '';
+    bulkImportResult.className = 'bulk-import-result';
   });
 
   function normalizeBulkDate(raw){
@@ -2727,8 +2740,21 @@ async function init(){
   }
 
   function parseBulkLine(line){
-    let parts = line.includes('\t') ? line.split('\t') : line.split(',');
+    let parts;
+    if (line.includes('\t')) parts = line.split('\t');
+    else if (line.includes(',')) parts = line.split(',');
+    else parts = [line]; // no delimiter at all — treat the whole line as just the company name below
     parts = parts.map(p=>p.trim());
+
+    // simplest case: just a bare list of company names, one per line — everything else defaults
+    if (parts.length === 1){
+      return {
+        date: new Date().toISOString().slice(0,10), time: nowHHMM(), person: '',
+        company: parts[0] === '-' ? '' : parts[0],
+        visit: false, activities: ['อื่นๆ'], feedback: '',
+      };
+    }
+
     const get = (i) => (parts[i] !== undefined && parts[i] !== '') ? parts[i] : '-';
 
     const date = normalizeBulkDate(get(0));
@@ -2739,7 +2765,11 @@ async function init(){
     const companyRaw = get(3);
     const company = companyRaw === '-' ? '' : companyRaw;
     const visitRaw = get(4).toLowerCase();
-    const visit = !(visitRaw.includes('ไม่') || visitRaw.includes('no') || visitRaw === 'false' || visitRaw === '0');
+    // default to NOT visit unless explicitly marked — easy to fix later by editing the entry,
+    // safer than assuming a visit happened when it wasn't stated
+    const visit = visitRaw.includes('ไม่') ? false
+      : (visitRaw === 'visit' || visitRaw.includes('ใช่') || visitRaw === 'yes' || visitRaw === 'y' || visitRaw === '1' || visitRaw === 'true') ? true
+      : false;
     const activitiesRaw = get(5);
     const activities = activitiesRaw === '-' ? ['อื่นๆ'] : activitiesRaw.split(/[;،,]/).map(a=>a.trim()).filter(Boolean);
     const feedbackRaw = get(6);
@@ -2748,13 +2778,92 @@ async function init(){
     return {date, time, person, company, visit, activities: activities.length?activities:['อื่นๆ'], feedback};
   }
 
+  const FIELD_LABELS = {
+    'บริษัท':'company', 'ชื่อบริษัท':'company',
+    'ผู้ติดต่อ':'person', 'ลูกค้า':'person', 'ชื่อลูกค้า':'person',
+    'กิจกรรม':'activity',
+    'เวลา':'time',
+    'วันที่':'date',
+    'รายละเอียด':'feedback', 'feedback':'feedback', 'โน้ต':'feedback', 'note':'feedback',
+    'visit':'visit', 'เข้าพบ':'visit',
+  };
+
+  const FIELD_LABEL_ALTS = Object.keys(FIELD_LABELS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  const FIELD_LABEL_RE = new RegExp(`(?:^|\\s)(${FIELD_LABEL_ALTS})\\s*[:：]\\s*`, 'gi');
+
+  function normalizeActivities(raw){
+    if (!raw) return ['อื่นๆ'];
+    const parts = raw.split(/[;,、]/).map(s=>s.trim()).filter(Boolean);
+    const mapped = parts.map(p=>{
+      if (p.includes('ใบเสนอราคา')) return 'ใบเสนอราคา';
+      if (p.includes('แนะนำตัว')) return 'แนะนำตัว';
+      if (p.includes('ส่งของ') || p.includes('ส่งตัวอย่าง')) return 'ส่งของ';
+      if (p.includes('ขอราคา')) return 'ขอราคา';
+      if (p.toLowerCase().includes('confirm') || p.includes('ปิดการขาย')) return 'Confirm';
+      if (p.includes('ปฏิเสธ')) return 'ปฏิเสธงาน';
+      if (p.includes('ติดตาม')) return 'ติดตามงาน';
+      return p || 'อื่นๆ';
+    });
+    return mapped.length ? mapped : ['อื่นๆ'];
+  }
+
+  // Parses the "บริษัท: ... / ผู้ติดต่อ: ... / กิจกรรม: ... / เวลา: ... / รายละเอียด: ..." format.
+  // Scans the WHOLE text for label markers (not just at line-starts) since pasted text sometimes
+  // runs one record's "รายละเอียด:" straight into the next record's "บริษัท:" on the same line —
+  // each field's value is simply "everything between this label and the next label found".
+  function parseLabeledBlocks(text){
+    FIELD_LABEL_RE.lastIndex = 0;
+    const matches = [...text.matchAll(FIELD_LABEL_RE)];
+    const fields = matches.map((m, i)=>{
+      const label = m[1];
+      const field = FIELD_LABELS[label] || FIELD_LABELS[label.toLowerCase()];
+      const start = m.index + m[0].length;
+      const end = (i+1 < matches.length) ? matches[i+1].index : text.length;
+      const value = text.slice(start, end).replace(/\s+/g, ' ').trim();
+      return {field, value};
+    });
+
+    const records = [];
+    let current = null;
+    for (const {field, value} of fields){
+      if (field === 'company'){
+        if (current) records.push(current);
+        current = {company:'', person:'', activity:'', time:'', date:'', feedback:'', visit:''};
+      }
+      if (current) current[field] = value;
+    }
+    if (current) records.push(current);
+
+    return records.map(r=>{
+      const date = r.date ? normalizeBulkDate(r.date) : new Date().toISOString().slice(0,10);
+      const time = r.time || nowHHMM();
+      const visitRaw = r.visit.toLowerCase();
+      const visit = visitRaw.includes('ไม่') ? false
+        : (visitRaw.includes('visit') || visitRaw.includes('ใช่') || visitRaw === 'yes') ? true
+        : false; // not mentioned at all -> default to not-visit, easy to fix later by editing
+      return {
+        date, time, person: r.person, company: r.company, visit,
+        activities: normalizeActivities(r.activity), feedback: r.feedback,
+      };
+    });
+  }
+
   document.getElementById('bulkImportSubmit').addEventListener('click', async ()=>{
-    const lines = bulkImportInput.value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
-    if (lines.length === 0){ bulkImportResult.textContent = 'ยังไม่มีข้อมูลให้นำเข้า'; return; }
+    const rawText = bulkImportInput.value;
+    if (!rawText.trim()){
+      bulkImportResult.textContent = 'ยังไม่มีข้อมูลให้นำเข้า — พิมพ์หรือวางข้อมูลในช่องด้านบนก่อน';
+      bulkImportResult.className = 'bulk-import-result show warn';
+      return;
+    }
+
+    // auto-detect format: "บริษัท: ..." labeled blocks vs Tab/Comma-delimited rows
+    const isLabeledFormat = /^\s*(บริษัท|ชื่อบริษัท)\s*[:：]/m.test(rawText);
+    const parsedRecords = isLabeledFormat
+      ? parseLabeledBlocks(rawText)
+      : rawText.split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(parseBulkLine);
 
     let imported = 0, skipped = 0;
-    for (const line of lines){
-      const parsed = parseBulkLine(line);
+    for (const parsed of parsedRecords){
       if (!parsed.company){ skipped++; continue; }
       const entry = {
         id: 'r'+Date.now()+Math.floor(Math.random()*10000),
@@ -2765,8 +2874,14 @@ async function init(){
       imported++;
     }
 
-    bulkImportResult.textContent = `นำเข้าสำเร็จ ${imported} รายการ${skipped?` (ข้าม ${skipped} รายการที่ไม่มีชื่อบริษัท)`:''}`;
-    bulkImportInput.value = '';
+    if (imported > 0){
+      bulkImportResult.textContent = `✓ นำเข้าสำเร็จ ${imported} รายการ${skipped?` — ข้าม ${skipped} รายการที่หาชื่อบริษัทไม่เจอ`:''}`;
+      bulkImportResult.className = 'bulk-import-result show ok';
+      bulkImportInput.value = '';
+    } else {
+      bulkImportResult.textContent = `✗ ไม่พบชื่อบริษัทในข้อมูลที่วางเลย (ข้ามทั้งหมด ${skipped} รายการ) — ตรวจรูปแบบอีกครั้ง`;
+      bulkImportResult.className = 'bulk-import-result show warn';
+    }
     renderReportList();
   });
 
