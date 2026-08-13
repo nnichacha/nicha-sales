@@ -793,6 +793,38 @@
   .estate-zones-caret.open{ transform:rotate(180deg); }
   .company-controls{margin-top:16px!important;padding:16px 18px!important;border:1px solid #30465b!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(17,31,46,.96),rgba(10,19,29,.96))!important;box-shadow:0 12px 28px rgba(0,0,0,.14)}.company-controls .search-box{min-width:300px}@media(max-width:760px){.company-controls{padding:12px!important}.company-controls .search-box{min-width:100%}}
   .company-directory{margin-top:14px;border:1px solid #30465b;border-radius:14px;background:rgba(10,19,29,.92);overflow:hidden}.company-directory-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;border-bottom:1px solid rgba(100,148,179,.25)}.company-directory-title{font-family:'Kanit',sans-serif;font-size:15px;color:#fff;font-weight:700}.company-directory-count{font-size:11px;color:var(--gold-lt);background:rgba(214,181,111,.11);border:1px solid rgba(214,181,111,.22);padding:3px 8px;border-radius:12px}.company-directory-list{max-height:410px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:#2d4354}.company-directory-item{display:block;padding:9px 12px;background:#101d2a;color:#e5f0f5;font-family:'Kanit',sans-serif;font-size:11.5px;line-height:1.35}.company-directory-item small{display:block;color:#87a1b2;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:2px}.company-directory-empty{padding:28px;color:var(--muted);font-size:12px;text-align:center}.company-directory-list::-webkit-scrollbar{width:8px}.company-directory-list::-webkit-scrollbar-thumb{background:#3b566a;border-radius:8px}
+
+  /* ===== Quick Paste & Auto Fill ===== */
+  .quick-fill-card{
+    margin:0 0 16px;
+    padding:16px 18px;
+    border:1px solid rgba(201,169,110,.45);
+    border-radius:12px;
+    background:linear-gradient(135deg,rgba(31,41,55,.92),rgba(17,24,39,.96));
+    box-shadow:0 8px 24px rgba(0,0,0,.16);
+  }
+  .quick-fill-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+  .quick-fill-title{font-family:'Kanit',sans-serif;font-weight:700;font-size:14px;color:var(--gold-lt)}
+  .quick-fill-hint{font-size:11px;color:var(--muted)}
+  .quick-fill-input{
+    width:100%;min-height:92px;resize:vertical;box-sizing:border-box;
+    background:rgba(15,23,42,.78);border:1px solid var(--line);border-radius:9px;
+    color:var(--text);padding:11px 13px;font-family:'Sarabun',sans-serif;font-size:13px;line-height:1.55;
+    outline:none;
+  }
+  .quick-fill-input:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-dim)}
+  .quick-fill-actions{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+  .quick-fill-btn{
+    border:1px solid var(--gold);background:var(--gold);color:#1F1300;
+    border-radius:8px;padding:8px 14px;font-family:'Kanit',sans-serif;font-weight:700;font-size:12px;cursor:pointer;
+  }
+  .quick-fill-clear{
+    border:1px solid var(--line);background:transparent;color:var(--muted);
+    border-radius:8px;padding:8px 12px;font-family:'Kanit',sans-serif;font-size:12px;cursor:pointer;
+  }
+  .quick-fill-status{font-size:11px;color:#86EFAC;min-height:18px}
+  .quick-fill-preview{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+
 </style>
 </head>
 <body>
@@ -949,6 +981,21 @@
 
   <div id="page2" style="display:none;">
     <div class="report-form-wrap">
+
+      <div class="quick-fill-card" id="quickFillCard">
+        <div class="quick-fill-head">
+          <div class="quick-fill-title">📋 วางข้อมูลแล้วเติมแบบฟอร์มอัตโนมัติ</div>
+          <div class="quick-fill-hint">วางแล้วระบบจะพยายามเติมให้ทันที</div>
+        </div>
+        <textarea id="quickFillInput" class="quick-fill-input"
+          placeholder="ก๊อปปี้ข้อความจาก LINE / Excel / Notes / Email แล้ววางที่นี่ เช่น&#10;บริษัท: ABC INDUSTRIAL CO., LTD.&#10;ผู้ติดต่อ: คุณสมชาย ฝ่ายจัดซื้อ&#10;เวลา: 10:30&#10;กิจกรรม: เข้าพบ, ติดตามงาน, ขอราคา&#10;รายละเอียด: ลูกค้าสนใจงาน Laser Cutting"></textarea>
+        <div class="quick-fill-actions">
+          <button type="button" class="quick-fill-btn" id="quickFillBtn">✨ เติมข้อมูลอัตโนมัติ</button>
+          <button type="button" class="quick-fill-clear" id="quickFillClear">ล้าง</button>
+          <span class="quick-fill-status" id="quickFillStatus"></span>
+        </div>
+        <div class="quick-fill-preview" id="quickFillPreview"></div>
+      </div>
       <div class="report-form-title" id="reportFormTitle">บันทึกการเข้าพบวันนี้</div>
       <div class="report-form-grid">
         <div class="field">
@@ -3218,6 +3265,312 @@ init();
   }
   setTimeout(mountCompanyDirectory,1650);
 })();
+
+
+<script>
+/* ============================================================
+   SMART PASTE & AUTO FILL — Daily Report
+   Free-form Thai/English notes -> existing Daily Report fields.
+   No API key required.
+   ============================================================ */
+(function(){
+  const input = document.getElementById('quickFillInput');
+  const btn = document.getElementById('quickFillBtn');
+  const clearBtn = document.getElementById('quickFillClear');
+  const status = document.getElementById('quickFillStatus');
+  const preview = document.getElementById('quickFillPreview');
+  if (!input || !btn) return;
+
+  const $ = id => document.getElementById(id);
+
+  function norm(s){
+    return String(s || '')
+      .replace(/\u00a0/g,' ')
+      .replace(/[“”]/g,'"')
+      .replace(/[‘’]/g,"'")
+      .replace(/[ \t]+/g,' ')
+      .replace(/\r/g,'')
+      .trim();
+  }
+
+  function stripPunct(s){
+    return norm(s).replace(/^[\s:：\-–—|,;]+|[\s:：\-–—|,;]+$/g,'').trim();
+  }
+
+  function setField(id, value){
+    const node=$(id);
+    if(!node || value==null || value==='') return false;
+    node.value=value;
+    node.dispatchEvent(new Event('input',{bubbles:true}));
+    node.dispatchEvent(new Event('change',{bubbles:true}));
+    return true;
+  }
+
+  function thaiDate(s){
+    const m=String(s||'').match(/(?:วันที่\s*)?(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+    if(!m) return '';
+    let y=Number(m[3]);
+    if(y<100) y+=2000;
+    if(y>2400) y-=543;
+    return `${y}-${String(Number(m[2])).padStart(2,'0')}-${String(Number(m[1])).padStart(2,'0')}`;
+  }
+
+  function relativeDate(text){
+    const now=new Date();
+    if(/เมื่อวาน/.test(text)) now.setDate(now.getDate()-1);
+    else if(/พรุ่งนี้/.test(text)) now.setDate(now.getDate()+1);
+    else if(/มะรืน/.test(text)) now.setDate(now.getDate()+2);
+    else return '';
+    return now.toISOString().slice(0,10);
+  }
+
+  function extractDate(text){
+    return thaiDate(text) || relativeDate(text) ||
+      (/(?:วันนี้|today)/i.test(text) ? new Date().toISOString().slice(0,10) : '');
+  }
+
+  function extractTime(text){
+    let m=text.match(/(?:เวลา|ตอน|ประมาณ|นัด)\s*(?:ประมาณ\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*(โมง|นาฬิกา|am|pm|น\.|น)?\s*(ครึ่ง)?/i);
+    if(!m) m=text.match(/\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/);
+    if(!m) return '';
+    let h=Number(m[1]), min=m[2]!==undefined ? Number(m[2]) : 0;
+    const word=(m[3]||'').toLowerCase();
+    if(m[4] || /ครึ่ง/.test(m[0])) min=30;
+    if(/pm/.test(word) && h<12) h+=12;
+    if(/บ่าย|เย็น|ค่ำ/.test(text) && h<12) h+=12;
+    return `${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+  }
+
+  function labeled(text, labels){
+    const lines=text.split('\n').map(norm).filter(Boolean);
+    for(const line of lines){
+      for(const label of labels){
+        const re=new RegExp('^\\s*'+label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+
+          '\\s*[:：\\-]\\s*(.+)$','i');
+        const m=line.match(re);
+        if(m) return stripPunct(m[1]);
+      }
+    }
+    for(const label of labels){
+      const re=new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+
+        '\\s*[:：]\\s*([^\\n]+)','i');
+      const m=text.match(re);
+      if(m) return stripPunct(m[1]);
+    }
+    return '';
+  }
+
+  function companyFromDatabase(text){
+    try{
+      const names=[];
+      Object.values(SITE_DATA||{}).forEach(d=>(d.sections||[]).forEach(s=>(s.companies||[]).forEach(c=>{
+        if(c && c.name) names.push(norm(c.name));
+      })));
+      names.sort((a,b)=>b.length-a.length);
+      const lower=text.toLowerCase();
+      return names.find(n=>n && lower.includes(n.toLowerCase())) || '';
+    }catch(e){ return ''; }
+  }
+
+  function extractCompany(text){
+    let v=labeled(text,['บริษัท','ชื่อบริษัท','โรงงาน','ชื่อโรงงาน','customer','company']);
+    if(v){
+      v=v.split(/\s+(?=(?:คุณ|ผู้ติดต่อ|ฝ่าย|แผนก|โทร|เบอร์|อีเมล|email|เวลา|ตอน|วันนี้|พรุ่งนี้|กิจกรรม|รายละเอียด|สนใจ|ขอราคา|ติดตาม))/i)[0];
+      return stripPunct(v);
+    }
+    return companyFromDatabase(text);
+  }
+
+  function extractPhone(text){
+    const m=text.match(/(?:โทร|เบอร์|มือถือ|โทรศัพท์|tel|phone)\s*[:：\-]?\s*(0\d[\d\s\-]{7,14}\d)/i)
+      || text.match(/\b0\d{8,9}\b/);
+    return m ? norm(m[1]||m[0]) : '';
+  }
+
+  function extractEmail(text){
+    const m=text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    return m ? m[0] : '';
+  }
+
+  function extractPerson(text){
+    let v=labeled(text,['ผู้ติดต่อ','ชื่อลูกค้า','ผู้ประสานงาน','contact','contact person','ผู้ซื้อ']);
+    if(v) return stripPunct(v.split(/\s+(?=(?:โทร|เบอร์|อีเมล|email|เวลา|กิจกรรม|รายละเอียด|บริษัท|โรงงาน))/i)[0]);
+
+    const patterns=[
+      /(?:เจอ|พบ|คุยกับ|ติดต่อกับ|เข้าพบ|นัดกับ|คุยงานกับ)\s*(คุณ[ก-๙A-Za-z][^\n,;|]+)/i,
+      /(?:คุณ)\s*([ก-๙A-Za-z][^\n,;|]{1,45})/i
+    ];
+    for(const re of patterns){
+      const m=text.match(re);
+      if(m){
+        let v=m[0].replace(/^(เจอ|พบ|คุยกับ|ติดต่อกับ|เข้าพบ|นัดกับ|คุยงานกับ)\s*/i,'');
+        v=v.replace(/\s+(?:ตอน|เวลา|ที่|บริษัท|โรงงาน|ฝ่าย|แผนก|โทร|เบอร์|อีเมล|email|วันนี้|พรุ่งนี้).*$/i,'');
+        v=stripPunct(v);
+        if(v && v.length<60) return v;
+      }
+    }
+    return '';
+  }
+
+  function extractDepartment(text){
+    const m=text.match(/(?:ฝ่าย|แผนก)\s*([ก-๙A-Za-z0-9 &\/-]{2,40})/i);
+    return m ? stripPunct(m[0]) : '';
+  }
+
+  const activityRules=[
+    {keys:['แนะนำตัว','แนะนำบริษัท','เปิดตลาด','introduce','company profile'],value:'แนะนำตัว'},
+    {keys:['ส่งของ','ส่งตัวอย่าง','ส่งชิ้นงาน','ส่งสินค้า','deliver','sample'],value:'ส่งของ'},
+    {keys:['ขอราคา','ขอใบราคา','ขอราคางาน','request price','request quotation','ขอ quotation'],value:'ขอราคา'},
+    {keys:['ทำใบเสนอราคา','ส่งใบเสนอราคา','quotation','quote','เสนอราคา'],value:'ใบเสนอราคา'},
+    {keys:['confirm','ยืนยันงาน','ยืนยันสั่งซื้อ','ยืนยันออเดอร์','สั่งซื้อ'],value:'Confirm'},
+    {keys:['ปฏิเสธงาน','ไม่รับงาน','ยกเลิกงาน','reject','cancel'],value:'ปฏิเสธงาน'},
+    {keys:['ติดตามงาน','ติดตามราคา','ติดตามใบเสนอราคา','follow up','follow-up','followup'],value:'ติดตามงาน'},
+    {keys:['อื่นๆ','อื่น ๆ','other'],value:'อื่นๆ'}
+  ];
+
+  function extractActivities(text){
+    const lower=text.toLowerCase();
+    const found=[];
+    activityRules.forEach(r=>{
+      if(r.keys.some(k=>lower.includes(k.toLowerCase())) && !found.includes(r.value)) found.push(r.value);
+    });
+    // "เข้าพบ" itself is Visit, not one of the activity chips.
+    return found;
+  }
+
+  function extractInterest(text){
+    const m=text.match(/(?:สนใจ|ต้องการ|ต้องการงาน|interested in|interest(?:ed)? in)\s*([^.\n,;]+)/i);
+    return m ? stripPunct(m[1]) : '';
+  }
+
+  function extractAction(text){
+    const m=text.match(/(?:ให้ส่ง|ให้ทาง|ส่งให้|ส่ง|นัด|โทรกลับ|follow up|ติดตาม)\s*([^.\n;]+)/i);
+    return m ? stripPunct(m[0]) : '';
+  }
+
+  function explicitDetail(text){
+    return labeled(text,['รายละเอียด','รายละเอียดการเข้าพบ','feedback','feedback จากลูกค้า','หมายเหตุ','note','รายละเอียดเพิ่มเติม']);
+  }
+
+  function buildFeedback(text, data){
+    const detail=explicitDetail(text);
+    if(detail) return detail;
+
+    const pieces=[];
+    if(data.department) pieces.push(data.department);
+    if(data.interest) pieces.push('สนใจ '+data.interest);
+    if(data.action) pieces.push(data.action);
+    if(data.phone) pieces.push('โทร '+data.phone);
+    if(data.email) pieces.push('อีเมล '+data.email);
+
+    // For free-form notes, keep the original note as the most reliable detail.
+    // This prevents information from being lost even if a phrase is not recognized.
+    const original=norm(text);
+    if(original && pieces.length===0) return original;
+    if(original) return original;
+    return pieces.join(' / ');
+  }
+
+  function isRealVisit(text){
+    return !/(?:ไม่ได้เข้าพบ|ไม่เข้าพบ|ไม่ได้\s*visit|ไม่\s*visit|โทรอย่างเดียว|โทรคุยอย่างเดียว|ส่งเมลอย่างเดียว)/i.test(text);
+  }
+
+  function highlight(data){
+    const bits=[];
+    if(data.date) bits.push('วันที่ '+data.date);
+    if(data.time) bits.push('เวลา '+data.time);
+    if(data.company) bits.push('บริษัท '+data.company);
+    if(data.person) bits.push('ผู้ติดต่อ '+data.person);
+    if(data.activities.length) bits.push('กิจกรรม '+data.activities.join(', '));
+    if(data.interest) bits.push('ความสนใจ '+data.interest);
+    if(data.action) bits.push('Action '+data.action);
+    return bits.join('  •  ');
+  }
+
+  function parse(text){
+    const company=extractCompany(text);
+    const person=extractPerson(text);
+    const data={
+      date:extractDate(text),
+      time:extractTime(text),
+      company,
+      person,
+      phone:extractPhone(text),
+      email:extractEmail(text),
+      department:extractDepartment(text),
+      activities:extractActivities(text),
+      interest:extractInterest(text),
+      action:extractAction(text),
+      visit:isRealVisit(text)
+    };
+    data.feedback=buildFeedback(text,data);
+    return data;
+  }
+
+  function apply(data){
+    const filled=[];
+    if(data.date && setField('rfDate',data.date)) filled.push('วันที่');
+    if(data.time && setField('rfTime',data.time)) filled.push('เวลา');
+    if(data.person && setField('rfPerson',data.person)) filled.push('ผู้ติดต่อ');
+    if(data.company && setField('rfCompany',data.company)) filled.push('บริษัท');
+    if(data.feedback && setField('rfFeedback',data.feedback)) filled.push('รายละเอียด');
+
+    const visit=$('rfVisit');
+    if(visit){
+      visit.checked=data.visit;
+      visit.dispatchEvent(new Event('change',{bubbles:true}));
+      filled.push(data.visit ? 'Visit' : 'ไม่ใช่ Visit');
+    }
+
+    const boxes=[...document.querySelectorAll('#activityChips input[type="checkbox"]')];
+    if(data.activities.length){
+      boxes.forEach(c=>c.checked=data.activities.includes(c.value));
+      boxes.forEach(c=>c.dispatchEvent(new Event('change',{bubbles:true})));
+      filled.push('กิจกรรม');
+    }
+
+    return filled;
+  }
+
+  function runAutoFill(){
+    const text=input.value.trim();
+    if(!text){
+      status.textContent='กรุณาวางข้อความก่อน';
+      preview.textContent='';
+      return;
+    }
+
+    const data=parse(text);
+    const filled=apply(data);
+
+    if(filled.length){
+      status.textContent='✓ เติมข้อมูลอัตโนมัติแล้ว: '+filled.join(' • ');
+      preview.textContent=highlight(data);
+    }else{
+      status.textContent='ยังแยกข้อมูลไม่ได้ ลองวางข้อความที่มีชื่อบริษัท/เวลา/ผู้ติดต่อเพิ่มเติม';
+      preview.textContent='';
+    }
+  }
+
+  // Paste once -> parse automatically.
+  input.addEventListener('paste',()=>setTimeout(runAutoFill,80));
+  btn.addEventListener('click',runAutoFill);
+
+  clearBtn.addEventListener('click',()=>{
+    input.value='';
+    status.textContent='';
+    preview.textContent='';
+  });
+
+  // Ctrl/Command + Enter also runs the parser.
+  input.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
+      e.preventDefault();
+      runAutoFill();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
