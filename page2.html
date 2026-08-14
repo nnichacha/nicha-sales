@@ -632,6 +632,26 @@
     font-weight:600; font-size:12.5px; padding:9px 16px; border-radius:8px; cursor:pointer; margin-top:20px;
   }
   .page-back-btn:hover{ color:var(--gold); border-color:var(--gold); }
+
+  .subtab-nav{ display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  .subtab-btn{
+    background:transparent; border:none; color:var(--muted); font-family:'Kanit',sans-serif; font-weight:600;
+    font-size:13.5px; padding:10px 6px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;
+    margin-right:20px;
+  }
+  .subtab-btn:hover{ color:var(--text); }
+  .subtab-btn.active{ color:var(--gold); border-bottom-color:var(--gold); }
+
+  .district-search-summary{
+    display:flex; flex-wrap:wrap; gap:10px; background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; padding:12px 16px; margin-bottom:14px;
+  }
+  .dss-item{ font-family:'Kanit',sans-serif; font-size:12.5px; color:var(--text); }
+  .dss-item b{ font-size:14px; margin-right:4px; }
+  .dss-target b{ color:#34D399; }
+  .dss-nontarget b{ color:#EF4444; }
+  .dss-unknown b{ color:#F59E0B; }
+
   @media(max-width:760px){
     #pageHub{ min-height:auto; padding:30px 0 40px; }
     .hub-grid{ grid-template-columns:1fr; gap:16px; max-width:340px; }
@@ -927,6 +947,7 @@
 }
 
   .territory-map{margin-top:16px;display:grid;grid-template-columns:1fr 310px;border:1px solid #2f4356;border-radius:15px;overflow:hidden;background:linear-gradient(140deg,#0d1b29,#0b141f);box-shadow:0 15px 34px rgba(0,0,0,.18)}
+  .territory-map-solo{grid-template-columns:1fr}
   .territory-map-main{min-height:390px;position:relative;padding:23px 27px;overflow:hidden;background:radial-gradient(circle at 47% 48%,rgba(43,138,190,.20),transparent 39%),linear-gradient(135deg,#102c47,#07101f 78%)}.territory-map-main:before{content:"";position:absolute;inset:0;opacity:.27;background-image:linear-gradient(rgba(105,181,223,.17) 1px,transparent 1px),linear-gradient(90deg,rgba(105,181,223,.17) 1px,transparent 1px);background-size:20px 20px;transform:perspective(450px) rotateX(56deg) scale(1.4);transform-origin:center 76%;}.territory-map-main:after{content:"";position:absolute;width:470px;height:190px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.68),transparent 67%);left:50%;top:61%;transform:translateX(-50%);pointer-events:none}.territory-kicker{font-family:'Kanit',sans-serif;font-weight:600;font-size:11px;letter-spacing:1.8px;color:var(--gold);position:relative;z-index:4}.territory-title{font-family:'Kanit',sans-serif;color:#fff;font-weight:700;font-size:20px;margin-top:4px;position:relative;z-index:4}
   .rayong-map{position:absolute;z-index:3;width:min(670px,81%);height:300px;left:48%;top:68px;transform:translateX(-50%);filter:drop-shadow(0 22px 17px rgba(0,0,0,.52));}.rayong-map .district{cursor:pointer;transform-box:fill-box;transform-origin:center;transition:transform .36s cubic-bezier(.2,.8,.2,1),filter .36s}.rayong-map .top{fill:#173d59;stroke:#5ab8e8;stroke-width:1.2;transition:fill .28s,stroke .28s}.rayong-map .side{fill:#09263e;stroke:#236c92;stroke-width:1}.rayong-map .grid{fill:url(#districtGrid);opacity:.5;pointer-events:none}.rayong-map .label{fill:#eef8ff;font-family:'Kanit',sans-serif;font-size:16px;font-weight:700;text-anchor:middle;paint-order:stroke;stroke:#071420;stroke-width:3px;stroke-linejoin:round;pointer-events:none}.rayong-map .district:hover,.rayong-map .district.active{transform:translateY(-16px);filter:drop-shadow(0 18px 10px rgba(0,0,0,.50))}.rayong-map .district:hover .top{fill:#226690;stroke:#8bd9ff}.rayong-map .district.active .top{fill:#287ba8;stroke:#d7b56e;stroke-width:1.6}.rayong-map .district.active .side{fill:#0d3652;stroke:#d7b56e}.map-tip{position:absolute;z-index:5;bottom:18px;left:27px;display:flex;align-items:center;gap:8px;color:#b4c8d8;font-size:11px;background:rgba(4,12,20,.56);border:1px solid rgba(99,168,205,.25);padding:8px 11px;border-radius:7px;backdrop-filter:blur(6px)}.map-tip i{width:7px;height:7px;background:#60c7f0;border-radius:50%;box-shadow:0 0 9px #60c7f0}.map-tip b{color:var(--gold-lt);font-weight:600}
   .territory-side{padding:22px;background:linear-gradient(180deg,rgba(22,35,52,.96),rgba(13,22,33,.98));border-left:1px solid #2f4356}.territory-side h3{font-family:'Kanit',sans-serif;font-size:15px;color:#fff;margin:0 0 4px}.territory-side p{font-size:11.5px;color:var(--muted);line-height:1.55;margin:0 0 13px}.territory-list{display:flex;flex-direction:column;gap:6px}.territory-item{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 10px;border:1px solid #2c4052;border-radius:7px;background:rgba(5,11,18,.28);font-family:'Kanit',sans-serif;color:#b9c9d5;font-size:11.5px;cursor:pointer;transition:.18s}.territory-item:hover,.territory-item.active{color:#fff;border-color:var(--gold);background:rgba(214,181,111,.10)}.territory-count{color:var(--gold);font-family:'Sarabun',sans-serif;font-weight:600;font-size:10px}.territory-legend{display:flex;gap:13px;margin-top:12px;color:var(--muted);font-size:10px}.territory-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:4px}.territory-legend i.blue{background:#38bdf8}
@@ -1151,24 +1172,41 @@
   </div>
 
   <div id="page1" style="display:none;">
-    <div class="kpi-row" id="kpiRow"></div>
-  <div class="contact-summary" id="contactSummary"></div>
-
-  <div class="visited-section" id="visitedSection">
-    <div class="visited-head" id="visitedHead">
-      <div class="visited-head-left">
-        <div class="visited-icon">
-          <svg viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        </div>
-        <div>
-          <div class="visited-title">บริษัทที่ไปพบแล้ว</div>
-          <div class="visited-meta" id="visitedMeta">0 แห่ง</div>
-        </div>
-      </div>
-      <div class="visited-caret" id="visitedCaret">▾</div>
+    <div class="subtab-nav">
+      <button class="subtab-btn active" id="subtabHomeBtn">หน้าแรก</button>
+      <button class="subtab-btn" id="subtabVisitedBtn">บริษัทที่ไปพบแล้ว</button>
+      <button class="subtab-btn" id="subtabEstateBtn">โซนอุตสาหกรรม</button>
     </div>
-    <div class="visited-body" id="visitedBody"></div>
-  </div>
+
+    <div id="subtabHome">
+      <div id="districtSearchSummary" class="district-search-summary" style="display:none;"></div>
+      <div class="kpi-row" id="kpiRow"></div>
+      <div class="contact-summary" id="contactSummary"></div>
+      <div class="override-banner" id="overrideChangeBanner" style="display:none;">
+        <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
+        <button onclick="location.reload()">รีเฟรชตอนนี้</button>
+      </div>
+      <div id="districtContainer"></div>
+    </div>
+
+    <div id="subtabVisited" style="display:none;">
+      <div class="visited-section" id="visitedSection">
+        <div class="visited-head" id="visitedHead">
+          <div class="visited-head-left">
+            <div class="visited-icon">
+              <svg viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <div>
+              <div class="visited-title">บริษัทที่ไปพบแล้ว</div>
+              <div class="visited-meta" id="visitedMeta">0 แห่ง</div>
+            </div>
+          </div>
+        </div>
+        <div class="visited-body open" id="visitedBody"></div>
+      </div>
+    </div>
+
+    <div id="subtabEstate" style="display:none;"></div>
 
   <div class="real-map-overlay" id="realMapOverlay">
     <div class="real-map-box">
@@ -1208,12 +1246,6 @@
       </div>
     </div>
   </div>
-  <div class="override-banner" id="overrideChangeBanner" style="display:none;">
-    <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
-    <button onclick="location.reload()">รีเฟรชตอนนี้</button>
-  </div>
-
-    <div id="districtContainer"></div>
   </div>
 
   <div id="page2" style="display:none;">
@@ -1878,7 +1910,7 @@ function renderVisitedSection(){
       renderVisitedSection();
       const b2 = document.getElementById('visitedBody');
       if (b2) b2.classList.add('open');
-      document.getElementById('visitedCaret').classList.add('open');
+      const vc = document.getElementById('visitedCaret'); if (vc) vc.classList.add('open');
     });
   });
   body.querySelectorAll('.visited-status-btn').forEach(btn=>{
@@ -1887,7 +1919,7 @@ function renderVisitedSection(){
       renderVisitedSection();
       const b2 = document.getElementById('visitedBody');
       if (b2) b2.classList.add('open');
-      document.getElementById('visitedCaret').classList.add('open');
+      const vc = document.getElementById('visitedCaret'); if (vc) vc.classList.add('open');
     });
   });
   body.querySelectorAll('.visited-card').forEach(card=>{
@@ -2559,14 +2591,6 @@ async function init(){
 
   await renderContactSummary(totalCompanies);
 
-  const visitedHead = document.getElementById('visitedHead');
-  const visitedBody = document.getElementById('visitedBody');
-  const visitedCaret = document.getElementById('visitedCaret');
-  visitedHead.addEventListener('click', ()=>{
-    const isOpen = visitedBody.classList.toggle('open');
-    visitedCaret.classList.toggle('open', isOpen);
-  });
-
   const vcModalCloseBtn = document.getElementById('vcModalClose');
   const vcModalOverlayEl = document.getElementById('vcModalOverlay');
   vcModalCloseBtn.addEventListener('click', function(e){
@@ -2599,6 +2623,29 @@ async function init(){
 
   // expose a simple global helper the map script (added separately) uses to
   // show one district's full company list and hide the others
+  function showDistrictSearchSummary(name){
+    const box = document.getElementById('districtSearchSummary');
+    if (!box) return;
+    if (!name || typeof SITE_DATA === 'undefined' || !SITE_DATA[name]){
+      box.style.display = 'none';
+      return;
+    }
+    let total = 0, target = 0, nontarget = 0, unknown = 0;
+    SITE_DATA[name].sections.forEach(s=> s.companies.forEach(c=>{
+      total++;
+      if (c.diwStatus === 'target') target++;
+      else if (c.diwStatus === 'nontarget') nontarget++;
+      else unknown++;
+    }));
+    box.innerHTML = `
+      <span class="dss-item"><b>${total}</b> โรงงานในอำเภอ${name}</span>
+      <span class="dss-item dss-target"><b>${target}</b> เป้าหมาย</span>
+      <span class="dss-item dss-nontarget"><b>${nontarget}</b> ไม่เกี่ยวข้อง</span>
+      <span class="dss-item dss-unknown"><b>${unknown}</b> ยังไม่ทราบ</span>
+    `;
+    box.style.display = '';
+  }
+
   window.selectDistrictArea = function(name){
     districtBlocks.forEach(x=>{
       const isMatch = x.dist === name;
@@ -2608,6 +2655,7 @@ async function init(){
         x.block.querySelectorAll('.tambon-chip').forEach((c,i)=> c.classList.toggle('active', i===0));
       }
     });
+    showDistrictSearchSummary(name);
   };
 
   // safety re-render: ensures the summary/visited section reflect every row's
@@ -2628,6 +2676,7 @@ async function init(){
     const cont = filterContacted.value;
     const diw = filterDiw.value;
     const est = filterEstate.value;
+    let matchCount = 0;
     document.querySelectorAll('table.company-table tbody tr').forEach(tr=>{
       let show = true;
       if (q && !(tr.dataset.name.includes(q) || tr.dataset.tambon.includes(q))) show = false;
@@ -2638,7 +2687,27 @@ async function init(){
       if (diw && tr.dataset.diwStatus !== diw) show = false;
       if (est && tr.dataset.estate !== est) show = false;
       tr.style.display = show ? '' : 'none';
+      if (show) matchCount++;
     });
+    const summaryBox = document.getElementById('districtSearchSummary');
+    if (q && summaryBox){
+      let target = 0, nontarget = 0, unknown = 0;
+      document.querySelectorAll('table.company-table tbody tr').forEach(tr=>{
+        if (tr.style.display === 'none') return;
+        if (tr.dataset.diwStatus === 'target') target++;
+        else if (tr.dataset.diwStatus === 'nontarget') nontarget++;
+        else unknown++;
+      });
+      summaryBox.innerHTML = `
+        <span class="dss-item">พบ <b>${matchCount}</b> รายการ สำหรับ "${searchInput.value.trim()}"</span>
+        <span class="dss-item dss-target"><b>${target}</b> เป้าหมาย</span>
+        <span class="dss-item dss-nontarget"><b>${nontarget}</b> ไม่เกี่ยวข้อง</span>
+        <span class="dss-item dss-unknown"><b>${unknown}</b> ยังไม่ทราบ</span>
+      `;
+      summaryBox.style.display = '';
+    } else if (!q && summaryBox){
+      summaryBox.style.display = 'none';
+    }
     // reveal the matching district block + tambon panel (search is an explicit
     // action, unlike map clicks, so scrolling here is still helpful)
     if (q){
@@ -2795,6 +2864,25 @@ async function init(){
   document.getElementById('hubCardReport').addEventListener('click', ()=> showPage('report'));
   document.getElementById('hubCardQuotes').addEventListener('click', ()=> showPage('quotes'));
   document.getElementById('tabHome').addEventListener('click', ()=> showPage('hub'));
+
+  // ---- Customer Database sub-tabs: หน้าแรก / บริษัทที่ไปพบแล้ว / โซนอุตสาหกรรม ----
+  const subtabHomeBtn = document.getElementById('subtabHomeBtn');
+  const subtabVisitedBtn = document.getElementById('subtabVisitedBtn');
+  const subtabEstateBtn = document.getElementById('subtabEstateBtn');
+  const subtabHome = document.getElementById('subtabHome');
+  const subtabVisited = document.getElementById('subtabVisited');
+  const subtabEstate = document.getElementById('subtabEstate');
+  function showSubtab(which){
+    subtabHome.style.display = which==='home' ? '' : 'none';
+    subtabVisited.style.display = which==='visited' ? '' : 'none';
+    subtabEstate.style.display = which==='estate' ? '' : 'none';
+    subtabHomeBtn.classList.toggle('active', which==='home');
+    subtabVisitedBtn.classList.toggle('active', which==='visited');
+    subtabEstateBtn.classList.toggle('active', which==='estate');
+  }
+  subtabHomeBtn.addEventListener('click', ()=> showSubtab('home'));
+  subtabVisitedBtn.addEventListener('click', ()=> showSubtab('visited'));
+  subtabEstateBtn.addEventListener('click', ()=> showSubtab('estate'));
 
   // ---- populate company autocomplete list ----
   const companyListEl = document.getElementById('companyList');
@@ -3578,15 +3666,13 @@ init();
 /* Compact territory overview: it only navigates to existing district tabs and never alters stored data. */
 (() => {
   function mountTerritoryMap(){
-    const page1El = document.getElementById('page1');
-    if (!page1El || document.getElementById('territoryMap') || typeof SITE_DATA === 'undefined') return;
+    const homeEl = document.getElementById('subtabHome');
+    if (!homeEl || document.getElementById('territoryMap') || typeof SITE_DATA === 'undefined') return;
     const areas = Object.entries(SITE_DATA);
     if (!areas.length) return;
-    const areaButtons = areas.map(([name,data],i)=>`<button class="territory-item ${i===0?'active':''}" data-territory="${name}"><span>${name}</span><span class="territory-count">${data.total_companies.toLocaleString()} แห่ง</span></button>`).join('');
-    const card = document.createElement('section'); card.className='territory-map'; card.id='territoryMap';
-    card.innerHTML=`<div class="territory-map-main"><div class="territory-kicker">INTERACTIVE TERRITORY MAP</div><div class="territory-title" contenteditable="true" spellcheck="false" data-editkey="territoryTitle">แผนที่พื้นที่ปฏิบัติการ · ระยอง</div><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district active" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg></div><aside class="territory-side"><h3>เลือกพื้นที่ปฏิบัติการ</h3><div class="territory-list">${areaButtons}</div><div class="territory-legend"><span><i></i>พื้นที่ให้บริการ</span><span><i class="blue"></i>พื้นที่ที่เลือก</span></div></aside>`;
-    page1El.insertBefore(card, page1El.firstChild);
-    if (typeof bindEditableTexts === 'function') bindEditableTexts(card);
+    const card = document.createElement('section'); card.className='territory-map territory-map-solo'; card.id='territoryMap';
+    card.innerHTML=`<div class="territory-map-main"><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district active" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg></div>`;
+    homeEl.insertBefore(card, homeEl.firstChild);
     function selectArea(name){
       const el = card.querySelector(`[data-territory="${name}"]`);
       const alreadyOpen = el && el.classList.contains('active');
@@ -3735,19 +3821,13 @@ init();
     return found;
   }
   function mountEstateZones(){
-    const page1=document.getElementById('page1');
-    if(!page1 || document.getElementById('estateZones')) return;
+    const estateHost=document.getElementById('subtabEstate');
+    if(!estateHost || document.getElementById('estateZones')) return;
     const panel=document.createElement('section');panel.className='estate-zones';panel.id='estateZones';
     const available=new Set();Object.values(SITE_DATA).forEach(d=>d.sections.forEach(s=>s.companies.forEach(c=>available.add(normalise(c.estate)))));
-    panel.innerHTML=`<div class="estate-zones-head" id="estateZonesHead" style="cursor:pointer;"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">เลือกชื่อนิคมเพื่อดูอำเภอและตำบลที่เกี่ยวข้อง แล้วกดตำแหน่งเพื่อเปิดข้อมูลย่อย</div></div><div style="display:flex; align-items:center; gap:10px;"><div class="estate-zones-note">แก้ไขชื่อนิคมได้ในคอลัมน์ “นิคม”</div><div class="estate-zones-caret" id="estateZonesCaret">▾</div></div></div><div class="estate-zones-collapse" id="estateZonesCollapse"><div class="estate-zone-grid">${CATALOGUE.map(name=>{const locations=collectLocations(name);const total=locations.reduce((n,x)=>n+x.count,0);return `<button class="estate-zone" data-estate="${name}">${name}<span class="zone-badge">${total||'—'}</span><small>${locations.length?`${locations.length} ตำบล`:(available.has(name)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small></button>`}).join('')}</div><div class="estate-zone-detail" id="estateZoneDetail"></div></div>`;
-    page1.appendChild(panel);
+    panel.innerHTML=`<div class="estate-zones-head"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">เลือกชื่อนิคมเพื่อดูอำเภอและตำบลที่เกี่ยวข้อง แล้วกดตำแหน่งเพื่อเปิดข้อมูลย่อย</div></div><div class="estate-zones-note">แก้ไขชื่อนิคมได้ในคอลัมน์ “นิคม”</div></div><div class="estate-zone-grid">${CATALOGUE.map(name=>{const locations=collectLocations(name);const total=locations.reduce((n,x)=>n+x.count,0);return `<button class="estate-zone" data-estate="${name}">${name}<span class="zone-badge">${total||'—'}</span><small>${locations.length?`${locations.length} ตำบล`:(available.has(name)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small></button>`}).join('')}</div><div class="estate-zone-detail" id="estateZoneDetail"></div>`;
+    estateHost.appendChild(panel);
     const detail=panel.querySelector('#estateZoneDetail');
-    const collapseWrap = panel.querySelector('#estateZonesCollapse');
-    const caret = panel.querySelector('#estateZonesCaret');
-    panel.querySelector('#estateZonesHead').addEventListener('click', ()=>{
-      const isOpen = collapseWrap.classList.toggle('open');
-      caret.classList.toggle('open', isOpen);
-    });
     panel.addEventListener('click',e=>{
       const zone=e.target.closest('.estate-zone'); if(!zone) return;
       const estate=zone.dataset.estate; const locations=collectLocations(estate);
@@ -3761,7 +3841,7 @@ init();
         document.getElementById('estateMapBtn').addEventListener('click', ()=> openRealEstateMap(estate, geo));
       }
     });
-    detail.addEventListener('click',e=>{const location=e.target.closest('[data-district]');if(!location)return;const name=location.dataset.district;if(typeof window.selectDistrictArea==='function')window.selectDistrictArea(name);const block=document.querySelector(`.district-block[data-dist="${name}"]`);if(block){setTimeout(()=>block.scrollIntoView({behavior:'smooth',block:'start'}),20);}});
+    detail.addEventListener('click',e=>{const location=e.target.closest('[data-district]');if(!location)return;const name=location.dataset.district;const homeBtn=document.getElementById('subtabHomeBtn');if(homeBtn)homeBtn.click();if(typeof window.selectDistrictArea==='function')window.selectDistrictArea(name);const block=document.querySelector(`.district-block[data-dist="${name}"]`);if(block){setTimeout(()=>block.scrollIntoView({behavior:'smooth',block:'start'}),20);}});
   }
   setTimeout(()=>{normaliseEstateData();mountEstateZones();},1400);
   window.IEAT_ESTATE_GEO = IEAT_ESTATE_GEO;
