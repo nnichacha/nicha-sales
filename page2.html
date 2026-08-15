@@ -153,42 +153,67 @@
   .save-dot{ width:7px; height:7px; border-radius:50%; background:var(--green); }
 
   .kpi-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:22px; }
-  .dash-grid{ display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:10px; margin-top:22px; }
+  .dash-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-top:22px; }
   .dash-card{
-    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;
-    display:flex; align-items:center; gap:12px; text-align:left; width:100%; font-family:inherit;
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px;
+    display:flex; flex-direction:column; align-items:flex-start; text-align:left; width:100%; font-family:inherit;
+    min-width:0; overflow:hidden;
   }
   .dash-clickable{ cursor:pointer; transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
   .dash-clickable:hover{ transform:translateY(-2px); border-color:var(--gold); }
-  .dash-clickable.active{ border-width:2px; box-shadow:0 0 0 2px rgba(201,169,110,.25); }
-  .dash-card.dash-green.active{ box-shadow:0 0 0 2px rgba(52,211,153,.3); }
-  .dash-card.dash-red.active{ box-shadow:0 0 0 2px rgba(239,68,68,.3); }
-  .dash-card.dash-yellow.active{ box-shadow:0 0 0 2px rgba(245,158,11,.3); }
-  .dash-card.dash-blue.active{ box-shadow:0 0 0 2px rgba(56,189,248,.3); }
-  .dash-icon{ font-size:22px; line-height:1; flex-shrink:0; }
-  .dash-label{ font-family:'Kanit',sans-serif; font-size:11px; color:var(--muted); }
-  .dash-value{ font-family:'Kanit',sans-serif; font-weight:800; font-size:22px; color:var(--text); margin-top:2px; }
-  .dash-green{ border-color:rgba(52,211,153,.35); }
+  .dash-clickable.expanded{ border-width:2px; }
+  .dash-card.dash-green.expanded{ box-shadow:0 0 0 2px rgba(52,211,153,.3); }
+  .dash-card.dash-red.expanded{ box-shadow:0 0 0 2px rgba(239,68,68,.3); }
+  .dash-card.dash-yellow.expanded{ box-shadow:0 0 0 2px rgba(245,158,11,.3); }
+  .dash-card.dash-blue.expanded{ box-shadow:0 0 0 2px rgba(56,189,248,.3); }
+  .dash-card-top{ display:flex; align-items:center; gap:8px; width:100%; }
+  .dash-dot{ width:13px; height:13px; border-radius:50%; flex-shrink:0; background:var(--muted); box-shadow:inset 0 -2px 3px rgba(0,0,0,.25), inset 0 2px 2px rgba(255,255,255,.25); }
+  .dash-icon{ font-size:18px; line-height:1; flex-shrink:0; }
+  .dash-label{ font-family:'Kanit',sans-serif; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dash-value{ font-family:'Kanit',sans-serif; font-weight:800; font-size:26px; color:var(--text); margin-top:8px; }
+  .dash-green .dash-dot{ background:#34D399; }
   .dash-green .dash-value{ color:#34D399; }
-  .dash-red{ border-color:rgba(239,68,68,.35); }
+  .dash-red .dash-dot{ background:#EF4444; }
   .dash-red .dash-value{ color:#EF4444; }
-  .dash-yellow{ border-color:rgba(245,158,11,.35); }
+  .dash-yellow .dash-dot{ background:#F59E0B; }
   .dash-yellow .dash-value{ color:#F59E0B; }
-  .dash-blue{ border-color:rgba(56,189,248,.35); }
+  .dash-blue .dash-dot{ background:#38BDF8; }
   .dash-blue .dash-value{ color:#38BDF8; }
-  .dash-highlight{
-    display:flex; align-items:center; gap:16px; margin-top:12px; padding:18px 22px; border-radius:14px;
-    background:linear-gradient(120deg, rgba(201,169,110,.14), rgba(201,169,110,.03)); border:1px solid var(--gold);
-    width:100%; text-align:left; font-family:inherit;
+  .dash-detail{
+    display:none; width:100%; opacity:0; animation:dash-detail-fade .25s ease forwards;
   }
-  .dash-highlight.dash-clickable.active{ border-width:2px; box-shadow:0 0 0 2px rgba(201,169,110,.3); }
-  .dash-highlight-icon{ font-size:32px; }
-  .dash-highlight-label{ font-family:'Kanit',sans-serif; font-size:12.5px; color:var(--gold-lt); }
-  .dash-highlight-value{ font-family:'Kanit',sans-serif; font-weight:800; font-size:30px; color:#fff; margin-top:2px; }
-  .dash-highlight-value span{ font-size:14px; font-weight:600; color:var(--muted); margin-left:4px; }
-  @media(max-width:760px){
-    .dash-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-    .dash-highlight{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .dash-clickable.expanded .dash-detail{ display:block; margin-top:12px; }
+  @keyframes dash-detail-fade{ from{ opacity:0; } to{ opacity:1; } }
+  .dash-detail-text{ font-family:'Sarabun',sans-serif; font-size:11.5px; color:var(--muted); line-height:1.6; padding-top:10px; border-top:1px solid var(--line); }
+  .dash-detail-btn{
+    display:inline-block; margin-top:9px; background:transparent; border:none; padding:0;
+    font-family:'Kanit',sans-serif; font-size:11.5px; font-weight:600; cursor:pointer;
+  }
+  .dash-green .dash-detail-btn{ color:#34D399; }
+  .dash-red .dash-detail-btn{ color:#EF4444; }
+  .dash-yellow .dash-detail-btn{ color:#F59E0B; }
+  .dash-blue .dash-detail-btn{ color:#38BDF8; }
+  .dash-detail-btn:hover{ text-decoration:underline; }
+  .dash-highlight{
+    display:flex; align-items:flex-start; gap:14px; margin-top:12px; padding:16px 18px; border-radius:14px;
+    background:linear-gradient(120deg, rgba(201,169,110,.14), rgba(201,169,110,.03)); border:1px solid var(--gold);
+    width:100%; text-align:left; font-family:inherit; flex-wrap:wrap;
+  }
+  .dash-highlight.dash-clickable.expanded{ border-width:2px; box-shadow:0 0 0 2px rgba(201,169,110,.3); }
+  .dash-highlight-icon{ font-size:28px; flex-shrink:0; }
+  .dash-highlight-body{ flex:1; min-width:160px; }
+  .dash-highlight-label{ font-family:'Kanit',sans-serif; font-size:12px; color:var(--gold-lt); }
+  .dash-highlight-value{ font-family:'Kanit',sans-serif; font-weight:800; font-size:26px; color:#fff; margin-top:2px; }
+  .dash-highlight-value span{ font-size:13px; font-weight:600; color:var(--muted); margin-left:4px; }
+  .dash-highlight .dash-detail{ flex-basis:100%; }
+  .dash-highlight .dash-detail-text{ border-top-color:rgba(201,169,110,.25); }
+  .dash-highlight .dash-detail-btn{ color:var(--gold); }
+  @media(max-width:520px){
+    .dash-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+    .dash-card{ padding:12px; }
+    .dash-value{ font-size:21px; }
+    .dash-label{ font-size:11px; }
+    .dash-highlight{ flex-direction:column; }
   }
   .contact-summary{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin-top:14px; }
   .contact-summary .cs-main{ display:flex; align-items:baseline; gap:8px; padding-right:16px; border-right:1px solid var(--line); }
@@ -217,6 +242,13 @@
   .visited-body{ display:none; padding:4px 20px 20px; }
   .visited-body.open{ display:block; }
   .visited-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:10px; }
+  .targets-group{ margin-bottom:22px; }
+  .targets-group:last-child{ margin-bottom:0; }
+  .targets-group-head{
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:13.5px; margin-bottom:10px;
+    padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
+  .targets-group-head span{ color:var(--muted); font-weight:500; font-size:12px; }
   .visited-card{
     background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--vc-accent, var(--green)); border-radius:8px;
     position:relative; transition:border-color .15s ease;
@@ -525,6 +557,8 @@
     background:var(--panel2); border:1px solid var(--line); border-radius:6px; color:var(--text); font-size:11px;
     padding:4px 6px; font-family:'Sarabun',sans-serif; min-width:110px;
   }
+  select.status-select.st-customer{ color:#34D399; }
+  select.status-select.st-new{ color:#38BDF8; }
   select.status-select.st-interesting{ color:#34D399; }
   select.status-select.st-followup{ color:var(--amber); }
   select.status-select.st-notinteresting{ color:#9CA3AF; }
@@ -606,7 +640,40 @@
     margin-top:40px; margin-bottom:26px;
   }
   .hub-grid{
-    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:22px; max-width:960px; margin:0 auto 40px;
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:22px; width:100%; max-width:960px; margin:0 auto 40px;
+  }
+
+  /* ---- glow feature card: blurred gradient glow behind + gradient-border card in front ---- */
+  .glow-grid{ gap:28px; }
+  .glow-card-wrap{
+    display:block; position:relative; width:100%; max-width:300px; margin:0 auto;
+    background:none; border:none; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    opacity:0; transform:translateY(30px);
+    animation:glow-card-in .8s ease-out forwards; animation-delay:var(--glow-delay, 0s);
+  }
+  @keyframes glow-card-in{ to{ opacity:1; transform:translateY(0); } }
+  .glow-bg{
+    position:absolute; inset:0; width:100%; height:100%; opacity:.6; border-radius:40px;
+    pointer-events:none; filter:blur(45px); transition:opacity .3s ease;
+  }
+  .glow-card-wrap:hover .glow-bg{ opacity:.85; }
+  .glow-fg{
+    position:relative; width:100%; height:260px; border-radius:40px; z-index:10; overflow:hidden;
+    border:8px solid transparent; box-sizing:border-box;
+    padding:28px; display:flex; flex-direction:column; justify-content:space-between; text-align:left;
+    transition:transform .25s ease;
+  }
+  .glow-card-wrap:hover .glow-fg{ transform:translateY(-4px); }
+  .glow-icon{ color:rgba(255,255,255,.9); }
+  .glow-icon svg{ width:32px; height:32px; stroke:currentColor; }
+  .glow-title{ font-family:'Kanit',sans-serif; color:#fff; font-weight:500; font-size:20px; margin-bottom:8px; letter-spacing:-.2px; }
+  .glow-desc{ font-family:'Sarabun',sans-serif; color:#9CA3AF; font-size:14px; line-height:1.6; font-weight:400; }
+  @media(min-width:768px){
+    .glow-fg{ height:300px; }
+  }
+  @media(max-width:760px){
+    .glow-grid{ grid-template-columns:1fr; max-width:340px; gap:24px; }
+    .glow-card-wrap{ max-width:340px; }
   }
 
   .hub-card{
@@ -1227,27 +1294,39 @@
         <circle class="hub-circuit-dot hub-circuit-dot-2" cx="860" cy="520" r="4"/>
       </svg>
     </div>
-    <div class="hub-grid">
-      <button class="hub-card hub-card-emerald" id="hubCardInfo">
-        <div class="hub-card-icon">
-          <svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/></svg>
+    <div class="hub-grid glow-grid">
+      <button class="glow-card-wrap" id="hubCardInfo" style="--glow-delay:0.1s;">
+        <div class="glow-bg" style="background:linear-gradient(137deg, #FF3D77 0%, #FFB1CE 45%, #FF9D3C 100%);"></div>
+        <div class="glow-fg" style="background:linear-gradient(#1A1A1C,#1A1A1C) padding-box, linear-gradient(137deg, #FF3D77 0%, #FFB1CE 45%, #FF9D3C 100%) border-box;">
+          <div class="glow-icon">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/></svg>
+          </div>
+          <div class="glow-body">
+            <div class="glow-title">Customer Database</div>
+          </div>
         </div>
-        <div class="hub-card-title">Customer Database</div>
-        <span class="hub-card-arrow">→</span>
       </button>
-      <button class="hub-card hub-card-red" id="hubCardReport">
-        <div class="hub-card-icon">
-          <svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <button class="glow-card-wrap" id="hubCardReport" style="--glow-delay:0.2s;">
+        <div class="glow-bg" style="background:linear-gradient(137deg, #FFFFFF 0%, #7DD3FC 45%, #06B6D4 100%);"></div>
+        <div class="glow-fg" style="background:linear-gradient(#1A1A1C,#1A1A1C) padding-box, linear-gradient(137deg, #FFFFFF 0%, #7DD3FC 45%, #06B6D4 100%) border-box;">
+          <div class="glow-icon">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div class="glow-body">
+            <div class="glow-title">Daily Report</div>
+          </div>
         </div>
-        <div class="hub-card-title">Daily Report</div>
-        <span class="hub-card-arrow">→</span>
       </button>
-      <button class="hub-card hub-card-yellow" id="hubCardQuotes">
-        <div class="hub-card-icon">
-          <svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      <button class="glow-card-wrap" id="hubCardQuotes" style="--glow-delay:0.3s;">
+        <div class="glow-bg" style="background:linear-gradient(137deg, #4361EE 0%, #E0AEFF 45%, #F72585 100%);"></div>
+        <div class="glow-fg" style="background:linear-gradient(#1A1A1C,#1A1A1C) padding-box, linear-gradient(137deg, #4361EE 0%, #E0AEFF 45%, #F72585 100%) border-box;">
+          <div class="glow-icon">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          </div>
+          <div class="glow-body">
+            <div class="glow-title">Pending Quote</div>
+          </div>
         </div>
-        <div class="hub-card-title">Pending Quote</div>
-        <span class="hub-card-arrow">→</span>
       </button>
     </div>
   </div>
@@ -1259,35 +1338,20 @@
   <div id="page1" style="display:none;">
     <div class="subtab-nav">
       <button class="subtab-btn active" id="subtabHomeBtn">หน้าแรก</button>
-      <button class="subtab-btn" id="subtabTargetsBtn">🎯 เป้าหมายที่ต้องดำเนินการ</button>
       <button class="subtab-btn" id="subtabVisitedBtn">บริษัทที่ไปพบแล้ว</button>
+      <button class="subtab-btn" id="subtabTargetsBtn">🎯 เป้าหมายที่ต้องดำเนินการ</button>
       <button class="subtab-btn" id="subtabEstateBtn">โซนอุตสาหกรรม</button>
     </div>
 
     <div id="subtabHome">
       <div id="districtSearchSummary" class="district-search-summary" style="display:none;"></div>
-      <div class="kpi-row" id="kpiRow"></div>
+      <div id="kpiRow"></div>
       <div class="contact-summary" id="contactSummary"></div>
       <div class="override-banner" id="overrideChangeBanner" style="display:none;">
         <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
         <button onclick="location.reload()">รีเฟรชตอนนี้</button>
       </div>
       <div id="districtContainer"></div>
-    </div>
-
-    <div id="subtabTargets" style="display:none;">
-      <div class="visited-section">
-        <div class="visited-head" style="cursor:default;">
-          <div class="visited-head-left">
-            <div class="visited-icon"><span style="font-size:16px;">🎯</span></div>
-            <div>
-              <div class="visited-title">บริษัทเป้าหมายที่ต้องดำเนินการ</div>
-              <div class="visited-meta" id="targetsMeta">0 แห่ง</div>
-            </div>
-          </div>
-        </div>
-        <div class="visited-body open" id="targetsBody"></div>
-      </div>
     </div>
 
     <div id="subtabVisited" style="display:none;">
@@ -1304,6 +1368,21 @@
           </div>
         </div>
         <div class="visited-body open" id="visitedBody"></div>
+      </div>
+    </div>
+
+    <div id="subtabTargets" style="display:none;">
+      <div class="visited-section">
+        <div class="visited-head" style="cursor:default;">
+          <div class="visited-head-left">
+            <div class="visited-icon"><span style="font-size:16px;">🎯</span></div>
+            <div>
+              <div class="visited-title">บริษัทเป้าหมายที่ต้องดำเนินการ</div>
+              <div class="visited-meta" id="targetsMeta">0 แห่ง</div>
+            </div>
+          </div>
+        </div>
+        <div class="visited-body open" id="targetsBody"></div>
       </div>
     </div>
 
@@ -1713,14 +1792,17 @@ window.ESTATE_OPTIONS = ESTATE_OPTIONS; // shared across script blocks — this 
 
 const STATUS_OPTIONS = [
   {v:'', label:'— ยังไม่ระบุผลการเข้าพบ —', cls:''},
+  {v:'customer', label:'Customer', cls:'st-customer'},
+  {v:'new', label:'New customer', cls:'st-new'},
   {v:'interesting', label:'น่าสนใจ', cls:'st-interesting'},
   {v:'followup', label:'รอติดตาม', cls:'st-followup'},
   {v:'notinteresting', label:'ไม่น่าสนใจ', cls:'st-notinteresting'},
   {v:'notrelevant', label:'ไม่เกี่ยวข้อง', cls:'st-notrelevant'},
 ];
-// migrates values saved under the old 5-option "สถานะติดตาม" taxonomy to the new
-// 4-option "ผลการเข้าพบ" one, so nothing typed before this change disappears
-const STATUS_MIGRATE = {customer:'interesting', new:'interesting', goon:'interesting', wait:'followup', no:'notrelevant'};
+// migrates values saved under the old 5-option "สถานะติดตาม" taxonomy to the current one —
+// Customer/New customer are kept as their own options, only "ไปต่อ"/"รอติดตาม"/"ไม่เกี่ยวข้อง"
+// (which don't have a direct match anymore) get folded into the closest new category
+const STATUS_MIGRATE = {goon:'interesting', wait:'followup', no:'notrelevant'};
 function normalizeVisitOutcome(v){
   if (!v) return v;
   return STATUS_MIGRATE[v] || v;
@@ -1948,34 +2030,76 @@ function refreshContactSummaryFromCache(){
   Object.entries(feedbackCache).forEach(([id, fb])=>{
     if (!fb || !validIds.has(id)) return;
     if (fb.contacted) contacted++;
-  });
-  Object.entries(idToDiw).forEach(([id, diw])=>{
-    const fb = feedbackCache[id];
-    const isContacted = !!(fb && fb.contacted);
-    if (diw === 'target' && !isContacted) remainingTargets++;
+    if (fb.status && ['interesting','followup','customer','new'].includes(fb.status)) remainingTargets++;
   });
 
   const total = _totalCompaniesForSummary;
+  const pct = (n)=> total ? Math.round((n/total)*100) : 0;
   kpiEl.innerHTML = `
     <div class="dash-grid">
-      <button class="dash-card dash-clickable" data-filter="all" onclick="applyDashboardFilter('all')"><div class="dash-icon">📊</div><div><div class="dash-label">บริษัททั้งหมด</div><div class="dash-value">${total}</div></div></button>
-      <button class="dash-card dash-green dash-clickable" data-filter="target" onclick="applyDashboardFilter('target')"><div class="dash-icon">🟢</div><div><div class="dash-label">น่าสนใจ</div><div class="dash-value">${green}</div></div></button>
-      <button class="dash-card dash-red dash-clickable" data-filter="nontarget" onclick="applyDashboardFilter('nontarget')"><div class="dash-icon">🔴</div><div><div class="dash-label">ไม่น่าสนใจ</div><div class="dash-value">${red}</div></div></button>
-      <button class="dash-card dash-yellow dash-clickable" data-filter="unknown" onclick="applyDashboardFilter('unknown')"><div class="dash-icon">🟡</div><div><div class="dash-label">รอตรวจสอบ</div><div class="dash-value">${yellow}</div></div></button>
-      <button class="dash-card dash-blue dash-clickable" data-filter="contacted" onclick="applyDashboardFilter('contacted')"><div class="dash-icon">🔵</div><div><div class="dash-label">เข้าพบแล้ว</div><div class="dash-value">${contacted}</div></div></button>
+      <div class="dash-card dash-clickable" data-key="all" onclick="toggleDashCard(this)" role="button" tabindex="0">
+        <div class="dash-card-top"><div class="dash-icon">📊</div><div class="dash-label">บริษัททั้งหมด</div></div>
+        <div class="dash-value">${total}</div>
+        <div class="dash-detail">
+          <div class="dash-detail-text">รวมทุกอำเภอ ทุกสถานะ ทั้งที่ยังไม่เข้าพบและเข้าพบแล้ว</div>
+          <button class="dash-detail-btn" onclick="event.stopPropagation(); applyDashboardFilter('all')">ดูรายชื่อทั้งหมด →</button>
+        </div>
+      </div>
+      <div class="dash-card dash-green dash-clickable" data-key="target" onclick="toggleDashCard(this)" role="button" tabindex="0">
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">น่าสนใจ</div></div>
+        <div class="dash-value">${green}</div>
+        <div class="dash-detail">
+          <div class="dash-detail-text">คิดเป็น ${pct(green)}% ของบริษัททั้งหมด — บริษัทที่ตรวจสอบแล้วว่าน่าสนใจ</div>
+          <button class="dash-detail-btn" onclick="event.stopPropagation(); applyDashboardFilter('target')">ดูรายชื่อ →</button>
+        </div>
+      </div>
+      <div class="dash-card dash-red dash-clickable" data-key="nontarget" onclick="toggleDashCard(this)" role="button" tabindex="0">
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">ไม่น่าสนใจ</div></div>
+        <div class="dash-value">${red}</div>
+        <div class="dash-detail">
+          <div class="dash-detail-text">คิดเป็น ${pct(red)}% ของบริษัททั้งหมด — ตรวจสอบแล้วว่าไม่ใช่กลุ่มเป้าหมาย</div>
+          <button class="dash-detail-btn" onclick="event.stopPropagation(); applyDashboardFilter('nontarget')">ดูรายชื่อ →</button>
+        </div>
+      </div>
+      <div class="dash-card dash-yellow dash-clickable" data-key="unknown" onclick="toggleDashCard(this)" role="button" tabindex="0">
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">รอตรวจสอบ</div></div>
+        <div class="dash-value">${yellow}</div>
+        <div class="dash-detail">
+          <div class="dash-detail-text">คิดเป็น ${pct(yellow)}% ของบริษัททั้งหมด — ยังไม่ได้ระบุว่าน่าสนใจหรือไม่</div>
+          <button class="dash-detail-btn" onclick="event.stopPropagation(); applyDashboardFilter('unknown')">ดูรายชื่อ →</button>
+        </div>
+      </div>
+      <div class="dash-card dash-blue dash-clickable" data-key="contacted" onclick="toggleDashCard(this)" role="button" tabindex="0">
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">เข้าพบแล้ว</div></div>
+        <div class="dash-value">${contacted}</div>
+        <div class="dash-detail">
+          <div class="dash-detail-text">คิดเป็น ${pct(contacted)}% ของบริษัททั้งหมด — บันทึกว่าเข้าพบเรียบร้อยแล้ว</div>
+          <button class="dash-detail-btn" onclick="event.stopPropagation(); applyDashboardFilter('contacted')">ดูรายชื่อ →</button>
+        </div>
+      </div>
     </div>
-    <button class="dash-highlight dash-clickable" data-filter="remaining" onclick="applyDashboardFilter('remaining')">
+    <div class="dash-highlight dash-clickable" data-key="remaining" onclick="toggleDashCard(this)" role="button" tabindex="0">
       <div class="dash-highlight-icon">🎯</div>
-      <div>
+      <div class="dash-highlight-body">
         <div class="dash-highlight-label">บริษัทเป้าหมายที่ต้องดำเนินการ</div>
         <div class="dash-highlight-value">${remainingTargets} <span>บริษัท</span></div>
       </div>
-    </button>
+      <div class="dash-detail">
+        <div class="dash-detail-text">รวมบริษัทที่ทำเครื่องหมายว่าน่าสนใจ รอติดตาม หรือปิดการขายแล้ว (Customer / New customer) — ไม่รวมที่ไม่น่าสนใจหรือไม่เกี่ยวข้อง</div>
+        <button class="dash-detail-btn" onclick="event.stopPropagation(); document.getElementById('subtabTargetsBtn').click();">ไปที่หน้าเป้าหมาย →</button>
+      </div>
+    </div>
   `;
   if (csEl) csEl.innerHTML = '';
   renderVisitedSection();
   if (typeof renderTargetsPage === 'function') renderTargetsPage();
 }
+
+window.toggleDashCard = function(btn){
+  const wasExpanded = btn.classList.contains('expanded');
+  document.querySelectorAll('.dash-clickable.expanded').forEach(el=> el.classList.remove('expanded'));
+  if (!wasExpanded) btn.classList.add('expanded');
+};
 
 let visitedFilterDist = 'all';
 let visitedFilterStatus = 'all';
@@ -2003,7 +2127,7 @@ function renderVisitedSection(){
   </div>`;
 
   const statusMeta = Object.fromEntries(STATUS_OPTIONS.map(o=>[o.v, o]));
-  const colorMap = {'interesting':'#34D399','followup':'var(--amber)','notinteresting':'#9CA3AF','notrelevant':'var(--red)'};
+  const colorMap = {'customer':'#34D399','new':'#38BDF8','interesting':'#34D399','followup':'var(--amber)','notinteresting':'#9CA3AF','notrelevant':'var(--red)'};
   const statusFilterChoices = STATUS_OPTIONS.filter(o=>o.v);
   const statusFilterRow = `<div class="visited-filter-row">
     <button class="visited-status-btn ${visitedFilterStatus==='all'?'active':''}" data-status="all">ทุกสถานะ (${visited.length})</button>
@@ -2074,40 +2198,62 @@ function renderTargetsPage(){
   const meta = document.getElementById('targetsMeta');
   if (!body) return;
 
-  const list = [];
+  // pipeline groups: companies actively being worked (interesting/follow-up) plus
+  // the ones already won (Customer / New customer) — never anything marked not
+  // interesting or not relevant, and never anything with no outcome set yet
+  const groups = [
+    {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
+    {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
+    {key:'customer', label:'Customer (สำเร็จแล้ว)', accent:'#34D399'},
+    {key:'new', label:'New customer (สำเร็จแล้ว)', accent:'#38BDF8'},
+  ];
+  const buckets = {interesting:[], followup:[], customer:[], new:[]};
+  let total = 0;
+
   Object.entries(SITE_DATA).forEach(([dist, d])=>{
     d.sections.forEach(s=> s.companies.forEach(c=>{
-      if (c.diwStatus !== 'target') return;
-      const fb = feedbackCache[c.id] || {contacted:false, status:'', note:''};
-      if (fb.contacted) return; // already visited — belongs on the "ไปพบแล้ว" page instead
-      list.push({id:c.id, fb, info:{name:c.name, tambon:c.tambon, amphoe:dist, diwStatus:c.diwStatus}});
+      const fb = feedbackCache[c.id];
+      const status = fb && fb.status;
+      if (!status || !buckets[status]) return; // excludes blank, notinteresting, notrelevant
+      buckets[status].push({id:c.id, fb, info:{name:c.name, tambon:c.tambon, amphoe:dist, diwStatus:c.diwStatus}});
+      total++;
     }));
   });
 
-  meta.textContent = `${list.length} แห่ง`;
-  if (list.length === 0){
-    body.innerHTML = `<div class="visited-empty">ไม่มีบริษัทที่ต้องดำเนินการเหลืออยู่ตอนนี้ 🎉</div>`;
+  meta.textContent = `${total} แห่ง`;
+  if (total === 0){
+    body.innerHTML = `<div class="visited-empty">ยังไม่มีบริษัทในกลุ่มนี้ตอนนี้</div>`;
     return;
   }
 
-  const cardsHtml = list.sort((a,b)=> a.info.name.localeCompare(b.info.name,'th')).map(v=>`
-    <div class="visited-card" data-id="${v.id}" style="--vc-accent:#34D399;">
-      <div class="vc-summary">
-        <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
-        <div class="vc-name">${v.info.name}</div>
-        <div class="vc-loc">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
+  const allEntries = [];
+  const sectionsHtml = groups.map(g=>{
+    const items = buckets[g.key].sort((a,b)=> a.info.name.localeCompare(b.info.name,'th'));
+    if (!items.length) return '';
+    items.forEach(v=> allEntries.push(v));
+    const cards = items.map(v=>`
+      <div class="visited-card" data-id="${v.id}" style="--vc-accent:${g.accent};">
+        <div class="vc-summary">
+          <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+          <div class="vc-name">${v.info.name}</div>
+          <div class="vc-loc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
+          </div>
+          <div class="vc-expand-hint"><span>คลิกเพื่อดู/แก้ไขข้อมูล</span></div>
         </div>
-        <div class="vc-badge-row"><div class="vc-diw-badge" style="color:#34D399; border-color:#34D399;">น่าสนใจ — ยังไม่เข้าพบ</div></div>
-        <div class="vc-expand-hint"><span>คลิกเพื่อบันทึกการเข้าพบ</span></div>
-      </div>
-    </div>`).join('');
+      </div>`).join('');
+    return `
+      <div class="targets-group">
+        <div class="targets-group-head" style="color:${g.accent};">${g.label} <span>(${items.length})</span></div>
+        <div class="visited-grid">${cards}</div>
+      </div>`;
+  }).join('');
 
-  body.innerHTML = `<div class="visited-grid">${cardsHtml}</div>`;
+  body.innerHTML = sectionsHtml;
   body.querySelectorAll('.visited-card').forEach(card=>{
     const id = card.dataset.id;
-    const match = list.find(v=>v.id===id);
+    const match = allEntries.find(v=>v.id===id);
     card.querySelector('.vc-summary').addEventListener('click', ()=> openVcModal(match));
   });
 }
@@ -2126,7 +2272,7 @@ function openVcModal(v){
   const noteEl = document.getElementById('vcModalNote');
   const box = document.getElementById('vcModalBox');
 
-  const colorMap = {'interesting':'#34D399','followup':'#F59E0B','notinteresting':'#9CA3AF','notrelevant':'#EF4444'};
+  const colorMap = {'customer':'#34D399','new':'#38BDF8','interesting':'#34D399','followup':'#F59E0B','notinteresting':'#9CA3AF','notrelevant':'#EF4444'};
   const accentColor = v.fb.status ? (colorMap[v.fb.status]||'#C9A96E') : '#9CA3AF';
   box.style.setProperty('--vc-modal-color', accentColor);
 
@@ -2957,23 +3103,7 @@ async function init(){
   filterDiw.addEventListener('change', applyFilters);
   filterEstate.addEventListener('change', applyFilters);
 
-  let activeDashFilter = null;
   window.applyDashboardFilter = function(kind){
-    // this one has a dedicated page — jump straight there instead of filtering the table
-    if (kind === 'remaining'){
-      const btn = document.getElementById('subtabTargetsBtn');
-      if (btn) btn.click();
-      return;
-    }
-
-    // clicking the already-active card again turns filtering off
-    if (activeDashFilter === kind) kind = 'all';
-    activeDashFilter = kind === 'all' ? null : kind;
-
-    document.querySelectorAll('.dash-clickable').forEach(el=>{
-      el.classList.toggle('active', el.dataset.filter === kind && kind !== 'all');
-    });
-
     filterDiw.value = '';
     filterContacted.value = '';
     if (kind === 'target' || kind === 'nontarget' || kind === 'unknown') filterDiw.value = kind;
