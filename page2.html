@@ -4253,17 +4253,14 @@ init();
     panel.innerHTML=`
       <div class="estate-zone-gridview" id="estateGridView">
         <div class="estate-zones-head"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">แตะนิคมที่ต้องการเพื่อดูรายชื่อบริษัททั้งหมดในนิคมนั้น</div></div></div>
-        <div class="estate-zone-grid">${sortedCatalogue.map((code,zi)=>{
+        <div class="estate-zone-grid">${sortedCatalogue.map(code=>{
           const locations=collectLocations(code);
           const total=locations.reduce((n,x)=>n+x.count,0);
           const full = fullNameOf(code);
-          return `<button class="glow-card-wrap estate-glow-wrap" data-estate="${code}" style="--glow-delay:${Math.min(zi*0.04,0.4)}s;">
-            <div class="glow-bg estate-glow-bg"></div>
-            <div class="glow-fg estate-glow-fg">
-              <div class="estate-zone-full">${full}</div>
-              <div class="estate-zone-code">${code}</div>
-              <div class="estate-zone-count">${total ? `${total} โรงงาน` : (available.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</div>
-            </div>
+          return `<button class="estate-zone" data-estate="${code}">
+            <div class="estate-zone-full">${full}</div>
+            <div class="estate-zone-code">${code}</div>
+            <small>${total ? `${total} โรงงาน` : (available.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small>
           </button>`;
         }).join('')}</div>
       </div>
@@ -4339,7 +4336,7 @@ init();
     }
 
     panel.addEventListener('click',e=>{
-      const zone=e.target.closest('.estate-glow-wrap'); if(!zone) return;
+      const zone=e.target.closest('.estate-zone'); if(!zone) return;
       openEstateDetail(zone.dataset.estate);
     });
     panel.querySelector('#estateBackBtn').addEventListener('click', ()=>{
