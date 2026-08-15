@@ -1066,6 +1066,22 @@
 
   .estate-zone-full{ font-weight:700; font-size:13px; line-height:1.4; color:#fff; padding-right:26px; }
   .estate-zone-code{ font-family:'Sarabun',sans-serif; font-size:10px; color:var(--gold-lt); margin-top:3px; }
+  .estate-zone-count{ font-family:'Sarabun',sans-serif; font-size:11px; color:#9CA3AF; margin-top:auto; padding-top:14px; }
+
+  /* black-tone glow variant, reused for the compact estate zone grid tiles */
+  .estate-glow-wrap{ max-width:none; opacity:1; transform:none; animation:glow-card-in .5s ease-out backwards; }
+  .estate-glow-bg{
+    background:linear-gradient(137deg, #000000 0%, #4B5563 45%, #000000 100%);
+    opacity:.5; border-radius:16px; filter:blur(22px);
+  }
+  .estate-glow-fg{
+    height:auto; min-height:96px; border-radius:16px; padding:14px 16px 12px; border-width:2px;
+    background:linear-gradient(#0B0F17,#0B0F17) padding-box, linear-gradient(137deg, #000000 0%, #52525B 45%, #000000 100%) border-box;
+  }
+  .estate-glow-wrap:hover .estate-glow-fg{ transform:translateY(-2px); }
+  .estate-glow-wrap.active .estate-glow-fg{
+    background:linear-gradient(#12181F,#12181F) padding-box, linear-gradient(137deg, #FFFFFF 0%, #9CA3AF 45%, #FFFFFF 100%) border-box;
+  }
 
   .estate-zone-gridview, .estate-zone-detailview{ transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .35s ease; }
   .estate-zone-gridview{ transform:translateX(0); opacity:1; }
@@ -1339,7 +1355,7 @@
     <div class="subtab-nav">
       <button class="subtab-btn active" id="subtabHomeBtn">หน้าแรก</button>
       <button class="subtab-btn" id="subtabVisitedBtn">บริษัทที่ไปพบแล้ว</button>
-      <button class="subtab-btn" id="subtabTargetsBtn">🎯 เป้าหมายที่ต้องดำเนินการ</button>
+      <button class="subtab-btn" id="subtabTargetsBtn">เป้าหมาย</button>
       <button class="subtab-btn" id="subtabEstateBtn">โซนอุตสาหกรรม</button>
     </div>
 
@@ -2204,7 +2220,7 @@ function renderTargetsPage(){
   const groups = [
     {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
     {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
-    {key:'customer', label:'Customer (สำเร็จแล้ว)', accent:'#34D399'},
+    {key:'customer', label:'Customer (ลูกค้าเก่า)', accent:'#34D399'},
     {key:'new', label:'New customer (สำเร็จแล้ว)', accent:'#38BDF8'},
   ];
   const buckets = {interesting:[], followup:[], customer:[], new:[]};
@@ -4237,15 +4253,17 @@ init();
     panel.innerHTML=`
       <div class="estate-zone-gridview" id="estateGridView">
         <div class="estate-zones-head"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">แตะนิคมที่ต้องการเพื่อดูรายชื่อบริษัททั้งหมดในนิคมนั้น</div></div></div>
-        <div class="estate-zone-grid">${sortedCatalogue.map(code=>{
+        <div class="estate-zone-grid">${sortedCatalogue.map((code,zi)=>{
           const locations=collectLocations(code);
           const total=locations.reduce((n,x)=>n+x.count,0);
           const full = fullNameOf(code);
-          return `<button class="estate-zone" data-estate="${code}">
-            <div class="estate-zone-full">${full}</div>
-            <div class="estate-zone-code">${code}</div>
-            <span class="zone-badge">${total||'—'}</span>
-            <small>${locations.length?`${locations.length} ตำบล`:(available.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small>
+          return `<button class="glow-card-wrap estate-glow-wrap" data-estate="${code}" style="--glow-delay:${Math.min(zi*0.04,0.4)}s;">
+            <div class="glow-bg estate-glow-bg"></div>
+            <div class="glow-fg estate-glow-fg">
+              <div class="estate-zone-full">${full}</div>
+              <div class="estate-zone-code">${code}</div>
+              <div class="estate-zone-count">${total ? `${total} โรงงาน` : (available.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</div>
+            </div>
           </button>`;
         }).join('')}</div>
       </div>
@@ -4321,7 +4339,7 @@ init();
     }
 
     panel.addEventListener('click',e=>{
-      const zone=e.target.closest('.estate-zone'); if(!zone) return;
+      const zone=e.target.closest('.estate-glow-wrap'); if(!zone) return;
       openEstateDetail(zone.dataset.estate);
     });
     panel.querySelector('#estateBackBtn').addEventListener('click', ()=>{
