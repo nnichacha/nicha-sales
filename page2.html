@@ -635,6 +635,7 @@
     background:rgba(255,255,255,.03); background-blend-mode:luminosity;
     backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);
     border:none; color:#fff; font-family:'Barlow',sans-serif; font-weight:500; font-size:14.5px; cursor:pointer;
+    text-decoration:none;
     box-shadow:4px 4px 4px rgba(0,0,0,.05), inset 0 1px 1px rgba(255,255,255,.15);
     transition:background .2s ease, transform .2s ease;
   }
@@ -1192,10 +1193,6 @@
   </div>
 
   <div class="masthead">
-    <a class="home-link site-home-link" href="index.html" title="หน้าแรกเว็บไซต์">
-      <svg viewBox="0 0 24 24" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
-    </a>
-
     <div class="toolbar">
       <div class="search-box search-box-lg">
         <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -1267,36 +1264,6 @@
     </div>
   </div>
 
-  <div id="pageHub">
-    <div class="hub-liquid-bg" aria-hidden="true">
-      <div class="hub-liquid-blob hub-liquid-blob-1"></div>
-      <div class="hub-liquid-blob hub-liquid-blob-2"></div>
-      <div class="hub-liquid-blob hub-liquid-blob-3"></div>
-      <div class="hub-liquid-fade-top"></div>
-      <div class="hub-liquid-fade-bottom"></div>
-    </div>
-    <div class="hub-cta-content">
-      <h2 class="hub-cta-heading">Everything about your customers,<br>in one place.</h2>
-      <p class="hub-cta-sub">Choose an option below to get started.</p>
-      <div class="hub-liquid-btn-row">
-        <button class="liquid-glass-btn" id="hubCardInfo">
-          <svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/></svg>
-          Customer Database
-          <svg class="lg-arrow" viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
-        </button>
-        <button class="liquid-glass-btn" id="hubCardReport">
-          <svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          Daily Report
-          <svg class="lg-arrow" viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
-        </button>
-        <button class="liquid-glass-btn" id="hubCardQuotes">
-          <svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-          Pending Quote
-          <svg class="lg-arrow" viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
 
 
   <div class="page-nav" id="pageBackNav" style="display:none;">
@@ -3198,24 +3165,28 @@ async function init(){
     reader.readAsText(file);
   });
 
-  // ---- page navigation: big-card hub first, then the chosen page ----
-  const pageHub = document.getElementById('pageHub');
+  // ---- page navigation: reached directly via ?tab= from the cover page (index.html) ----
   const pageBackNav = document.getElementById('pageBackNav');
   const page1 = document.getElementById('page1');
   const page2 = document.getElementById('page2');
   const page3 = document.getElementById('page3');
   function showPage(which){
-    pageHub.style.display = which==='hub' ? '' : 'none';
-    pageBackNav.style.display = which==='hub' ? 'none' : '';
+    pageBackNav.style.display = '';
     page1.style.display = which==='info' ? '' : 'none';
     page2.style.display = which==='report' ? '' : 'none';
     page3.style.display = which==='quotes' ? '' : 'none';
     window.scrollTo({top:0, behavior:'instant'});
   }
-  document.getElementById('hubCardInfo').addEventListener('click', ()=> showPage('info'));
-  document.getElementById('hubCardReport').addEventListener('click', ()=> showPage('report'));
-  document.getElementById('hubCardQuotes').addEventListener('click', ()=> showPage('quotes'));
-  document.getElementById('tabHome').addEventListener('click', ()=> showPage('hub'));
+  document.getElementById('tabHome').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+
+  // this page is always reached from the cover page (index.html) with a ?tab= param —
+  // defaults to Customer Database if the param is missing or unrecognized
+  (function initialPageFromUrl(){
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const map = {info:'info', report:'report', quotes:'quotes'};
+    showPage(map[tab] || 'info');
+  })();
 
   // ---- Customer Database sub-tabs: หน้าแรก / บริษัทที่ไปพบแล้ว / โซนอุตสาหกรรม ----
   const subtabHomeBtn = document.getElementById('subtabHomeBtn');
