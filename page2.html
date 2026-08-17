@@ -1279,8 +1279,8 @@
     </div>
 
     <div id="subtabHome">
-      <div id="districtSearchSummary" class="district-search-summary" style="display:none;"></div>
       <div id="kpiRow"></div>
+      <div id="districtSearchSummary" class="district-search-summary" style="display:none;"></div>
       <div class="contact-summary" id="contactSummary"></div>
       <div class="override-banner" id="overrideChangeBanner" style="display:none;">
         <span>มีการเพิ่ม/แก้ไข/ลบรายชื่อบริษัทจากทีม — กดรีเฟรชหน้าเพื่อดูข้อมูลล่าสุด</span>
@@ -4001,7 +4001,7 @@ init();
     if (!areas.length) return;
     const card = document.createElement('section'); card.className='territory-map territory-map-solo'; card.id='territoryMap';
     card.innerHTML=`<div class="territory-map-main"><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district active" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg></div>`;
-    const summaryAnchor = document.getElementById('districtSearchSummary');
+    const summaryAnchor = document.getElementById('kpiRow');
     if (summaryAnchor) summaryAnchor.insertAdjacentElement('afterend', card);
     else homeEl.insertBefore(card, homeEl.firstChild);
     function selectArea(name){
@@ -4279,10 +4279,11 @@ init();
   function moveCompanyControls(){
     const toolbar=document.querySelector('.masthead > .toolbar');
     const map=document.getElementById('territoryMap');
+    const summaryBox=document.getElementById('districtSearchSummary');
     if(!toolbar || !map || toolbar.dataset.moved==='true') return;
     toolbar.dataset.moved='true';
     toolbar.classList.add('company-controls');
-    map.insertAdjacentElement('afterend',toolbar);
+    (summaryBox || map).insertAdjacentElement('afterend',toolbar);
     // Company information always opens unfiltered so every factory is visible.
     const search=document.getElementById('searchInput');
     const filters=['filterDiw','filterEstate','filterRelation','filterContacted'].map(id=>document.getElementById(id));
