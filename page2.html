@@ -2842,6 +2842,29 @@ async function init(){
     document.getElementById('loginWidget').style.display = 'none';
   }
   applyCompanyOverrides();
+
+  // one-time name correction: an older stored edit (local or team Firebase) may still
+  // hold the English name for these companies, which would silently overwrite the
+  // Thai name in SITE_DATA every time the page loads — force the correct Thai name
+  // and persist it, so the fix sticks for this device and syncs to the team too
+  (function fixKnownEnglishNames(){
+    const correctNames = {
+      c1089: 'บริษัท บีวายดี ออโต้ (ประเทศไทย) จำกัด',
+      c1090: 'บริษัท ชูฮู อินดัสเตรียล (ไทยแลนด์) จำกัด',
+      c1091: 'บริษัท เอฟแอลวาย เทคโนโลยี (ไทยแลนด์) จำกัด',
+      c1093: 'บริษัท ไฮ่ ไท่ กรุ๊ป (ไทยแลนด์) จำกัด',
+      c1095: 'บริษัท ควอนตัม เอสพีที จำกัด',
+    };
+    Object.entries(SITE_DATA).forEach(([dist, d])=>{
+      d.sections.forEach(s=> s.companies.forEach(c=>{
+        if (correctNames[c.id] && c.name !== correctNames[c.id]){
+          c.name = correctNames[c.id];
+          persistFieldEdit(c.id, {name: correctNames[c.id]});
+        }
+      }));
+    });
+  })();
+
   buildCompanyNameIndex();
   await bindEditableTexts(document.querySelector('.masthead'));
 
