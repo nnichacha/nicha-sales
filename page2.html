@@ -1600,28 +1600,14 @@ function initFirebaseSync(config){
 }
 
 function setupAuthGate(){
-  try{
-    firebase.auth().onAuthStateChanged(user=>{
-      document.body.classList.toggle('can-edit', !!user);
-      const statusText = document.getElementById('loginStatusText');
-      const loginBtn = document.getElementById('loginBtn');
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (user){
-        statusText.textContent = user.email || 'เข้าสู่ระบบแล้ว';
-        loginBtn.style.display = 'none';
-        logoutBtn.style.display = '';
-      } else {
-        statusText.textContent = 'โหมดดูอย่างเดียว';
-        loginBtn.style.display = '';
-        logoutBtn.style.display = 'none';
-      }
-    });
-  }catch(e){
-    console.error('Auth setup failed', e);
-    // if Authentication isn't enabled in the Firebase project, fail open to editable
-    // so the site doesn't lock everyone out silently
-    document.body.classList.add('can-edit');
-  }
+  // editing is always available — no login required to add/delete/edit companies
+  document.body.classList.add('can-edit');
+  const statusText = document.getElementById('loginStatusText');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (statusText) statusText.textContent = 'ซิงค์ทีมแบบเรียลไทม์';
+  if (loginBtn) loginBtn.style.display = 'none';
+  if (logoutBtn) logoutBtn.style.display = 'none';
 }
 
 function attachRealtimeListeners(){
@@ -3029,26 +3015,17 @@ async function init(){
     } else if (!q && summaryBox && typeof showDistrictSearchSummary === 'function'){
       showDistrictSearchSummary(null);
     }
-    // reveal the matching district block + tambon panel — search jumps straight to the
-    // hit and highlights it; filter-only clicks (from the dashboard cards) just reveal
-    // every matching block without jumping around to each one
+    // reveal only the blocks/panels that actually have a match — no auto-scrolling,
+    // the user clicks through to whichever result they want themselves; anything with
+    // zero matches gets explicitly hidden so a search with no hits shows nothing at all
     if (q || diw || cont || est){
-      document.querySelectorAll('.day-card').forEach(dc=>{
-        const anyVisible = [...dc.querySelectorAll('tbody tr')].some(tr=>tr.style.display!=='none');
-        if (!anyVisible) return;
-        const panel = dc.closest('.tambon-panel');
-        const block = dc.closest('.district-block');
-        if (block && block.classList.contains('hidden')){
-          block.classList.remove('hidden');
-        }
-        if (panel){
-          panel.classList.add('active');
-          if (q){
-            panel.scrollIntoView({behavior:'smooth', block:'start'});
-            panel.classList.add('jump-highlight');
-            setTimeout(()=> panel.classList.remove('jump-highlight'), 1200);
-          }
-        }
+      document.querySelectorAll('.tambon-panel').forEach(panel=>{
+        const anyVisible = [...panel.querySelectorAll('tbody tr')].some(tr=>tr.style.display!=='none');
+        panel.classList.toggle('active', anyVisible);
+      });
+      document.querySelectorAll('.district-block').forEach(block=>{
+        const anyVisible = [...block.querySelectorAll('tbody tr')].some(tr=>tr.style.display!=='none');
+        block.classList.toggle('hidden', !anyVisible);
       });
     } else {
       // no filters active at all — collapse back to the default state
