@@ -58,6 +58,13 @@
 
   .toolbar{ display:flex; gap:12px; margin-top:22px; flex-wrap:wrap; align-items:center; }
   .search-box{ position:relative; flex:1; min-width:280px; }
+  .add-company-global-btn{
+    flex-shrink:0; width:40px; height:40px; border-radius:8px; border:1px solid var(--gold);
+    background:transparent; color:var(--gold); font-size:22px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:background .15s ease, color .15s ease;
+  }
+  .add-company-global-btn:hover{ background:var(--gold); color:var(--ink); }
+  body:not(.can-edit) .add-company-global-btn{ display:none; }
   .search-box.search-box-lg input{
     padding:13px 16px 13px 42px; font-size:14px; border-width:1.5px; border-radius:10px;
   }
@@ -562,8 +569,7 @@
   select.status-select.st-interesting{ color:#34D399; }
   select.status-select.st-followup{ color:var(--amber); }
   select.status-select.st-notinteresting{ color:#9CA3AF; }
-  select.status-select.st-notrelevant{ color:var(--red); }
-  textarea.feedback-note{
+    textarea.feedback-note{
     width:100%; min-width:180px; background:var(--panel2); border:1px solid var(--line); border-radius:6px;
     color:var(--text); font-size:11.5px; font-family:'Sarabun',sans-serif; padding:6px 8px; resize:vertical; min-height:32px;
   }
@@ -1199,10 +1205,11 @@
         <input type="text" id="searchInput" placeholder="พิมพ์ค้นหาชื่อบริษัทหรือตำบล...">
         <div class="search-suggest" id="searchSuggest"></div>
       </div>
+      <button class="add-company-global-btn" id="addCompanyGlobalBtn" title="เพิ่มบริษัทใหม่">+</button>
       <select class="filter-select" id="filterDiw">
         <option value="">สถานะทั้งหมด</option>
-        <option value="target">น่าสนใจ</option>
-        <option value="nontarget">ไม่น่าสนใจ</option>
+        <option value="target">เกี่ยวข้อง</option>
+        <option value="nontarget">ไม่เกี่ยวข้อง</option>
         <option value="unknown">ยังไม่ทราบข้อมูล</option>
       </select>
       <select class="filter-select" id="filterEstate">
@@ -1600,14 +1607,28 @@ function initFirebaseSync(config){
 }
 
 function setupAuthGate(){
-  // editing is always available — no login required to add/delete/edit companies
-  document.body.classList.add('can-edit');
-  const statusText = document.getElementById('loginStatusText');
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (statusText) statusText.textContent = 'ซิงค์ทีมแบบเรียลไทม์';
-  if (loginBtn) loginBtn.style.display = 'none';
-  if (logoutBtn) logoutBtn.style.display = 'none';
+  try{
+    firebase.auth().onAuthStateChanged(user=>{
+      document.body.classList.toggle('can-edit', !!user);
+      const statusText = document.getElementById('loginStatusText');
+      const loginBtn = document.getElementById('loginBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (user){
+        statusText.textContent = user.email || 'เข้าสู่ระบบแล้ว';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = '';
+      } else {
+        statusText.textContent = 'โหมดดูอย่างเดียว';
+        loginBtn.style.display = '';
+        logoutBtn.style.display = 'none';
+      }
+    });
+  }catch(e){
+    console.error('Auth setup failed', e);
+    // if Authentication isn't enabled in the Firebase project, fail open to editable
+    // so the site doesn't lock everyone out silently
+    document.body.classList.add('can-edit');
+  }
 }
 
 function attachRealtimeListeners(){
@@ -1718,20 +1739,21 @@ const STATUS_OPTIONS = [
   {v:'interesting', label:'น่าสนใจ', cls:'st-interesting'},
   {v:'followup', label:'รอติดตาม', cls:'st-followup'},
   {v:'notinteresting', label:'ไม่น่าสนใจ', cls:'st-notinteresting'},
-  {v:'notrelevant', label:'ไม่เกี่ยวข้อง', cls:'st-notrelevant'},
 ];
-// migrates values saved under the old 5-option "สถานะติดตาม" taxonomy to the current one —
-// Customer/New customer are kept as their own options, only "ไปต่อ"/"รอติดตาม"/"ไม่เกี่ยวข้อง"
-// (which don't have a direct match anymore) get folded into the closest new category
-const STATUS_MIGRATE = {goon:'interesting', wait:'followup', no:'notrelevant'};
+// migrates values saved under older taxonomies to the current one — "notrelevant" (ไม่เกี่ยวข้อง)
+// meant the same thing as "notinteresting" (ไม่น่าสนใจ) so it's folded into that single option
+const STATUS_MIGRATE = {goon:'interesting', wait:'followup', no:'notinteresting', notrelevant:'notinteresting'};
 function normalizeVisitOutcome(v){
   if (!v) return v;
   return STATUS_MIGRATE[v] || v;
 }
 
+// "กลุ่มเป้าหมาย" — whether this company is worth pursuing at all, assessed before any visit.
+// Deliberately uses different words than STATUS_OPTIONS (สถานะติดตาม, the visit outcome) so
+// the two concepts never look like the same status showing twice.
 const DIW_OPTIONS = [
-  {v:'target', label:'น่าสนใจ', color:'var(--green)'},
-  {v:'nontarget', label:'ไม่น่าสนใจ', color:'var(--red)'},
+  {v:'target', label:'เกี่ยวข้อง', color:'var(--green)'},
+  {v:'nontarget', label:'ไม่เกี่ยวข้อง', color:'var(--red)'},
   {v:'unknown', label:'ยังไม่ทราบข้อมูล', color:'var(--amber)'},
 ];
 
@@ -1967,15 +1989,15 @@ function refreshContactSummaryFromCache(){
         </div>
       </div>
       <div class="dash-card dash-green dash-clickable" data-key="target" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">น่าสนใจ</div></div>
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">เกี่ยวข้อง</div></div>
         <div class="dash-value">${green}</div>
         <div class="dash-detail">
-          <div class="dash-detail-text">คิดเป็น ${pct(green)}% ของบริษัททั้งหมด — บริษัทที่ตรวจสอบแล้วว่าน่าสนใจ</div>
+          <div class="dash-detail-text">คิดเป็น ${pct(green)}% ของบริษัททั้งหมด — บริษัทที่ตรวจสอบแล้วว่าเกี่ยวข้อง</div>
           <button class="dash-detail-btn" onclick="event.stopPropagation(); applyDashboardFilter('target')">ดูรายชื่อ →</button>
         </div>
       </div>
       <div class="dash-card dash-red dash-clickable" data-key="nontarget" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">ไม่น่าสนใจ</div></div>
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">ไม่เกี่ยวข้อง</div></div>
         <div class="dash-value">${red}</div>
         <div class="dash-detail">
           <div class="dash-detail-text">คิดเป็น ${pct(red)}% ของบริษัททั้งหมด — ตรวจสอบแล้วว่าไม่ใช่กลุ่มเป้าหมาย</div>
@@ -2048,7 +2070,7 @@ function renderVisitedSection(){
   </div>`;
 
   const statusMeta = Object.fromEntries(STATUS_OPTIONS.map(o=>[o.v, o]));
-  const colorMap = {'customer':'#34D399','new':'#38BDF8','interesting':'#34D399','followup':'var(--amber)','notinteresting':'#9CA3AF','notrelevant':'var(--red)'};
+  const colorMap = {'customer':'#34D399','new':'#38BDF8','interesting':'#34D399','followup':'var(--amber)','notinteresting':'#9CA3AF'};
   const statusFilterChoices = STATUS_OPTIONS.filter(o=>o.v);
   const statusFilterRow = `<div class="visited-filter-row">
     <button class="visited-status-btn ${visitedFilterStatus==='all'?'active':''}" data-status="all">ทุกสถานะ (${visited.length})</button>
@@ -2070,8 +2092,6 @@ function renderVisitedSection(){
     const st = statusMeta[v.fb.status];
     const accentColor = st && st.v ? colorMap[st.v] : '#6B7280';
     const statusBadge = st && st.v ? `<div class="vc-status" style="background:${colorMap[st.v]}22; color:${colorMap[st.v]};">${st.label}</div>` : '<div class="vc-status vc-status-none">ยังไม่ระบุสถานะ</div>';
-    const diwMeta = DIW_OPTIONS.find(o=>o.v===v.info.diwStatus);
-    const diwBadge = diwMeta ? `<div class="vc-diw-badge" style="color:${diwMeta.color}; border-color:${diwMeta.color};">${diwMeta.label}</div>` : '';
     return `<div class="visited-card" data-id="${v.id}" style="--vc-accent:${accentColor};">
       <div class="vc-summary">
         <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -2080,7 +2100,7 @@ function renderVisitedSection(){
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
         </div>
-        <div class="vc-badge-row">${statusBadge}${diwBadge}</div>
+        <div class="vc-badge-row">${statusBadge}</div>
         <div class="vc-expand-hint"><span>คลิกดูรายละเอียด</span></div>
       </div>
     </div>`;
@@ -2193,7 +2213,7 @@ function openVcModal(v){
   const noteEl = document.getElementById('vcModalNote');
   const box = document.getElementById('vcModalBox');
 
-  const colorMap = {'customer':'#34D399','new':'#38BDF8','interesting':'#34D399','followup':'#F59E0B','notinteresting':'#9CA3AF','notrelevant':'#EF4444'};
+  const colorMap = {'customer':'#34D399','new':'#38BDF8','interesting':'#34D399','followup':'#F59E0B','notinteresting':'#9CA3AF'};
   const accentColor = v.fb.status ? (colorMap[v.fb.status]||'#C9A96E') : '#9CA3AF';
   box.style.setProperty('--vc-modal-color', accentColor);
 
@@ -2237,6 +2257,7 @@ function openVcModal(v){
     const opt = STATUS_OPTIONS.find(o=>o.v===freshStatus.value);
     box.style.setProperty('--vc-modal-color', freshStatus.value ? (colorMap[freshStatus.value]||'#C9A96E') : '#9CA3AF');
     persistVcModal(true);
+    refreshContactSummaryFromCache();
   });
   freshDiw.addEventListener('change', ()=>{
     v.info.diwStatus = freshDiw.value;
@@ -2884,7 +2905,6 @@ async function init(){
   const districtBlocks = [];
   for (const [dist, data] of Object.entries(SITE_DATA)) {
     const block = await buildDistrictBlock(dist, data, num);
-    block.classList.add('hidden');
     container.appendChild(block);
     await bindEditableTexts(block);
     districtBlocks.push({dist, block, num});
@@ -2936,15 +2956,17 @@ async function init(){
   window.selectDistrictArea = function(name){
     districtBlocks.forEach(x=>{
       const isMatch = x.dist === name;
-      x.block.classList.toggle('hidden', !isMatch);
-      if (isMatch){
+      // no district chosen -> show everything; a district chosen -> narrow to just that one
+      x.block.classList.toggle('hidden', !!name && !isMatch);
+      if (!name || isMatch){
         x.block.querySelectorAll('.tambon-panel').forEach(p=> p.classList.add('active'));
-        x.block.querySelectorAll('.tambon-chip').forEach((c,i)=> c.classList.toggle('active', i===0));
+        x.block.querySelectorAll('.tambon-chip').forEach((c,i)=> c.classList.toggle('active', !name || i===0));
       }
     });
     showDistrictSearchSummary(name);
   };
   showDistrictSearchSummary(null);
+  window.selectDistrictArea(null);
 
   // safety re-render: ensures the summary/visited section reflect every row's
   // feedback once all rows have finished loading, closing any timing gap
@@ -3028,8 +3050,9 @@ async function init(){
         block.classList.toggle('hidden', !anyVisible);
       });
     } else {
-      // no filters active at all — collapse back to the default state
-      document.querySelectorAll('.district-block').forEach(b=> b.classList.add('hidden'));
+      // no filters active at all — back to the default state, which now means
+      // showing every company rather than hiding everything
+      if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(null);
     }
   }
   searchInput.addEventListener('input', applyFilters);
@@ -3178,6 +3201,39 @@ async function init(){
     window.scrollTo({top:0, behavior:'instant'});
   }
   document.getElementById('tabHome').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+
+  const addCompanyGlobalBtn = document.getElementById('addCompanyGlobalBtn');
+  if (addCompanyGlobalBtn){
+    addCompanyGlobalBtn.addEventListener('click', async ()=>{
+      const districts = Object.keys(SITE_DATA);
+      const dist = window.prompt('เพิ่มบริษัทใหม่ — พิมพ์ชื่ออำเภอ:\n' + districts.join(', '), districts[0]);
+      if (!dist || !SITE_DATA[dist]) { if (dist) showToastSafe('ไม่พบอำเภอนี้'); return; }
+      const tambons = SITE_DATA[dist].sections.map(s=>s.tambon);
+      const tambon = window.prompt('พิมพ์ชื่อตำบลในอำเภอ ' + dist + ':\n' + tambons.join(', '), tambons[0]);
+      const section = SITE_DATA[dist].sections.find(s=>s.tambon===tambon);
+      if (!section) { if (tambon) showToastSafe('ไม่พบตำบลนี้'); return; }
+      const name = window.prompt('ชื่อบริษัท:', '');
+      if (!name || !name.trim()) return;
+
+      const newId = 'new' + Date.now() + Math.floor(Math.random()*1000);
+      const newCompany = {id:newId, name:name.trim(), tambon:section.tambon, type:'', estate:'', diwStatus:'unknown', relation:''};
+      const ov = loadCompanyOverrides();
+      const key = sectionKey(dist, section.tambon);
+      ov.additions[key] = ov.additions[key] || {};
+      ov.additions[key][newId] = newCompany;
+      saveCompanyOverrides(ov);
+      if (syncConnected){
+        fbDb.ref('companyOverrides/additions/'+key+'/'+newId).set(newCompany).catch(e=>console.error(e));
+      }
+      showToastSafe(`เพิ่ม "${name.trim()}" แล้ว — กำลังโหลดหน้าใหม่เพื่อแสดงผล`);
+      window.setTimeout(()=> window.location.reload(), 700);
+    });
+  }
+  function showToastSafe(msg){
+    if (typeof flashSaved === 'function') flashSaved();
+    console.log(msg);
+    alert(msg);
+  }
 
   // this page is always reached from the cover page (index.html) with a ?tab= param —
   // defaults to Customer Database if the param is missing or unrecognized
@@ -4000,7 +4056,7 @@ init();
     const areas = Object.entries(SITE_DATA);
     if (!areas.length) return;
     const card = document.createElement('section'); card.className='territory-map territory-map-solo'; card.id='territoryMap';
-    card.innerHTML=`<div class="territory-map-main"><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district active" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg></div>`;
+    card.innerHTML=`<div class="territory-map-main"><svg class="rayong-map" viewBox="0 0 680 330" aria-label="แผนที่สามมิติพื้นที่ขายจังหวัดระยอง" role="img"><defs><pattern id="districtGrid" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 L 0 8" stroke="#9de7ff" stroke-width=".7"/></pattern></defs><g class="district" data-territory="ปลวกแดง"><path class="side" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117 104 138 178 158 251 185 365 203 431 171 456 112 456 91 371 43 232 28 124 74Z"/><path class="top" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><path class="grid" d="M124 74 232 28 371 43 456 91 431 150 365 182 251 164 178 137 104 117Z"/><text class="label" x="280" y="108">ปลวกแดง</text></g><g class="district" data-territory="นิคมพัฒนา"><path class="side" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184 23 206 59 276 168 308 233 255 251 185Z"/><path class="top" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><path class="grid" d="M104 117 178 137 251 164 233 234 168 286 59 254 23 184Z"/><text class="label" x="138" y="205">นิคมพัฒนา</text></g><g class="district" data-territory="บ้านค่าย"><path class="side" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234 233 255 287 273 367 302 461 328 556 313 553 276 602 278 649 234 649 213 558 166 431 150 365 182Z"/><path class="top" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><path class="grid" d="M251 164 365 182 431 150 558 166 649 213 602 257 553 255 556 292 461 307 367 281 287 252 233 234Z"/><text class="label" x="455" y="238">บ้านค่าย</text></g></svg></div>`;
     const summaryAnchor = document.getElementById('kpiRow');
     if (summaryAnchor) summaryAnchor.insertAdjacentElement('afterend', card);
     else homeEl.insertBefore(card, homeEl.firstChild);
