@@ -2683,11 +2683,10 @@ async function buildTambonSection(dist, section, distId, tIndex, labelPrefix){
   card.appendChild(head);
   card.appendChild(body);
 
-  for (const c of section.companies){
-    const row = await renderCompanyRow(c, dist);
-    tbody.appendChild(row);
-  }
-  updateDayProgress(card);
+  // row-building is deferred (see populateTambonRows) — only happens once this
+  // district is actually selected, so the initial page load stays fast
+  tbody.dataset.populated = 'false';
+  card._lazy = {tbody, dist, section};
 
   addRow.querySelector('.add-company-btn').addEventListener('click', async ()=>{
     const newId = 'new' + Date.now() + Math.floor(Math.random()*1000);
@@ -2712,12 +2711,32 @@ async function buildTambonSection(dist, section, distId, tIndex, labelPrefix){
   return card;
 }
 
+async function populateTambonRows(card){
+  const lazy = card._lazy;
+  if (!lazy || lazy.tbody.dataset.populated === 'true') return;
+  lazy.tbody.dataset.populated = 'true';
+  const CHUNK_SIZE = 15;
+  const companies = lazy.section.companies;
+  for (let i = 0; i < companies.length; i += CHUNK_SIZE){
+    const chunk = companies.slice(i, i + CHUNK_SIZE);
+    const chunkRows = await Promise.all(chunk.map(c => renderCompanyRow(c, lazy.dist)));
+    const frag = document.createDocumentFragment();
+    chunkRows.forEach(row => frag.appendChild(row));
+    lazy.tbody.appendChild(frag);
+    if (i + CHUNK_SIZE < companies.length){
+      await new Promise(r => requestAnimationFrame(r)); // let the browser paint between chunks
+    }
+  }
+  updateDayProgress(card);
+}
+
 
 async function buildDistrictBlock(dist, data, num){
   const distId = 'd'+num;
   const block = document.createElement('div');
   block.className = 'district-block';
   block.dataset.dist = dist;
+  block._tambonCards = [];
 
   const head = document.createElement('div');
   head.className = 'district-head';
@@ -2772,6 +2791,7 @@ async function buildDistrictBlock(dist, data, num){
     const section = data.sections[i];
     const idx = tIndexMap[section.tambon] ?? i;
     const card = await buildTambonSection(dist, section, distId, idx, labelPrefix);
+    block._tambonCards.push(card);
 
     const panel = document.createElement('div');
     panel.className = 'tambon-panel';
@@ -2911,6 +2931,7 @@ async function init(){
   const districtBlocks = [];
   for (const [dist, data] of Object.entries(SITE_DATA)) {
     const block = await buildDistrictBlock(dist, data, num);
+    block.classList.add('hidden');
     container.appendChild(block);
     await bindEditableTexts(block);
     districtBlocks.push({dist, block, num});
@@ -2937,15 +2958,18 @@ async function init(){
     return list;
   }
 
-  function showDistrictSearchSummary(name){
+  function showDistrictSearchSummary(names){
     const box = document.getElementById('districtSearchSummary');
     if (!box || typeof SITE_DATA === 'undefined') return;
+    const list = Array.isArray(names) ? names.filter(n=> SITE_DATA[n]) : (names && SITE_DATA[names] ? [names] : []);
     let label, counts;
-    if (name && SITE_DATA[name]){
+    if (list.length){
       const companies = [];
-      SITE_DATA[name].sections.forEach(s=> companies.push(...s.companies));
+      list.forEach(name => SITE_DATA[name].sections.forEach(s=> companies.push(...s.companies)));
       counts = computeDiwCounts(companies);
-      label = `<b>${counts.total}</b> โรงงานในอำเภอ${name}`;
+      label = list.length === 1
+        ? `<b>${counts.total}</b> โรงงานในอำเภอ${list[0]}`
+        : `<b>${counts.total}</b> โรงงานใน ${list.length} อำเภอ (${list.join(', ')})`;
     } else {
       counts = computeDiwCounts(allCompaniesFlat());
       label = `<b>${counts.total}</b> โรงงานทั้งหมด`;
@@ -2959,20 +2983,31 @@ async function init(){
     box.style.display = '';
   }
 
+  // multi-select: clicking a district on the map toggles it in/out of this set;
+  // nothing selected -> nothing shown (keeps the page fast, no upfront rendering)
+  const selectedDistricts = new Set();
+
   window.selectDistrictArea = function(name){
+    if (name){
+      if (selectedDistricts.has(name)) selectedDistricts.delete(name);
+      else selectedDistricts.add(name);
+    } else {
+      selectedDistricts.clear();
+    }
+
     districtBlocks.forEach(x=>{
-      const isMatch = x.dist === name;
-      // no district chosen -> show everything; a district chosen -> narrow to just that one
-      x.block.classList.toggle('hidden', !!name && !isMatch);
-      if (!name || isMatch){
+      const isSelected = selectedDistricts.has(x.dist);
+      x.block.classList.toggle('hidden', !isSelected);
+      if (isSelected){
         x.block.querySelectorAll('.tambon-panel').forEach(p=> p.classList.add('active'));
-        x.block.querySelectorAll('.tambon-chip').forEach((c,i)=> c.classList.toggle('active', !name || i===0));
+        x.block.querySelectorAll('.tambon-chip').forEach((c,i)=> c.classList.toggle('active', i===0));
+        // build this district's rows now, the first time it's actually shown
+        x.block._tambonCards.forEach(card=> populateTambonRows(card));
       }
     });
-    showDistrictSearchSummary(name);
+    showDistrictSearchSummary([...selectedDistricts]);
   };
   showDistrictSearchSummary(null);
-  window.selectDistrictArea(null);
 
   // safety re-render: ensures the summary/visited section reflect every row's
   // feedback once all rows have finished loading, closing any timing gap
@@ -3005,12 +3040,21 @@ async function init(){
   const filterEstate = document.getElementById('filterEstate');
   refreshEstateFilterOptions();
 
-  function applyFilters(){
+  async function applyFilters(){
     const q = searchInput.value.trim().toLowerCase();
     const rel = filterRelation.value;
     const cont = filterContacted.value;
     const diw = filterDiw.value;
     const est = filterEstate.value;
+
+    // search/filter needs to scan every company — make sure every district's rows
+    // actually exist in the DOM first (they're normally built lazily on click)
+    if (q || diw || cont || est){
+      await Promise.all(
+        districtBlocks.flatMap(x => x.block._tambonCards.map(card => populateTambonRows(card)))
+      );
+    }
+
     let matchCount = 0;
     document.querySelectorAll('table.company-table tbody tr').forEach(tr=>{
       let show = true;
@@ -4068,19 +4112,13 @@ init();
     else homeEl.insertBefore(card, homeEl.firstChild);
     function selectArea(name){
       const el = card.querySelector(`[data-territory="${name}"]`);
-      const alreadyOpen = el && el.classList.contains('active');
-      if (alreadyOpen){
-        card.querySelectorAll('[data-territory]').forEach(x=>x.classList.remove('active'));
-        if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(null);
-      } else {
-        card.querySelectorAll('[data-territory]').forEach(x=>x.classList.toggle('active',x.dataset.territory===name));
-        if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(name);
-      }
+      if (el) el.classList.toggle('active');
+      if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(name);
       // no auto-scroll — the user scrolls down themselves to see the revealed data
     }
     card.addEventListener('click',e=>{const item=e.target.closest('[data-territory]');if(item)selectArea(item.dataset.territory);});
   }
-  setTimeout(mountTerritoryMap,700);
+  setTimeout(mountTerritoryMap,50);
 })();
 </script>
 <script>
@@ -4351,7 +4389,7 @@ init();
       window.currentOpenEstateCode = null;
     });
   }
-  setTimeout(()=>{normaliseEstateData();mountEstateZones();},1400);
+  setTimeout(()=>{normaliseEstateData();mountEstateZones();},250);
   window.IEAT_ESTATE_GEO = IEAT_ESTATE_GEO;
   window.findOSMBoundary = findOSMBoundary;
   window.normaliseEstate = normalise;
@@ -4376,7 +4414,7 @@ init();
     const estate=document.getElementById('filterEstate');
     if(estate) estate.dispatchEvent(new Event('change'));
   }
-  setTimeout(moveCompanyControls,1200);
+  setTimeout(moveCompanyControls,150);
 })();
 </script>
 <script>
@@ -4403,7 +4441,7 @@ init();
     ['searchInput','filterEstate','filterDiw','filterRelation','filterContacted'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener(id==='searchInput'?'input':'change',render);}});
     render();
   }
-  setTimeout(mountCompanyDirectory,1650);
+  setTimeout(mountCompanyDirectory,350);
 })();
 </script>
 
