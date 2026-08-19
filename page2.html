@@ -1758,6 +1758,7 @@ const DIW_OPTIONS = [
 ];
 
 let feedbackCache = {};
+window.feedbackCache = feedbackCache; // shared across script blocks — this one lives inside an IIFE
 
 let reportsCache = null;
 
@@ -1792,6 +1793,7 @@ function buildCompanyNameIndex(){
       });
     });
   });
+  window.companyIdToInfo = companyIdToInfo; // shared across script blocks — kept in sync after each rebuild
 }
 
 async function autoMarkContacted(companyName){
@@ -1872,6 +1874,7 @@ async function loadFeedback(id){
   feedbackCache[id] = val;
   return val;
 }
+window.loadFeedback = loadFeedback; // shared across script blocks
 
 async function saveFeedback(id, data){
   feedbackCache[id] = data;
@@ -1890,6 +1893,7 @@ async function saveFeedback(id, data){
     txt.textContent = 'บันทึกไม่สำเร็จ (ตรวจสอบการเชื่อมต่อ)';
   }
 }
+window.saveFeedback = saveFeedback; // shared across script blocks
 
 async function fetchAllFeedback(){
   const all = {};
@@ -2036,6 +2040,7 @@ function refreshContactSummaryFromCache(){
   if (csEl) csEl.innerHTML = '';
   renderVisitedSection();
   if (typeof renderTargetsPage === 'function') renderTargetsPage();
+  if (typeof window.refreshOpenEstateDetail === 'function') window.refreshOpenEstateDetail();
 }
 
 window.toggleDashCard = function(btn){
@@ -2289,6 +2294,7 @@ function openVcModal(v){
   overlay.style.display = '';
   overlay.classList.add('open');
 }
+window.openVcModal = openVcModal; // shared across script blocks
 
 function closeVcModal(){
   const overlay = document.getElementById('vcModalOverlay');
@@ -4258,24 +4264,35 @@ init();
 
     const gridView = panel.querySelector('#estateGridView');
     const detailView = panel.querySelector('#estateDetailView');
-    const diwMetaLocal = {target:{label:'เกี่ยวข้อง', color:'#34D399'}, nontarget:{label:'ไม่เกี่ยวข้อง', color:'#EF4444'}, unknown:{label:'ยังไม่ทราบข้อมูล', color:'#F59E0B'}};
+    const trackingGroups = [
+      {key:'customer', label:'Customer', accent:'#34D399'},
+      {key:'new', label:'New customer', accent:'#38BDF8'},
+      {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
+      {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
+      {key:'notinteresting', label:'ไม่น่าสนใจ', accent:'#9CA3AF'},
+      {key:'', label:'ยังไม่ทราบข้อมูล', accent:'#9CA3AF'},
+    ];
+    window.currentOpenEstateCode = null;
 
     function openEstateDetail(code){
+      window.currentOpenEstateCode = code;
       const companies = collectEstateCompanies(code);
       const full = fullNameOf(code);
       panel.querySelector('#estateDetailFull').textContent = full;
       panel.querySelector('#estateDetailCode').textContent = code;
 
-      let target=0, nontarget=0, unknown=0;
+      // group by สถานะติดตาม (the same status used on the เป้าหมาย page) — never by
+      // กลุ่มเป้าหมาย, and anything with no status yet falls into "ยังไม่ทราบข้อมูล"
+      const buckets = {customer:[], new:[], interesting:[], followup:[], notinteresting:[], '':[]};
       companies.forEach(c=>{
-        const st = c.diwStatus === 'target' ? 'target' : c.diwStatus === 'nontarget' ? 'nontarget' : 'unknown';
-        if (st==='target') target++; else if (st==='nontarget') nontarget++; else unknown++;
+        const fb = feedbackCache[c.id];
+        const st = fb && fb.status && buckets[fb.status] ? fb.status : '';
+        buckets[st].push(c);
       });
+      const statCounts = trackingGroups.map(g=> ({...g, count: buckets[g.key].length}));
       panel.querySelector('#estateDetailStats').innerHTML = `
         <div class="eds-chip"><b>${companies.length}</b> บริษัททั้งหมด</div>
-        <div class="eds-chip" style="color:#34D399;"><b>${target}</b> เกี่ยวข้อง</div>
-        <div class="eds-chip" style="color:#EF4444;"><b>${nontarget}</b> ไม่เกี่ยวข้อง</div>
-        <div class="eds-chip" style="color:#F59E0B;"><b>${unknown}</b> ยังไม่ทราบข้อมูล</div>
+        ${statCounts.map(g=> `<div class="eds-chip" style="color:${g.accent};"><b>${g.count}</b> ${g.label}</div>`).join('')}
       `;
 
       const geo = IEAT_ESTATE_GEO[code];
@@ -4289,13 +4306,20 @@ init();
       if (!companies.length){
         listEl.innerHTML = `<div class="estate-empty">ยังไม่พบรายการบริษัทในโซนนี้ — สามารถระบุชื่อนิคมให้บริษัทได้จากคอลัมน์ “นิคม” ในหน้าแรก</div>`;
       } else {
-        const sorted = companies.slice().sort((a,b)=> a.name.localeCompare(b.name,'th'));
-        listEl.innerHTML = sorted.map(c=>{
-          const meta = diwMetaLocal[c.diwStatus] || diwMetaLocal.unknown;
-          return `<div class="estate-company-row" data-id="${c.id}">
-            <div class="ecr-name">${c.name}</div>
-            <div class="ecr-loc">ตำบล${c.tambon} · อำเภอ${c.district}</div>
-            <div class="ecr-badge" style="color:${meta.color}; border-color:${meta.color};">${meta.label}</div>
+        const allEntries = [];
+        listEl.innerHTML = trackingGroups.map(g=>{
+          const items = buckets[g.key].slice().sort((a,b)=> a.name.localeCompare(b.name,'th'));
+          if (!items.length) return '';
+          items.forEach(c=> allEntries.push(c));
+          const rows = items.map(c=>`
+            <div class="estate-company-row" data-id="${c.id}">
+              <div class="ecr-name">${c.name}</div>
+              <div class="ecr-loc">ตำบล${c.tambon} · อำเภอ${c.district}</div>
+              <div class="ecr-badge" style="color:${g.accent}; border-color:${g.accent};">${g.label}</div>
+            </div>`).join('');
+          return `<div class="targets-group">
+            <div class="targets-group-head" style="color:${g.accent};">${g.label} <span>(${items.length})</span></div>
+            ${rows}
           </div>`;
         }).join('');
         listEl.querySelectorAll('.estate-company-row').forEach(row=>{
@@ -4313,6 +4337,9 @@ init();
       gridView.classList.add('slide-out');
       detailView.classList.add('slide-in');
     }
+    window.refreshOpenEstateDetail = function(){
+      if (window.currentOpenEstateCode) openEstateDetail(window.currentOpenEstateCode);
+    };
 
     panel.addEventListener('click',e=>{
       const zone=e.target.closest('.estate-zone'); if(!zone) return;
@@ -4321,6 +4348,7 @@ init();
     panel.querySelector('#estateBackBtn').addEventListener('click', ()=>{
       gridView.classList.remove('slide-out');
       detailView.classList.remove('slide-in');
+      window.currentOpenEstateCode = null;
     });
   }
   setTimeout(()=>{normaliseEstateData();mountEstateZones();},1400);
