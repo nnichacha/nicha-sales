@@ -1138,6 +1138,12 @@
     cursor:pointer; transition:background .15s ease;
   }
   .estate-company-row:hover{ background:rgba(214,181,111,.06); }
+  .ecr-move-select{
+    flex-shrink:0; background:#0F1E2C; border:1px solid #2e4a60; color:#9CC5DE; font-family:'Sarabun',sans-serif;
+    font-size:10.5px; padding:4px 6px; border-radius:6px; cursor:pointer; max-width:110px;
+  }
+  .ecr-move-select:hover{ border-color:var(--gold); color:var(--gold); }
+  body:not(.can-edit) .ecr-move-select{ display:none; }
   .ecr-name{ flex:1; min-width:0; font-family:'Kanit',sans-serif; font-size:13px; color:#fff; font-weight:600; }
   .ecr-loc{ font-family:'Sarabun',sans-serif; font-size:11px; color:var(--muted); flex-shrink:0; }
   .ecr-badge{
@@ -2042,6 +2048,7 @@ function refreshContactSummaryFromCache(){
   renderVisitedSection();
   if (typeof renderTargetsPage === 'function') renderTargetsPage();
   if (typeof window.refreshOpenEstateDetail === 'function') window.refreshOpenEstateDetail();
+  if (typeof window.refreshEstateGridInner === 'function') window.refreshEstateGridInner();
 }
 
 window.toggleDashCard = function(btn){
@@ -2487,8 +2494,12 @@ function saveCompanyOverrides(ov){
 function sectionKey(dist, tambon){ return (dist + '|' + tambon).replace(/[.#$/\[\]]/g, '_'); }
 
 function loadEstateOverrides(){
-  try{ return JSON.parse(localStorage.getItem('estateOverrides') || '{"edits":{},"additions":{}}'); }
-  catch(e){ return {edits:{}, additions:{}}; }
+  try{
+    const parsed = JSON.parse(localStorage.getItem('estateOverrides') || '{"edits":{},"additions":{},"renames":{}}');
+    parsed.renames = parsed.renames || {};
+    return parsed;
+  }
+  catch(e){ return {edits:{}, additions:{}, renames:{}}; }
 }
 function saveEstateOverrides(ov){
   localStorage.setItem('estateOverrides', JSON.stringify(ov));
@@ -2496,10 +2507,24 @@ function saveEstateOverrides(ov){
 function applyEstateOverrides(){
   if (typeof window.ESTATE_OPTIONS === 'undefined') return;
   const ov = loadEstateOverrides();
+  // full code+name renames (code is the id companies point to, so this can change both)
+  Object.entries(ov.renames || {}).forEach(([oldCode, patch])=>{
+    const entry = window.ESTATE_OPTIONS.find(o=>o.code===oldCode);
+    if (entry){
+      if (patch.full) entry.full = patch.full;
+      if (patch.newCode && patch.newCode !== oldCode) entry.code = patch.newCode;
+    }
+    if (patch.newCode && Array.isArray(window.CATALOGUE_REF)){
+      const idx = window.CATALOGUE_REF.indexOf(oldCode);
+      if (idx !== -1) window.CATALOGUE_REF[idx] = patch.newCode;
+    }
+  });
+  // name-only renames to existing estates
   Object.entries(ov.edits).forEach(([code, patch])=>{
     const entry = window.ESTATE_OPTIONS.find(o=>o.code===code);
     if (entry && patch.full) entry.full = patch.full;
   });
+  // brand new estates added by the team
   Object.entries(ov.additions).forEach(([code, entry])=>{
     if (!window.ESTATE_OPTIONS.some(o=>o.code===code)){
       window.ESTATE_OPTIONS.push({code, full: entry.full});
@@ -2526,6 +2551,18 @@ window.persistEstateRename = function(code, full){
     fbDb.ref('estateOverrides/edits/'+code).set({full}).catch(e=>console.error(e));
   }
 };
+window.persistEstateCodeRename = function(oldCode, newCode, full){
+  const ov = loadEstateOverrides();
+  ov.renames = ov.renames || {};
+  ov.renames[oldCode] = {newCode, full};
+  // an old addition/edit entry keyed by the old code is now superseded by the rename
+  delete ov.additions[oldCode];
+  delete ov.edits[oldCode];
+  saveEstateOverrides(ov);
+  if (typeof syncConnected !== 'undefined' && syncConnected && typeof fbDb !== 'undefined'){
+    fbDb.ref('estateOverrides/renames/'+oldCode).set({newCode, full}).catch(e=>console.error(e));
+  }
+};
 
 function persistFieldEdit(id, fields){
   const ov = loadCompanyOverrides();
@@ -2536,6 +2573,7 @@ function persistFieldEdit(id, fields){
   }
   flashSaved();
 }
+window.persistFieldEdit = persistFieldEdit; // shared across script blocks
 
 async function fetchRemoteOverrides(){
   if (!syncConnected) return;
@@ -2551,6 +2589,22 @@ async function fetchRemoteOverrides(){
     }
   }catch(e){ console.error('fetchRemoteOverrides failed', e); }
 }
+
+async function fetchRemoteEstateOverrides(){
+  if (!syncConnected) return;
+  try{
+    const snap = await fbDb.ref('estateOverrides').once('value');
+    const remote = snap.val();
+    if (remote){
+      saveEstateOverrides({
+        edits: remote.edits || {},
+        additions: remote.additions || {},
+        renames: remote.renames || {},
+      });
+    }
+  }catch(e){ console.error('fetchRemoteEstateOverrides failed', e); }
+}
+window.fetchRemoteEstateOverrides = fetchRemoteEstateOverrides;
 
 function applyCompanyOverrides(){
   const ov = loadCompanyOverrides();
@@ -2630,6 +2684,8 @@ async function renderCompanyRow(c, dist){
     c.estate = val;
     persistFieldEdit(c.id, {estate: val});
     refreshEstateFilterOptions();
+    if (typeof window.refreshEstateGridInner === 'function') window.refreshEstateGridInner();
+    if (typeof window.refreshOpenEstateDetail === 'function') window.refreshOpenEstateDetail();
   });
 
   function persist(){
@@ -2909,6 +2965,7 @@ async function init(){
   if (storedConfig && typeof firebase !== 'undefined'){
     initFirebaseSync(storedConfig);
     await fetchRemoteOverrides();
+    await fetchRemoteEstateOverrides();
   } else {
     if (storedConfig && typeof firebase === 'undefined'){
       console.warn('Firebase SDK ไม่โหลด (เครือข่ายอาจบล็อก gstatic.com) — ใช้งานแบบออฟไลน์ในเครื่องนี้แทน');
@@ -4337,7 +4394,7 @@ init();
         <button class="estate-back-btn" id="estateBackBtn">← กลับไปเลือกนิคม</button>
         <div class="estate-detail-header">
           <div class="estate-detail-full" id="estateDetailFull"></div>
-          <button class="estate-rename-btn" id="estateRenameBtn" title="แก้ไขชื่อนิคม">✎ แก้ไขชื่อ</button>
+          <button class="estate-rename-btn" id="estateRenameBtn" title="แก้ไขรหัสย่อ/ชื่อนิคม">✎ แก้ไขรหัส/ชื่อ</button>
           <div class="estate-detail-code" id="estateDetailCode"></div>
         </div>
         <div class="estate-detail-stats" id="estateDetailStats"></div>
@@ -4396,24 +4453,48 @@ init();
           const items = buckets[g.key].slice().sort((a,b)=> a.name.localeCompare(b.name,'th'));
           if (!items.length) return '';
           items.forEach(c=> allEntries.push(c));
-          const rows = items.map(c=>`
+          const rows = items.map(c=>{
+            const moveOptions = ESTATE_OPTIONS.map(o=>`<option value="${o.code}" ${o.code===c.estate?'selected':''}>${o.code}</option>`).join('');
+            return `
             <div class="estate-company-row" data-id="${c.id}">
               <div class="ecr-name">${c.name}</div>
               <div class="ecr-loc">ตำบล${c.tambon} · อำเภอ${c.district}</div>
               <div class="ecr-badge" style="color:${g.accent}; border-color:${g.accent};">${g.label}</div>
-            </div>`).join('');
+              <select class="ecr-move-select" data-id="${c.id}" title="ย้ายไปนิคมอื่น (ถ้าใส่ผิดตอนแรก)">${moveOptions}</select>
+            </div>`;
+          }).join('');
           return `<div class="targets-group">
             <div class="targets-group-head" style="color:${g.accent};">${g.label} <span>(${items.length})</span></div>
             ${rows}
           </div>`;
         }).join('');
         listEl.querySelectorAll('.estate-company-row').forEach(row=>{
-          row.addEventListener('click', async ()=>{
+          row.addEventListener('click', async (e)=>{
+            if (e.target.closest('.ecr-move-select')) return; // let the select handle its own click
             const id = row.dataset.id;
             const info = companyIdToInfo[id];
             if (!info) return;
             const fb = await loadFeedback(id);
             openVcModal({id, fb, info});
+          });
+        });
+        listEl.querySelectorAll('.ecr-move-select').forEach(sel=>{
+          sel.addEventListener('click', e=> e.stopPropagation());
+          sel.addEventListener('change', ()=>{
+            const id = sel.dataset.id;
+            const newCode = sel.value;
+            if (newCode === code) return; // unchanged
+            // find and update the live company record in SITE_DATA
+            let updated = null;
+            Object.values(SITE_DATA).forEach(d=> d.sections.forEach(s=> s.companies.forEach(cc=>{
+              if (cc.id === id){ cc.estate = newCode; updated = cc; }
+            })));
+            if (companyIdToInfo[id]) companyIdToInfo[id].estate = newCode;
+            persistFieldEdit(id, {estate: newCode});
+            if (typeof refreshEstateFilterOptions === 'function') refreshEstateFilterOptions();
+            if (typeof window.refreshEstateGridInner === 'function') window.refreshEstateGridInner();
+            flashSaved();
+            openEstateDetail(code); // re-render this same estate's list without the moved company
           });
         });
       }
@@ -4429,6 +4510,8 @@ init();
     function refreshEstateGridInner(){
       const gridInner = panel.querySelector('#estateZoneGridInner');
       if (!gridInner) return;
+      const freshAvailable = new Set();
+      Object.values(SITE_DATA).forEach(d=>d.sections.forEach(s=>s.companies.forEach(c=>freshAvailable.add(normalise(c.estate)))));
       const freshSorted = CATALOGUE.filter(c=>c!=='นอกนิคม').slice().sort((a,b)=> fullNameOf(a).localeCompare(fullNameOf(b),'th'));
       if (CATALOGUE.includes('นอกนิคม')) freshSorted.push('นอกนิคม');
       gridInner.innerHTML = freshSorted.map(code=>{
@@ -4438,10 +4521,11 @@ init();
         return `<button class="estate-zone" data-estate="${code}">
           <div class="estate-zone-full">${full}</div>
           <div class="estate-zone-code">${code}</div>
-          <small>${total ? `${total} โรงงาน` : (available.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small>
+          <small>${total ? `${total} โรงงาน` : (freshAvailable.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small>
         </button>`;
       }).join('');
     }
+    window.refreshEstateGridInner = refreshEstateGridInner; // shared across script blocks — kept live from anywhere
 
     panel.addEventListener('click',e=>{
       const zone=e.target.closest('.estate-zone'); if(!zone) return;
@@ -4474,13 +4558,40 @@ init();
       const code = window.currentOpenEstateCode;
       if (!code) return;
       const entry = ESTATE_OPTIONS.find(o=>o.code===code);
-      const nextFull = window.prompt('ชื่อเต็มใหม่ของนิคม:', entry ? entry.full : '');
+      const nextCode = window.prompt('รหัสย่อของนิคม (ใช้เชื่อมกับข้อมูลบริษัท เปลี่ยนได้แต่ต้องไม่ซ้ำกับนิคมอื่น):', code);
+      if (!nextCode || !nextCode.trim()) return;
+      const trimmedCode = nextCode.trim();
+      if (trimmedCode !== code && ESTATE_OPTIONS.some(o=>o.code===trimmedCode)){
+        alert('มีนิคมที่ใช้รหัสนี้อยู่แล้ว กรุณาใช้รหัสอื่น'); return;
+      }
+      const nextFull = window.prompt('ชื่อเต็มของนิคม:', entry ? entry.full : '');
       if (!nextFull || !nextFull.trim()) return;
-      if (entry) entry.full = nextFull.trim();
-      window.persistEstateRename(code, nextFull.trim());
+      const trimmedFull = nextFull.trim();
+
+      if (trimmedCode !== code){
+        // code changed — cascade the update to every company currently filed under it,
+        // so nothing becomes orphaned from an estate that no longer exists under that code
+        const affectedIds = [];
+        Object.values(SITE_DATA).forEach(d=> d.sections.forEach(s=> s.companies.forEach(c=>{
+          if (normalise(c.estate) === code){ c.estate = trimmedCode; affectedIds.push(c.id); }
+        })));
+        affectedIds.forEach(id=>{
+          if (companyIdToInfo[id]) companyIdToInfo[id].estate = trimmedCode;
+          persistFieldEdit(id, {estate: trimmedCode});
+        });
+        if (entry) entry.code = trimmedCode;
+        const cIdx = CATALOGUE.indexOf(code);
+        if (cIdx !== -1) CATALOGUE[cIdx] = trimmedCode;
+        window.persistEstateCodeRename(code, trimmedCode, trimmedFull);
+        window.currentOpenEstateCode = trimmedCode;
+      } else {
+        window.persistEstateRename(code, trimmedFull);
+      }
+      if (entry) entry.full = trimmedFull;
+
       if (typeof refreshEstateFilterOptions === 'function') refreshEstateFilterOptions();
       refreshEstateGridInner();
-      openEstateDetail(code);
+      openEstateDetail(window.currentOpenEstateCode);
       flashSaved();
     });
   }
