@@ -1036,23 +1036,21 @@
   .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:18px; color:#0B2A4A; line-height:1.1; }
   .rd-kpi .l{ font-size:8.5px; color:#7C8798; letter-spacing:0.3px; margin-top:3px; font-weight:600; }
 
-  .rd-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
-  .rd-table thead th{
-    font-family:'Kanit',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
-    color:#fff; text-align:left; padding:9px 10px; background:#0B2A4A;
-  }
-  .rd-table thead th:first-child{ border-radius:6px 0 0 0; }
-  .rd-table thead th:last-child{ border-radius:0 6px 0 0; }
-  .rd-th-time{ width:56px; }
-  .rd-table td{ padding:10px; vertical-align:top; border-bottom:1px solid #E7EAEF; }
-  .rd-row-alt{ background:#F8F9FB; }
-  .rd-td-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; color:#0B2A4A; white-space:nowrap; }
-  .rd-td-main{ width:38%; }
-  .rd-row-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11.5px; color:#0B1220; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .rd-row-person{ font-size:10px; color:#5B6B85; margin-top:2px; }
-  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+  .rd-timeline{ position:relative; }
+  .rd-tl-item{ position:relative; display:flex; gap:14px; }
+  .rd-tl-rail{ position:relative; width:14px; flex-shrink:0; display:flex; justify-content:center; }
+  .rd-tl-rail::before{ content:''; position:absolute; top:16px; bottom:-8px; width:2px; background:#E1E6ED; }
+  .rd-tl-item:last-child .rd-tl-rail::before{ display:none; }
+  .rd-tl-dot{ position:relative; z-index:1; width:14px; height:14px; border-radius:50%; margin-top:14px; border:3px solid #fff; box-shadow:0 0 0 1.5px #E1E6ED; }
+  .rd-tl-card{ flex:1; min-width:0; background:#F8F9FB; border:1px solid #ECEFF3; border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .rd-tl-card-alt{ background:#fff; }
+  .rd-tl-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .rd-tl-time{ font-family:'Kanit',sans-serif; font-weight:800; font-size:12.5px; color:#0B2A4A; background:#EAF0F7; padding:2px 8px; border-radius:5px; }
+  .rd-tl-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:#0B1220; }
+  .rd-tl-person{ font-size:10.5px; color:#5B6B85; margin-top:4px; }
+  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:7px; }
   .rd-tag{ font-size:8.5px; font-family:'Kanit',sans-serif; font-weight:700; padding:2px 7px; border-radius:5px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
-  .rd-td-note{ font-size:10.5px; color:#2B3648; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .rd-tl-note{ font-size:10.5px; color:#2B3648; line-height:1.6; margin-top:8px; padding-top:8px; border-top:1px dashed #E1E6ED; white-space:pre-wrap; word-break:break-word; }
   .rd-note-none{ color:#9BA6B5; }
   .rd-empty{ text-align:center; padding:30px 0; font-size:13px; color:#7C8798; }
 
@@ -1069,7 +1067,7 @@
     body *{ visibility:hidden; }
     #reportDoc, #reportDoc *{ visibility:visible; }
     #reportDoc{ position:absolute; left:0; top:0; width:100%; background:#fff; }
-    .rd-table tr{ break-inside:avoid; }
+    .rd-tl-item{ break-inside:avoid; }
   }
 
 
@@ -4085,20 +4083,25 @@ async function init(){
     const quotesSent = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
     const followups = list.filter(e=>e.activities.includes('ติดตามงาน'));
 
-    const rowsHtml = list.map((e,i)=>{
+    const itemsHtml = list.map((e,i)=>{
       const tagsHtml = e.activities.map(a=>reportActivityBadge(a)).join('');
       const visitTag = e.visit === false
         ? '<span class="rd-tag" style="background:#EEF1F5; color:#5B6B85; border:1px solid #DCE1E8;">กิจกรรม</span>'
         : '<span class="rd-tag" style="background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8;">Visit</span>';
-      return `<tr class="rd-row${i%2?' rd-row-alt':''}">
-        <td class="rd-td-time">${e.time || '--:--'}</td>
-        <td class="rd-td-main">
-          <div class="rd-row-company">${e.company || '—'} ${visitTag}</div>
-          <div class="rd-row-person">${e.person || '—'}</div>
+      const dotColor = e.visit === false ? '#94A3B8' : '#0B2A4A';
+      return `<div class="rd-tl-item">
+        <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
+        <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}">
+          <div class="rd-tl-head">
+            <span class="rd-tl-time">${e.time || '--:--'}</span>
+            <span class="rd-tl-company">${e.company || '—'}</span>
+            ${visitTag}
+          </div>
+          ${e.person ? `<div class="rd-tl-person">${e.person}</div>` : ''}
           <div class="rd-tags">${tagsHtml}</div>
-        </td>
-        <td class="rd-td-note">${e.feedback ? e.feedback : '<span class="rd-note-none">—</span>'}</td>
-      </tr>`;
+          ${e.feedback ? `<div class="rd-tl-note">${e.feedback}</div>` : ''}
+        </div>
+      </div>`;
     }).join('');
 
     const followupHtml = followups.length
@@ -4124,10 +4127,7 @@ async function init(){
           <div class="rd-kpi"><div class="n">${quotesSent}</div><div class="l">ใบเสนอราคา</div></div>
         </div>
       </div>
-      ${list.length ? `<table class="rd-table">
-        <thead><tr><th class="rd-th-time">เวลา</th><th>บริษัท / ผู้ติดต่อ / กิจกรรม</th><th>บันทึกเพิ่มเติม</th></tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
+      ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
       ${list.length ? `<div class="rd-followup-bar"><span class="rd-followup-label">ต้องติดตามต่อ:</span> ${followupHtml}</div>` : ''}
       <div class="rd-footer">
         <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
@@ -4174,12 +4174,20 @@ async function init(){
       return;
     }
     modalImage.textContent = 'กำลังสร้างรูปภาพ...';
+    // force a fixed, desktop-quality width for the capture so the exported image looks
+    // identical no matter what device (phone or computer) triggered the export — otherwise
+    // a narrow phone screen would export a cramped, differently-proportioned image
+    const prevWidth = reportDoc.style.width;
+    const prevMaxWidth = reportDoc.style.maxWidth;
+    reportDoc.style.width = '720px';
+    reportDoc.style.maxWidth = 'none';
     try{
       const canvas = await html2canvas(reportDoc, {
-        backgroundColor: '#0D1420',
+        backgroundColor: '#FFFFFF',
         scale: 2,
         useCORS: true,
         logging: false,
+        windowWidth: 720,
       });
       const link = document.createElement('a');
       link.download = `รายงานประจำวัน-${modalReportDate}.png`;
@@ -4191,6 +4199,9 @@ async function init(){
       console.error(e);
       alert('สร้างรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
       modalImage.textContent = 'บันทึกเป็นรูปภาพ (PNG)';
+    }finally{
+      reportDoc.style.width = prevWidth;
+      reportDoc.style.maxWidth = prevMaxWidth;
     }
   });
   modalShareLink.addEventListener('click', ()=>{
