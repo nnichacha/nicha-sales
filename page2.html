@@ -846,6 +846,7 @@
   .dr-kpi-gold .dr-kpi-icon{ background:var(--gold-dim); color:var(--gold); }
   .dr-kpi-green .dr-kpi-icon{ background:var(--green-dim); color:#6EE7B7; }
   .dr-kpi-cyan .dr-kpi-icon{ background:rgba(34,211,238,.14); color:#67E8F9; }
+  .dr-kpi-red .dr-kpi-icon{ background:var(--red-dim); color:#F87171; }
   .dr-kpi-value{ font-family:'Kanit',sans-serif; font-size:30px; font-weight:800; color:#fff; line-height:1; }
   .dr-kpi-label{ font-family:'Sarabun',sans-serif; font-size:12px; color:var(--muted); margin-top:6px; }
 
@@ -945,31 +946,38 @@
   .report-date-stats{ display:flex; gap:14px; flex-wrap:wrap; }
   .rstat{ font-size:11.5px; color:var(--muted); font-family:'Kanit',sans-serif; }
   .rstat b{ color:var(--gold); font-size:14px; }
-  .report-entries{ position:relative; padding:20px 18px 8px 34px; }
-  .report-entries::before{
-    content:""; position:absolute; left:44px; top:8px; bottom:16px; width:2px; background:var(--line);
+  .report-entries{ position:relative; padding:16px 16px 8px; }
+  .dr-tl-item{ position:relative; display:flex; gap:10px; margin-bottom:10px; }
+  .dr-tl-rail{ position:relative; width:16px; flex-shrink:0; display:flex; justify-content:center; }
+  .dr-tl-rail::before{ content:''; position:absolute; top:16px; bottom:-10px; width:2px; background:var(--line); }
+  .dr-tl-item:last-child .dr-tl-rail::before{ display:none; }
+  .dr-tl-dot{ position:relative; z-index:1; width:11px; height:11px; border-radius:50%; margin-top:13px; background:var(--gold); border:2px solid var(--ink); }
+  .dr-tl-card{ flex:1; min-width:0; display:flex; gap:12px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .dr-tl-left{ flex:0 0 32%; max-width:32%; min-width:0; border-right:1px dashed var(--line); padding-right:12px; }
+  .dr-tl-right{ flex:1; min-width:0; display:flex; align-items:center; }
+  .dr-tl-head{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .dr-tl-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; color:var(--gold); }
+  .dr-tl-visit-tag{ font-size:9px; font-family:'Kanit',sans-serif; font-weight:700; padding:2px 7px; border-radius:5px; background:var(--green-dim); color:#6EE7B7; }
+  .dr-tl-company{
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#fff; margin-top:5px; line-height:1.3;
+    word-break:break-word; overflow-wrap:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
-  .report-entry{ position:relative; padding:0 0 22px 26px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
-  .report-entry::before{
-    content:""; position:absolute; left:-4.5px; top:3px; width:12px; height:12px; border-radius:50%;
-    background:var(--gold); border:2px solid var(--ink); z-index:1;
-  }
-  .re-time{
-    font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:var(--gold); min-width:48px; padding-top:1px;
-  }
-  .report-entry .re-main{
-    flex:1; min-width:220px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 14px;
-  }
-  .report-entry .re-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; }
-  .report-entry .re-person{ font-size:12px; color:#B7C0CC; margin-top:3px; }
-  .report-entry .re-activities{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-  .report-entry .re-feedback{ font-size:12.5px; color:#E8ECF1; margin-top:8px; line-height:1.65; background:rgba(255,255,255,0.045); border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 6px 6px 0; white-space:pre-wrap; }
+  .dr-tl-person{ font-size:11px; color:var(--muted); margin-top:3px; overflow-wrap:break-word; }
+  .dr-tl-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:7px; }
+  .dr-tl-note{ font-size:12px; color:#E8ECF1; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .dr-tl-note-empty{ color:var(--muted); }
+  .dr-tl-actions{ display:flex; gap:6px; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); }
 
-  .re-delete{ background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:6px; padding:6px 12px; font-size:11px; cursor:pointer; font-family:'Sarabun',sans-serif; }
+  .re-delete{ background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:6px; padding:5px 11px; font-size:10.5px; cursor:pointer; font-family:'Sarabun',sans-serif; }
   .re-delete:hover{ border-color:var(--red); color:var(--red); }
-  .re-actions-col{ display:flex; flex-direction:column; gap:6px; align-self:flex-start; }
-  .re-edit{ font-size:11px !important; padding:5px 12px !important; }
+  .re-edit{ font-size:10.5px !important; padding:5px 11px !important; }
   .report-empty{ padding:40px 20px; text-align:center; color:var(--muted); font-size:13px; }
+  @media(max-width:600px){
+    .dr-tl-left{ flex-basis:34%; max-width:34%; padding-right:9px; }
+    .dr-tl-card{ padding:10px; gap:9px; }
+    .dr-tl-company{ font-size:12px; }
+    .dr-tl-note{ font-size:11px; }
+  }
 
   .pq-list{ margin-top:14px; display:flex; flex-direction:column; gap:12px; }
   .pq-card{
@@ -1046,8 +1054,10 @@
   .rd-tl-card-alt{ background:#fff; }
   .rd-tl-left{ flex:0 0 32%; max-width:32%; min-width:0; border-right:1px dashed #E1E6ED; padding-right:12px; }
   .rd-tl-right{ flex:1; min-width:0; display:flex; align-items:center; }
+  .rd-tl-head{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
   .rd-tl-time{ display:inline-block; font-family:'Kanit',sans-serif; font-weight:800; font-size:11.5px; color:#0B2A4A; background:#EAF0F7; padding:2px 8px; border-radius:5px; }
-  .rd-tl-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; color:#0B1220; margin-top:6px; line-height:1.3; }
+  .rd-tag-visit{ background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8; }
+  .rd-tl-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; color:#0B1220; margin-top:6px; line-height:1.3; word-break:break-word; overflow-wrap:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .rd-tl-person{ font-size:10px; color:#5B6B85; margin-top:3px; }
   .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:7px; }
   .rd-tag{ font-size:8px; font-family:'Kanit',sans-serif; font-weight:700; padding:2px 6px; border-radius:5px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
@@ -1194,12 +1204,7 @@
   .rstat{ font-size:10px; }
   .report-date-actions .btn-compile{ font-size:10px; padding:6px 10px; }
 
-  .report-entries{ padding:14px 10px 4px 24px; }
-  .report-entry{ padding:0 0 16px 20px; gap:10px; }
-  .report-entry::before{ left:-19px; }
-  .re-time{ min-width:38px; font-size:11px; }
-  .report-entry .re-main{ padding:10px 12px; }
-  .report-entry .re-company{ font-size:12.5px; }
+  .report-entries{ padding:12px 10px 6px; }
 
   .pq-card{ padding:13px 14px; gap:10px; }
   .pq-card .pq-company{ font-size:13.5px; }
@@ -1556,7 +1561,6 @@
     </div>
 
     <div class="dr-kpi-grid" id="drKpiGrid"></div>
-    <div class="dr-progress-card" id="drProgressCard"></div>
 
     <div class="report-form-wrap">
       <div class="report-form-title" id="reportFormTitle">บันทึกการเข้าพบวันนี้</div>
@@ -1647,6 +1651,19 @@
   </div>
 
   <div id="page3" style="display:none;">
+
+    <div class="dr-dash-header">
+      <div class="dr-dash-titlebar">
+        <div>
+          <div class="dr-dash-eyebrow">PENDING QUOTE</div>
+          <div class="dr-dash-title">รายการรอราคา</div>
+        </div>
+      </div>
+      <button class="dr-today-btn" id="pqCompileBtn">สร้างรายงานสรุป</button>
+    </div>
+
+    <div class="dr-kpi-grid" id="pqKpiGrid"></div>
+
     <div class="report-form-wrap">
       <div class="report-form-title">Log Pending Quote</div>
       <div class="report-form-grid">
@@ -1688,11 +1705,36 @@
       <div class="rf-actions">
         <button class="btn-primary" id="pqSubmit">บันทึกรายการ</button>
         <button class="filter-select" id="pqCancelEdit" style="cursor:pointer; display:none;">ยกเลิกการแก้ไข</button>
+        <button class="filter-select" id="pqBulkToggle" style="cursor:pointer; margin-left:auto;">นำเข้าหลายรายการพร้อมกัน</button>
       </div>
     </div>
 
-    <div class="archive-bar">
-      <div class="archive-stats" id="pqStats"></div>
+    <div class="report-form-wrap" id="pqBulkImportPanel" style="display:none; margin-top:14px;">
+      <div class="report-form-title">นำเข้าหลายรายการรอราคาพร้อมกัน</div>
+      <div class="bulk-import-hint">
+        <b>พิมพ์แบบระบุหัวข้อได้เลย</b> แต่ละรายการขึ้นต้นด้วย "บริษัท:" เสมอ ไม่ต้องเว้นบรรทัดคั่นก็ได้ ระบบจะรู้เองว่าเจอ "บริษัท:" ใหม่ = ขึ้นรายการใหม่<br>
+        หัวข้อที่รู้จัก: <b>บริษัท / ลูกค้า / เบอร์ / รายละเอียด / วันที่ขอราคา / วันที่ต้องส่ง / วันที่ส่งราคา / หมายเหตุ</b> — หัวข้อไหนไม่ใส่ก็ได้ (วันที่ขอราคา=วันนี้ถ้าไม่ระบุ ส่วนวันที่ต้องส่ง/วันที่ส่งราคาปล่อยว่างได้ถ้ายังไม่รู้)<br>
+        <b>หรือจะพิมพ์แบบตาราง</b> คั่นด้วย Tab/Comma ก็ได้ (บริษัท|ลูกค้า|เบอร์|รายละเอียด|วันที่ขอราคา|วันที่ต้องส่ง|วันที่ส่งราคา|หมายเหตุ)
+      </div>
+      <textarea id="pqBulkImportInput" placeholder="บริษัท: QUANTUM SPT
+ลูกค้า: Khun Supattra
+เบอร์: 081-234-5678
+รายละเอียด: ขอราคางาน C-STAND SUPPORT ขนาด 16T x 500 x 40 mm.
+วันที่ขอราคา: 21/08/2569
+วันที่ต้องส่ง: 25/08/2569
+หมายเหตุ: รอราคาจากซัพพลายเออร์
+
+บริษัท: บริษัท ตัวอย่าง จำกัด
+ลูกค้า: คุณสมชาย
+รายละเอียด: รายละเอียดยาวๆ ต่อกันหลายบรรทัดก็ได้ ระบบจะรวมเป็นก้อนเดียวให้เอง" style="min-height:160px; font-family:monospace; font-size:12px;"></textarea>
+      <div class="rf-actions">
+        <button class="btn-primary" id="pqBulkImportSubmit">นำเข้าข้อมูล</button>
+        <button class="filter-select" id="pqBulkImportCancel" style="cursor:pointer;">ยกเลิก</button>
+      </div>
+      <div id="pqBulkImportResult" class="bulk-import-result"></div>
+    </div>
+
+    <div class="archive-bar" style="justify-content:flex-end;">
       <select class="filter-select" id="pqFilterStatus">
         <option value="">ทุกสถานะ</option>
         <option value="pending">รอราคา</option>
@@ -3614,9 +3656,6 @@ async function init(){
 
   // ---- date-scoped daily dashboard: one day at a time, never mixed with other days ----
   let currentReportDate = todayISO();
-  const DAILY_VISIT_TARGET_KEY = 'dailyVisitTarget';
-  function getDailyTarget(){ return parseInt(localStorage.getItem(DAILY_VISIT_TARGET_KEY), 10) || 5; }
-  function setDailyTarget(n){ localStorage.setItem(DAILY_VISIT_TARGET_KEY, String(n)); }
 
   function entriesForDate(date){
     return loadReports().filter(e=>e.date===date).sort((a,b)=> (a.time||'').localeCompare(b.time||''));
@@ -3664,23 +3703,6 @@ async function init(){
       </div>
     `;
 
-    const target = getDailyTarget();
-    const pct = Math.min(100, Math.round((visits / target) * 100));
-    const progressColor = pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--red)';
-    document.getElementById('drProgressCard').innerHTML = `
-      <div class="dr-progress-head">
-        <div class="dr-progress-title">Daily Progress — เข้าพบเทียบกับเป้าหมาย</div>
-        <div class="dr-progress-target">เป้าหมาย <input type="number" min="1" id="drTargetInput" value="${target}" class="dr-target-input"> ราย/วัน</div>
-      </div>
-      <div class="dr-progress-bar-track"><div class="dr-progress-bar-fill" style="width:${pct}%; background:${progressColor};"></div></div>
-      <div class="dr-progress-foot">${visits} / ${target} ราย (${pct}%)</div>
-    `;
-    document.getElementById('drTargetInput').addEventListener('change', (e)=>{
-      const n = parseInt(e.target.value, 10) || 1;
-      setDailyTarget(n);
-      renderDayDashboard();
-    });
-
     // daily summary — key stats + notable feedback/issues + who needs follow-up
     const feedbackNotes = entries.filter(e=>e.feedback && e.feedback.trim());
     const rejectedNotes = entries.filter(e=>e.activities.includes('ปฏิเสธงาน'));
@@ -3711,28 +3733,32 @@ async function init(){
       reportListEl.innerHTML = `<div class="report-empty">ยังไม่มีบันทึกของวันที่เลือก</div>`;
       return;
     }
-    const entriesHtml = entries.map(e=>{
+    const entriesHtml = entries.map((e,i)=>{
+      const visitTag = e.visit === false ? '' : '<span class="dr-tl-visit-tag">Visit</span>';
       const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
-      const visitTag = e.visit === false ? '' : '<span class="tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
-      return `<div class="report-entry" data-id="${e.id}">
-        <div class="re-time">${e.time || '--:--'}</div>
-        <div class="re-main">
-          <div class="re-company">${e.company || '—'} ${visitTag}</div>
-          <div class="re-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
-          <div class="re-activities">${tagsHtml}</div>
-          ${e.feedback ? `<div class="re-feedback">${e.feedback}</div>` : ''}
+      const dotColor = e.visit === false ? 'var(--muted)' : 'var(--gold)';
+      return `<div class="dr-tl-item">
+        <div class="dr-tl-rail"><div class="dr-tl-dot" style="background:${dotColor};"></div></div>
+        <div class="dr-tl-card" data-id="${e.id}">
+          <div class="dr-tl-left">
+            <div class="dr-tl-head"><span class="dr-tl-time">${e.time || '--:--'}</span>${visitTag}</div>
+            <div class="dr-tl-company">${e.company || '—'}</div>
+            ${e.person ? `<div class="dr-tl-person">${e.person}</div>` : ''}
+            ${tagsHtml ? `<div class="dr-tl-tags">${tagsHtml}</div>` : ''}
+          </div>
+          <div class="dr-tl-right">
+            ${e.feedback ? `<div class="dr-tl-note">${e.feedback}</div>` : '<div class="dr-tl-note dr-tl-note-empty">—</div>'}
+          </div>
         </div>
-        <div class="re-actions-col">
+        <div class="dr-tl-actions" style="margin-left:26px;">
           <button class="btn-report re-edit" data-id="${e.id}">แก้ไข</button>
           <button class="re-delete" data-id="${e.id}">ลบ</button>
         </div>
       </div>`;
     }).join('');
-    const roadSvg = buildDayRoadSvg(entries, currentReportDate.replace(/-/g,''));
     reportListEl.innerHTML = `<div class="report-date-group" data-date="${currentReportDate}">
-      <div class="day-road-wrap">${roadSvg}</div>
       <div class="report-entries">${entriesHtml}</div>
-      <div style="padding:12px 0 0;"><button class="btn-report btn-compile" data-date="${currentReportDate}">สร้างรายงานทั้งวัน</button></div>
+      <div style="padding:4px 16px 12px;"><button class="btn-report btn-compile" data-date="${currentReportDate}">สร้างรายงานทั้งวัน</button></div>
     </div>`;
 
     reportListEl.querySelectorAll('.btn-compile').forEach(btn=>{
@@ -4104,6 +4130,119 @@ async function init(){
       `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>${name}</span>`;
   }
 
+  // shared timeline row builder — used identically by the live "กิจกรรมของวันนี้" list
+  // and the compiled "สร้างรายงานทั้งวัน" report, so both look exactly the same
+  function buildTimelineItemHtml(e, i){
+    const visitTag = e.visit === false ? '' : '<span class="rd-tag rd-tag-visit">Visit</span>';
+    const tagsHtml = e.activities.map(a=>reportActivityBadge(a)).join('');
+    const dotColor = e.visit === false ? '#94A3B8' : '#0B2A4A';
+    return `<div class="rd-tl-item">
+      <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
+      <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}" data-id="${e.id||''}">
+        <div class="rd-tl-left">
+          <div class="rd-tl-head"><span class="rd-tl-time">${e.time || '--:--'}</span>${visitTag}</div>
+          <div class="rd-tl-company">${e.company || '—'}</div>
+          ${e.person ? `<div class="rd-tl-person">${e.person}</div>` : ''}
+          ${tagsHtml ? `<div class="rd-tags">${tagsHtml}</div>` : ''}
+        </div>
+        <div class="rd-tl-right">
+          ${e.feedback ? `<div class="rd-tl-note">${e.feedback}</div>` : '<div class="rd-tl-note rd-tl-note-empty">—</div>'}
+        </div>
+      </div>
+    </div>`;
+  }
+
+
+  function pqStatusMeta(st){
+    return {
+      pending: {label:'รอราคา', color:'#B45309'},
+      overdue: {label:'เลยกำหนด', color:'#DC2626'},
+      sent: {label:'ส่งราคาแล้ว', color:'#1B7A4A'},
+    }[st];
+  }
+
+  function buildPqReportHtml(){
+    const all = loadPendingQuotes();
+    const list = all.slice().sort((a,b)=> (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
+    const pending = all.filter(q=>quoteStatus(q)==='pending').length;
+    const overdue = all.filter(q=>quoteStatus(q)==='overdue').length;
+    const sent = all.filter(q=>quoteStatus(q)==='sent').length;
+    const dLabel = new Date().toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+    const itemsHtml = list.map((q,i)=>{
+      const st = quoteStatus(q);
+      const meta = pqStatusMeta(st);
+      return `<div class="rd-tl-item">
+        <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${meta.color};"></div></div>
+        <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}">
+          <div class="rd-tl-left">
+            <div class="rd-tl-head"><span class="rd-tag" style="background:${meta.color}1A; color:${meta.color}; border:1px solid ${meta.color}55;">${meta.label}</span></div>
+            <div class="rd-tl-company">${q.company || '—'}</div>
+            ${q.customer ? `<div class="rd-tl-person">${q.customer}${q.phone ? ' · '+q.phone : ''}</div>` : ''}
+            <div class="rd-tags">
+              ${q.requestDate ? `<span class="rd-tag" style="background:#EEF1F5; color:#5B6B85; border:1px solid #DCE1E8;">ขอราคา ${q.requestDate}</span>` : ''}
+              ${q.dueDate ? `<span class="rd-tag" style="background:#EEF1F5; color:#5B6B85; border:1px solid #DCE1E8;">ต้องส่ง ${q.dueDate}</span>` : ''}
+              ${q.sentDate ? `<span class="rd-tag" style="background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8;">ส่งแล้ว ${q.sentDate}</span>` : ''}
+            </div>
+          </div>
+          <div class="rd-tl-right">
+            <div class="rd-tl-note">${q.detail || '<span class="rd-tl-note-empty">—</span>'}${q.note ? `<br><span style="color:#9BA6B5;">Note: ${q.note}</span>` : ''}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `
+      <div class="rd-topbar"></div>
+      <div class="rd-body-pad">
+      <div class="rd-header">
+        <div>
+          <div class="rd-brand">
+            <svg viewBox="0 0 24 24" stroke-width="2"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
+            <span class="rd-brand-text">Rayong Sales Territory · Pending Quote</span>
+          </div>
+          <div class="rd-title">รายงานสรุปรายการรอราคา</div>
+          <div class="rd-sub">ณ วันที่ ${dLabel}</div>
+        </div>
+        <div class="rd-kpis">
+          <div class="rd-kpi"><div class="n">${all.length}</div><div class="l">ทั้งหมด</div></div>
+          <div class="rd-kpi"><div class="n">${pending}</div><div class="l">รอราคา</div></div>
+          <div class="rd-kpi"><div class="n">${overdue}</div><div class="l">เลยกำหนด</div></div>
+          <div class="rd-kpi"><div class="n">${sent}</div><div class="l">ส่งแล้ว</div></div>
+        </div>
+      </div>
+      ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">ไม่มีรายการรอราคา</div>'}
+      <div class="rd-footer">
+        <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
+        <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
+      </div>
+      </div>
+    `;
+  }
+
+  function buildPqReportText(){
+    const all = loadPendingQuotes();
+    const list = all.slice().sort((a,b)=> (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
+    const pending = all.filter(q=>quoteStatus(q)==='pending').length;
+    const overdue = all.filter(q=>quoteStatus(q)==='overdue').length;
+    const sent = all.filter(q=>quoteStatus(q)==='sent').length;
+    const dLabel = new Date().toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+    let txt = `รายงานสรุปรายการรอราคา — ณ วันที่ ${dLabel}\n`;
+    txt += `ทั้งหมด: ${all.length} รายการ   |   รอราคา: ${pending}   |   เลยกำหนด: ${overdue}   |   ส่งแล้ว: ${sent}\n`;
+    txt += `${'='.repeat(48)}\n\n`;
+    list.forEach(q=>{
+      const meta = pqStatusMeta(quoteStatus(q));
+      txt += `[${meta.label}] ${q.company || '—'}\n`;
+      if (q.customer) txt += `  ลูกค้า: ${q.customer}${q.phone ? ' · '+q.phone : ''}\n`;
+      if (q.detail) txt += `  รายละเอียด: ${q.detail}\n`;
+      txt += `  วันที่ขอราคา: ${q.requestDate||'—'}   ต้องส่ง: ${q.dueDate||'—'}   ส่งแล้ว: ${q.sentDate||'ยังไม่ได้ส่ง'}\n`;
+      if (q.note) txt += `  Note: ${q.note}\n`;
+      txt += `\n`;
+    });
+    return txt;
+  }
+
   function buildDayReportHtml(date){
     const list = loadReports().filter(e=>e.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     const dObj = new Date(date+'T00:00:00');
@@ -4113,27 +4252,7 @@ async function init(){
     const quotesSent = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
     const followups = list.filter(e=>e.activities.includes('ติดตามงาน'));
 
-    const itemsHtml = list.map((e,i)=>{
-      const visitTag = e.visit === false
-        ? '<span class="rd-tag" style="background:#EEF1F5; color:#5B6B85; border:1px solid #DCE1E8;">กิจกรรม</span>'
-        : '<span class="rd-tag" style="background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8;">Visit</span>';
-      const tagsHtml = visitTag + e.activities.map(a=>reportActivityBadge(a)).join('');
-      const dotColor = e.visit === false ? '#94A3B8' : '#0B2A4A';
-      return `<div class="rd-tl-item">
-        <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
-        <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}">
-          <div class="rd-tl-left">
-            <div class="rd-tl-time">${e.time || '--:--'}</div>
-            <div class="rd-tl-company">${e.company || '—'}</div>
-            ${e.person ? `<div class="rd-tl-person">${e.person}</div>` : ''}
-            <div class="rd-tags">${tagsHtml}</div>
-          </div>
-          <div class="rd-tl-right">
-            ${e.feedback ? `<div class="rd-tl-note">${e.feedback}</div>` : '<div class="rd-tl-note rd-tl-note-empty">—</div>'}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
+    const itemsHtml = list.map((e,i)=> buildTimelineItemHtml(e, i)).join('');
 
     const followupHtml = followups.length
       ? followups.map(e=>`<span class="rd-fu-chip">${e.company||'—'}</span>`).join('')
@@ -4178,18 +4297,28 @@ async function init(){
   const modalPrint = document.getElementById('modalPrint');
   const modalDownload = document.getElementById('modalDownload');
   let modalReportDate = null;
+  let modalReportMode = 'daily'; // 'daily' | 'pq' — which builder/filename to use for the shared modal
 
   function openDayReport(date){
+    modalReportMode = 'daily';
     modalReportDate = date;
     const dObj = new Date(date+'T00:00:00');
     modalTitle.textContent = 'รายงานประจำวัน — ' + dObj.toLocaleDateString('th-TH', {year:'numeric', month:'long', day:'numeric'});
     reportDoc.innerHTML = buildDayReportHtml(date);
     reportModal.classList.add('open');
   }
+  function openPqReport(){
+    modalReportMode = 'pq';
+    modalReportDate = new Date().toISOString().slice(0,10);
+    modalTitle.textContent = 'รายงานสรุปรายการรอราคา';
+    reportDoc.innerHTML = buildPqReportHtml();
+    reportModal.classList.add('open');
+  }
+  document.getElementById('pqCompileBtn').addEventListener('click', openPqReport);
   modalClose.addEventListener('click', ()=> reportModal.classList.remove('open'));
   reportModal.addEventListener('click', (e)=>{ if(e.target===reportModal) reportModal.classList.remove('open'); });
   modalCopy.addEventListener('click', ()=>{
-    const txt = buildDayReportText(modalReportDate);
+    const txt = modalReportMode === 'pq' ? buildPqReportText() : buildDayReportText(modalReportDate);
     navigator.clipboard.writeText(txt).then(()=>{
       modalCopy.textContent = 'คัดลอกแล้ว ✓';
       setTimeout(()=>{ modalCopy.textContent = 'คัดลอกรายงาน (ข้อความ)'; }, 1500);
@@ -4219,7 +4348,8 @@ async function init(){
         windowWidth: 640,
       });
       const link = document.createElement('a');
-      link.download = `รายงานประจำวัน-${modalReportDate}.png`;
+      const filenameBase = modalReportMode === 'pq' ? 'รายงานสรุปรอราคา' : 'รายงานประจำวัน';
+      link.download = `${filenameBase}-${modalReportDate}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       modalImage.textContent = 'บันทึกแล้ว ✓';
@@ -4233,7 +4363,9 @@ async function init(){
     }
   });
   modalShareLink.addEventListener('click', ()=>{
-    const url = location.origin + location.pathname + '?report=' + modalReportDate;
+    const url = modalReportMode === 'pq'
+      ? location.origin + location.pathname + '?report=pq'
+      : location.origin + location.pathname + '?report=' + modalReportDate;
     navigator.clipboard.writeText(url).then(()=>{
       modalShareLink.textContent = 'คัดลอกลิงก์แล้ว ✓';
       setTimeout(()=>{ modalShareLink.textContent = 'คัดลอกลิงก์แชร์'; }, 1500);
@@ -4247,11 +4379,12 @@ async function init(){
   });
   modalPrint.addEventListener('click', ()=>{ window.print(); });
   modalDownload.addEventListener('click', ()=>{
-    const txt = buildDayReportText(modalReportDate);
+    const txt = modalReportMode === 'pq' ? buildPqReportText() : buildDayReportText(modalReportDate);
+    const filenameBase = modalReportMode === 'pq' ? 'รายงานสรุปรอราคา' : 'รายงานประจำวัน';
     const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `รายงานประจำวัน-${modalReportDate}.txt`;
+    a.href = url; a.download = `${filenameBase}-${modalReportDate}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -4311,11 +4444,27 @@ async function init(){
     const pending = all.filter(q=>quoteStatus(q)==='pending').length;
     const overdue = all.filter(q=>quoteStatus(q)==='overdue').length;
     const sent = all.filter(q=>quoteStatus(q)==='sent').length;
-    document.getElementById('pqStats').innerHTML = `
-      <div class="astat">รอราคา <b style="color:var(--amber)">${pending}</b></div>
-      <div class="astat">เลยกำหนด <b style="color:var(--red)">${overdue}</b></div>
-      <div class="astat">ส่งราคาแล้ว <b style="color:var(--green)">${sent}</b></div>
-      <div class="astat">ทั้งหมด <b>${all.length}</b></div>
+    document.getElementById('pqKpiGrid').innerHTML = `
+      <div class="dr-kpi-card dr-kpi-gold">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></div>
+        <div class="dr-kpi-value">${all.length}</div>
+        <div class="dr-kpi-label">ทั้งหมด</div>
+      </div>
+      <div class="dr-kpi-card dr-kpi-blue">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <div class="dr-kpi-value">${pending}</div>
+        <div class="dr-kpi-label">รอราคา</div>
+      </div>
+      <div class="dr-kpi-card dr-kpi-red">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7.5" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.9" fill="currentColor"/></svg></div>
+        <div class="dr-kpi-value">${overdue}</div>
+        <div class="dr-kpi-label">เลยกำหนด</div>
+      </div>
+      <div class="dr-kpi-card dr-kpi-green">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12.5 9.5 18 20 5"/></svg></div>
+        <div class="dr-kpi-value">${sent}</div>
+        <div class="dr-kpi-label">ส่งราคาแล้ว</div>
+      </div>
     `;
 
     const list = document.getElementById('pqList');
@@ -4421,6 +4570,135 @@ async function init(){
   pqFilterStatus.addEventListener('change', ()=>{
     pqStatusFilter = pqFilterStatus.value;
     renderPendingQuotes();
+  });
+
+  // ---- bulk import for Pending Quote: same battle-tested labeled-block parser
+  // pattern as Daily Report (stray-character cleanup, flexible date formats,
+  // colon optional) reused here so it doesn't repeat the same bugs ----
+  const PQ_FIELD_LABELS = {
+    'บริษัท':'company', 'ชื่อบริษัท':'company', 'ชื่อโรงงาน':'company', 'โรงงาน':'company', 'company':'company',
+    'ลูกค้า':'customer', 'ชื่อลูกค้า':'customer', 'ผู้ติดต่อ':'customer', 'customer':'customer', 'contact':'customer',
+    'เบอร์ติดต่อ':'phone', 'เบอร์โทร':'phone', 'เบอร์':'phone', 'โทร':'phone', 'phone':'phone', 'tel':'phone',
+    'รายละเอียดงาน':'detail', 'รายละเอียด':'detail', 'สเปก':'detail', 'งาน':'detail', 'detail':'detail',
+    'วันที่ลูกค้าขอราคา':'requestDate', 'วันที่ขอราคา':'requestDate', 'วันขอราคา':'requestDate', 'requestdate':'requestDate',
+    'วันที่ต้องส่งราคา':'dueDate', 'วันที่ต้องส่ง':'dueDate', 'กำหนดส่ง':'dueDate', 'duedate':'dueDate', 'due':'dueDate',
+    'วันที่ส่งราคาให้ลูกค้า':'sentDate', 'วันที่ส่งราคา':'sentDate', 'วันที่ส่ง':'sentDate', 'sentdate':'sentDate', 'sent':'sentDate',
+    'หมายเหตุ':'note', 'note':'note', 'ติดอะไรอยู่':'note', 'ติดอะไร':'note',
+  };
+  const PQ_FIELD_LABEL_ALTS = Object.keys(PQ_FIELD_LABELS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  const PQ_FIELD_LABEL_RE = new RegExp(`(?:^|\\s)(${PQ_FIELD_LABEL_ALTS})\\s*[:：]\\s*`, 'gi');
+
+  function normalizeBulkDateOptional(raw){
+    // like normalizeBulkDate, but returns '' (not today's date) when nothing was
+    // specified — a blank "วันที่ส่งราคา" genuinely means "not sent yet", not "today"
+    if (!raw || raw === '-') return '';
+    raw = raw.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    const m = raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+    if (m){
+      let [, d, mo, y] = m;
+      if (y.length === 2) y = '20'+y;
+      let yn = parseInt(y,10);
+      if (yn > 2400) yn -= 543;
+      return `${yn}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    }
+    return '';
+  }
+
+  function parsePqLabeledBlocks(text){
+    PQ_FIELD_LABEL_RE.lastIndex = 0;
+    const matches = [...text.matchAll(PQ_FIELD_LABEL_RE)];
+    const fields = matches.map((m, i)=>{
+      const label = m[1];
+      const field = PQ_FIELD_LABELS[label] || PQ_FIELD_LABELS[label.toLowerCase()];
+      const start = m.index + m[0].length;
+      const end = (i+1 < matches.length) ? matches[i+1].index : text.length;
+      const value = cleanFieldValue(text.slice(start, end).replace(/\s+/g, ' ').trim());
+      return {field, value};
+    });
+
+    const records = [];
+    let current = null;
+    for (const {field, value} of fields){
+      if (field === 'company'){
+        if (current) records.push(current);
+        current = {company:'', customer:'', phone:'', detail:'', requestDate:'', dueDate:'', sentDate:'', note:''};
+      }
+      if (current) current[field] = value;
+    }
+    if (current) records.push(current);
+
+    return records.filter(r=>r.company).map(r=>({
+      company: r.company,
+      customer: r.customer,
+      phone: r.phone,
+      detail: r.detail,
+      requestDate: r.requestDate ? normalizeBulkDate(r.requestDate) : new Date().toISOString().slice(0,10),
+      dueDate: normalizeBulkDateOptional(r.dueDate),
+      sentDate: normalizeBulkDateOptional(r.sentDate),
+      note: r.note,
+    }));
+  }
+
+  function parsePqBulkLine(line){
+    let parts;
+    if (line.includes('\t')) parts = line.split('\t');
+    else if (line.includes('|')) parts = line.split('|');
+    else if (line.includes(',')) parts = line.split(',');
+    else parts = [line];
+    parts = parts.map(p=>cleanFieldValue(p.trim()));
+    if (parts.length === 1){
+      return { company: parts[0] === '-' ? '' : parts[0], customer:'', phone:'', detail:'',
+        requestDate: new Date().toISOString().slice(0,10), dueDate:'', sentDate:'', note:'' };
+    }
+    const get = (i) => (parts[i] !== undefined && parts[i] !== '') ? parts[i] : '-';
+    return {
+      company: get(0) === '-' ? '' : get(0),
+      customer: get(1) === '-' ? '' : get(1),
+      phone: get(2) === '-' ? '' : get(2),
+      detail: get(3) === '-' ? '' : get(3),
+      requestDate: get(4) === '-' ? new Date().toISOString().slice(0,10) : normalizeBulkDate(get(4)),
+      dueDate: get(5) === '-' ? '' : normalizeBulkDateOptional(get(5)),
+      sentDate: get(6) === '-' ? '' : normalizeBulkDateOptional(get(6)),
+      note: get(7) === '-' ? '' : get(7),
+    };
+  }
+
+  function parsePqBulkText(text){
+    if (/(?:^|\s)(?:บริษัท|company)\s*[:：]/i.test(text)){
+      return parsePqLabeledBlocks(text);
+    }
+    return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(parsePqBulkLine).filter(r=>r.company);
+  }
+
+  const pqBulkToggle = document.getElementById('pqBulkToggle');
+  const pqBulkImportPanel = document.getElementById('pqBulkImportPanel');
+  const pqBulkImportInput = document.getElementById('pqBulkImportInput');
+  const pqBulkImportResult = document.getElementById('pqBulkImportResult');
+  const pqBulkImportSubmit = document.getElementById('pqBulkImportSubmit');
+  const pqBulkImportCancel = document.getElementById('pqBulkImportCancel');
+
+  pqBulkToggle.addEventListener('click', ()=>{
+    const isOpen = pqBulkImportPanel.style.display !== 'none';
+    pqBulkImportPanel.style.display = isOpen ? 'none' : '';
+  });
+  pqBulkImportCancel.addEventListener('click', ()=>{
+    pqBulkImportPanel.style.display = 'none';
+    pqBulkImportInput.value = '';
+    pqBulkImportResult.textContent = '';
+  });
+  pqBulkImportSubmit.addEventListener('click', async ()=>{
+    const text = pqBulkImportInput.value;
+    if (!text.trim()){ pqBulkImportResult.textContent = 'ยังไม่มีข้อมูลให้นำเข้า'; return; }
+    const records = parsePqBulkText(text);
+    if (records.length === 0){ pqBulkImportResult.textContent = 'ไม่พบรายการที่นำเข้าได้ — ตรวจสอบว่าใส่ "บริษัท:" ไว้ทุกรายการ'; return; }
+    for (const r of records){
+      await addPendingQuote({id:'q'+Date.now()+Math.floor(Math.random()*1000)+Math.floor(Math.random()*1000), ...r, createdAt:new Date().toISOString()});
+    }
+    pqBulkImportResult.textContent = `นำเข้าสำเร็จ ${records.length} รายการ`;
+    pqBulkImportInput.value = '';
+    renderPendingQuotes();
+    setTimeout(()=>{ pqBulkImportPanel.style.display = 'none'; pqBulkImportResult.textContent=''; }, 1400);
   });
 
   renderPendingQuotes();
