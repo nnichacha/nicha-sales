@@ -1044,9 +1044,9 @@
   .rd-tl-dot{ position:relative; z-index:1; width:14px; height:14px; border-radius:50%; margin-top:14px; border:3px solid #fff; box-shadow:0 0 0 1.5px #E1E6ED; }
   .rd-tl-card{ flex:1; min-width:0; background:#F8F9FB; border:1px solid #ECEFF3; border-radius:10px; padding:14px 16px; margin-bottom:12px; }
   .rd-tl-card-alt{ background:#fff; }
-  .rd-tl-head{ display:flex; align-items:center; gap:9px; }
+  .rd-tl-head{ display:flex; align-items:flex-start; gap:9px; }
   .rd-tl-time{ flex-shrink:0; font-family:'Kanit',sans-serif; font-weight:800; font-size:12px; color:#0B2A4A; background:#EAF0F7; padding:3px 9px; border-radius:5px; }
-  .rd-tl-company{ flex:1; min-width:0; font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#0B1220; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rd-tl-company{ flex:1; min-width:0; font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#0B1220; }
   .rd-tl-person{ font-size:10.5px; color:#5B6B85; margin-top:6px; }
   .rd-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-top:9px; }
   .rd-tag{ font-size:9px; font-family:'Kanit',sans-serif; font-weight:700; padding:3px 8px; border-radius:5px; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; flex-shrink:0; }
@@ -1062,6 +1062,39 @@
   .rd-fu-chip{ background:#fff; border:1px solid #E9CE84; border-radius:5px; padding:3px 9px; color:#1A2332; font-size:10px; font-weight:600; }
 
   .rd-footer{ margin-top:18px; padding-top:10px; border-top:1px solid #E7EAEF; font-size:9px; color:#9BA6B5; display:flex; justify-content:space-between; }
+
+  /* ---- mobile: report doc must use almost the full screen width, not float narrow
+     in the middle — this overrides the desktop-sized padding that was eating most
+     of the available width on phones ---- */
+  @media(max-width:600px){
+    .modal-box{ margin:0 6px; border-radius:9px; }
+    .rd-body-pad{ padding:14px 14px 12px; }
+    .rd-header{ gap:10px; padding-bottom:10px; margin-bottom:12px; }
+    .rd-brand-text{ font-size:8.5px; }
+    .rd-title{ font-size:16px; margin-top:5px; }
+    .rd-sub{ font-size:11px; }
+    .rd-kpis{ gap:5px; width:100%; }
+    .rd-kpi{ flex:1; min-width:0; padding:7px 4px; }
+    .rd-kpi .n{ font-size:15px; }
+    .rd-kpi .l{ font-size:7.5px; }
+
+    .rd-tl-rail{ width:20px; }
+    .rd-tl-item{ gap:6px; }
+    .rd-tl-dot{ width:12px; height:12px; margin-top:13px; }
+    .rd-tl-card{ padding:12px; margin-bottom:10px; border-radius:9px; }
+    .rd-tl-head{ gap:7px; }
+    .rd-tl-time{ font-size:11px; padding:2px 7px; }
+    .rd-tl-company{ font-size:12.5px; white-space:normal; }
+    .rd-tl-person{ font-size:10px; margin-top:4px; }
+    .rd-tags{ gap:5px; margin-top:8px; }
+    .rd-tag{ font-size:8.5px; padding:3px 7px; }
+    .rd-tl-note{ font-size:11px; line-height:1.55; margin-top:9px; padding-top:9px; }
+
+    .rd-followup-bar{ padding:10px 12px; margin-top:12px; }
+    .rd-followup-label{ font-size:10px; }
+    .rd-fu-chip{ font-size:9.5px; padding:3px 8px; }
+    .rd-footer{ font-size:8.5px; flex-direction:column; gap:3px; }
+  }
 
   @media print{
     body *{ visibility:hidden; }
@@ -4080,10 +4113,10 @@ async function init(){
     const followups = list.filter(e=>e.activities.includes('ติดตามงาน'));
 
     const itemsHtml = list.map((e,i)=>{
-      const tagsHtml = e.activities.map(a=>reportActivityBadge(a)).join('');
       const visitTag = e.visit === false
         ? '<span class="rd-tag" style="background:#EEF1F5; color:#5B6B85; border:1px solid #DCE1E8;">กิจกรรม</span>'
         : '<span class="rd-tag" style="background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8;">Visit</span>';
+      const tagsHtml = visitTag + e.activities.map(a=>reportActivityBadge(a)).join('');
       const dotColor = e.visit === false ? '#94A3B8' : '#0B2A4A';
       return `<div class="rd-tl-item">
         <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
@@ -4091,7 +4124,6 @@ async function init(){
           <div class="rd-tl-head">
             <span class="rd-tl-time">${e.time || '--:--'}</span>
             <span class="rd-tl-company">${e.company || '—'}</span>
-            ${visitTag}
           </div>
           ${e.person ? `<div class="rd-tl-person">${e.person}</div>` : ''}
           <div class="rd-tags">${tagsHtml}</div>
