@@ -1019,7 +1019,7 @@
   /* ---- printable executive report doc: white professional corporate style ---- */
   @page{ size: A4; margin: 8mm; }
   #reportDoc{
-    padding:0; background:#FFFFFF; color:#1A2332; font-family:'Sarabun',sans-serif;
+    width:100%; padding:0; background:#FFFFFF; color:#1A2332; font-family:'Sarabun',sans-serif;
     border-radius:8px; overflow:hidden;
   }
   .rd-topbar{ height:6px; background:linear-gradient(90deg, #0B2A4A 0%, #C9A227 100%); }
@@ -1042,15 +1042,15 @@
   .rd-tl-rail::before{ content:''; position:absolute; top:16px; bottom:-8px; width:2px; background:#E1E6ED; }
   .rd-tl-item:last-child .rd-tl-rail::before{ display:none; }
   .rd-tl-dot{ position:relative; z-index:1; width:14px; height:14px; border-radius:50%; margin-top:14px; border:3px solid #fff; box-shadow:0 0 0 1.5px #E1E6ED; }
-  .rd-tl-card{ flex:1; min-width:0; background:#F8F9FB; border:1px solid #ECEFF3; border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .rd-tl-card{ flex:1; min-width:0; background:#F8F9FB; border:1px solid #ECEFF3; border-radius:10px; padding:14px 16px; margin-bottom:12px; }
   .rd-tl-card-alt{ background:#fff; }
-  .rd-tl-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .rd-tl-time{ font-family:'Kanit',sans-serif; font-weight:800; font-size:12.5px; color:#0B2A4A; background:#EAF0F7; padding:2px 8px; border-radius:5px; }
-  .rd-tl-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:#0B1220; }
-  .rd-tl-person{ font-size:10.5px; color:#5B6B85; margin-top:4px; }
-  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:7px; }
-  .rd-tag{ font-size:8.5px; font-family:'Kanit',sans-serif; font-weight:700; padding:2px 7px; border-radius:5px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
-  .rd-tl-note{ font-size:10.5px; color:#2B3648; line-height:1.6; margin-top:8px; padding-top:8px; border-top:1px dashed #E1E6ED; white-space:pre-wrap; word-break:break-word; }
+  .rd-tl-head{ display:flex; align-items:center; gap:9px; }
+  .rd-tl-time{ flex-shrink:0; font-family:'Kanit',sans-serif; font-weight:800; font-size:12px; color:#0B2A4A; background:#EAF0F7; padding:3px 9px; border-radius:5px; }
+  .rd-tl-company{ flex:1; min-width:0; font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#0B1220; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rd-tl-person{ font-size:10.5px; color:#5B6B85; margin-top:6px; }
+  .rd-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-top:9px; }
+  .rd-tag{ font-size:9px; font-family:'Kanit',sans-serif; font-weight:700; padding:3px 8px; border-radius:5px; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; flex-shrink:0; }
+  .rd-tl-note{ font-size:11px; color:#2B3648; line-height:1.65; margin-top:10px; padding-top:10px; border-top:1px dashed #E1E6ED; white-space:pre-wrap; word-break:break-word; }
   .rd-note-none{ color:#9BA6B5; }
   .rd-empty{ text-align:center; padding:30px 0; font-size:13px; color:#7C8798; }
 
@@ -1174,10 +1174,6 @@
 
   .modal-box, .sync-panel, .login-fields{ max-width:100%; }
   .modal-box{ margin:0 8px; max-height:92vh; }
-  #reportDoc{ padding:16px 14px 18px; }
-  .rd-title{ font-size:16px; }
-  .rd-kpis{ gap:5px; }
-  .rd-kpi{ padding:6px 10px; min-width:52px; }
 
   .shared-report-view{ padding:16px 10px 40px; }
 }
@@ -4174,20 +4170,18 @@ async function init(){
       return;
     }
     modalImage.textContent = 'กำลังสร้างรูปภาพ...';
-    // force a fixed, desktop-quality width for the capture so the exported image looks
-    // identical no matter what device (phone or computer) triggered the export — otherwise
-    // a narrow phone screen would export a cramped, differently-proportioned image
+    // reportDoc fits the screen naturally while viewing (fluid width) — but for the actual
+    // exported file we briefly widen it to a fixed, comfortable size so the PNG always comes
+    // out spacious and readable, never cramped just because it was triggered from a phone
     const prevWidth = reportDoc.style.width;
-    const prevMaxWidth = reportDoc.style.maxWidth;
-    reportDoc.style.width = '720px';
-    reportDoc.style.maxWidth = 'none';
+    reportDoc.style.width = '640px';
     try{
       const canvas = await html2canvas(reportDoc, {
         backgroundColor: '#FFFFFF',
         scale: 2,
         useCORS: true,
         logging: false,
-        windowWidth: 720,
+        windowWidth: 640,
       });
       const link = document.createElement('a');
       link.download = `รายงานประจำวัน-${modalReportDate}.png`;
@@ -4201,7 +4195,6 @@ async function init(){
       modalImage.textContent = 'บันทึกเป็นรูปภาพ (PNG)';
     }finally{
       reportDoc.style.width = prevWidth;
-      reportDoc.style.maxWidth = prevMaxWidth;
     }
   });
   modalShareLink.addEventListener('click', ()=>{
