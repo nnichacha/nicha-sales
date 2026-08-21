@@ -796,6 +796,87 @@
   }
 
   .report-form-wrap{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-top:26px; }
+
+  /* ---- Daily Report dashboard: prominent date header, KPIs, progress, summary ---- */
+  .dr-dash-header{
+    background:linear-gradient(155deg, var(--panel3) 0%, var(--panel) 100%);
+    border:1px solid var(--line); border-radius:14px; padding:22px 26px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    margin-top:22px;
+  }
+  .dr-dash-titlebar{ display:flex; align-items:center; gap:14px; }
+  .dr-dash-eyebrow{ font-family:'Kanit',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; color:var(--gold); text-transform:uppercase; }
+  .dr-dash-title{ font-family:'Kanit',sans-serif; font-size:22px; font-weight:700; color:#fff; margin-top:4px; letter-spacing:-.2px; }
+  .dr-dash-badge{ font-family:'Kanit',sans-serif; font-size:12px; font-weight:600; padding:6px 14px; border-radius:999px; flex-shrink:0; }
+  .dr-badge-today{ background:var(--green-dim); color:#6EE7B7; border:1px solid rgba(34,197,94,.4); }
+  .dr-badge-past{ background:rgba(148,163,184,.14); color:var(--muted); border:1px solid rgba(148,163,184,.3); }
+  .dr-date-nav{ display:flex; align-items:center; gap:8px; }
+  .dr-nav-btn{
+    width:36px; height:36px; border-radius:9px; border:1px solid var(--line); background:var(--panel2);
+    color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s;
+  }
+  .dr-nav-btn:hover{ border-color:var(--gold); color:var(--gold); }
+  .dr-nav-btn svg{ width:17px; height:17px; }
+  .dr-date-input{
+    background:var(--panel2); border:1px solid var(--line); color:var(--text); border-radius:9px;
+    padding:8px 10px; font-family:'Sarabun',sans-serif; font-size:13px;
+  }
+  .dr-today-btn{
+    background:var(--gold); color:var(--ink); border:none; border-radius:9px; padding:9px 16px;
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; cursor:pointer; transition:.15s;
+  }
+  .dr-today-btn:hover{ background:var(--gold-lt); }
+
+  .dr-kpi-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-top:16px; }
+  .dr-kpi-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px;
+    position:relative; overflow:hidden;
+  }
+  .dr-kpi-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+  .dr-kpi-icon svg{ width:18px; height:18px; }
+  .dr-kpi-blue .dr-kpi-icon{ background:rgba(59,130,246,.14); color:#60A5FA; }
+  .dr-kpi-gold .dr-kpi-icon{ background:var(--gold-dim); color:var(--gold); }
+  .dr-kpi-green .dr-kpi-icon{ background:var(--green-dim); color:#6EE7B7; }
+  .dr-kpi-cyan .dr-kpi-icon{ background:rgba(34,211,238,.14); color:#67E8F9; }
+  .dr-kpi-value{ font-family:'Kanit',sans-serif; font-size:30px; font-weight:800; color:#fff; line-height:1; }
+  .dr-kpi-label{ font-family:'Sarabun',sans-serif; font-size:12px; color:var(--muted); margin-top:6px; }
+
+  .dr-progress-card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-top:14px; }
+  .dr-progress-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+  .dr-progress-title{ font-family:'Kanit',sans-serif; font-size:13.5px; font-weight:600; color:#fff; }
+  .dr-progress-target{ font-family:'Sarabun',sans-serif; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+  .dr-target-input{
+    width:48px; background:var(--panel2); border:1px solid var(--line); color:var(--gold); border-radius:6px;
+    padding:3px 6px; text-align:center; font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px;
+  }
+  .dr-progress-bar-track{ height:10px; background:var(--panel2); border-radius:999px; overflow:hidden; }
+  .dr-progress-bar-fill{ height:100%; border-radius:999px; transition:width .4s ease; }
+  .dr-progress-foot{ font-family:'Kanit',sans-serif; font-size:11.5px; color:var(--muted); margin-top:8px; }
+
+  .dr-summary-card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-top:20px; }
+  .dr-summary-empty{ font-size:12.5px; color:var(--muted); text-align:center; padding:16px 0; }
+  .dr-summary-title{ font-family:'Kanit',sans-serif; font-size:14px; font-weight:700; color:#fff; margin-bottom:14px; }
+  .dr-summary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .dr-summary-sub{ font-family:'Kanit',sans-serif; font-size:11.5px; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+  .dr-summary-line{ font-size:12.5px; color:var(--text); line-height:1.8; }
+  .dr-summary-time{ color:var(--muted); font-size:11px; margin-left:4px; }
+  .dr-summary-none{ font-size:12px; color:var(--muted); font-style:italic; }
+
+  .dr-activity-head{ display:flex; align-items:baseline; justify-content:space-between; margin-top:24px; margin-bottom:10px; flex-wrap:wrap; gap:6px; }
+  .dr-section-title{ font-family:'Kanit',sans-serif; font-size:15px; font-weight:700; color:#fff; }
+  .dr-section-title span{ color:var(--gold); font-weight:500; font-size:13px; }
+  .dr-activity-sub{ font-size:11.5px; color:var(--muted); }
+
+  @media(max-width:900px){
+    .dr-kpi-grid{ grid-template-columns:repeat(2, 1fr); }
+    .dr-summary-grid{ grid-template-columns:1fr; }
+    .dr-dash-header{ flex-direction:column; align-items:flex-start; }
+  }
+  @media(max-width:600px){
+    .dr-kpi-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+    .dr-kpi-value{ font-size:24px; }
+    .dr-dash-title{ font-size:17px; }
+  }
   .bulk-import-hint{
     font-size:11.5px; color:var(--muted); line-height:1.8; background:var(--panel2); border:1px dashed var(--line);
     border-radius:8px; padding:10px 14px; margin-bottom:12px;
@@ -1381,6 +1462,30 @@
   </div>
 
   <div id="page2" style="display:none;">
+
+    <div class="dr-dash-header">
+      <div class="dr-dash-titlebar">
+        <div>
+          <div class="dr-dash-eyebrow">DAILY REPORT</div>
+          <div class="dr-dash-title" id="drDateTitle">—</div>
+        </div>
+        <div class="dr-dash-badge" id="drDateBadge">วันนี้</div>
+      </div>
+      <div class="dr-date-nav">
+        <button class="dr-nav-btn" id="drPrevDay" title="วันก่อนหน้า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <input type="date" id="drDatePicker" class="dr-date-input">
+        <button class="dr-nav-btn" id="drNextDay" title="วันถัดไป">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="dr-today-btn" id="drTodayBtn">วันนี้</button>
+      </div>
+    </div>
+
+    <div class="dr-kpi-grid" id="drKpiGrid"></div>
+    <div class="dr-progress-card" id="drProgressCard"></div>
+
     <div class="report-form-wrap">
       <div class="report-form-title" id="reportFormTitle">บันทึกการเข้าพบวันนี้</div>
       <div class="report-form-grid">
@@ -1459,13 +1564,11 @@
 
     <div class="activity-legend" id="activityLegend"></div>
 
-    <div class="archive-bar">
-      <div class="archive-stats" id="archiveStats"></div>
-      <div class="archive-search">
-        <label>ค้นหาย้อนหลัง:</label>
-        <input type="date" id="rfSearchDate">
-        <button class="filter-select" id="rfSearchClear" style="cursor:pointer;">ล้างตัวกรอง</button>
-      </div>
+    <div class="dr-summary-card" id="drSummaryCard"></div>
+
+    <div class="dr-activity-head">
+      <div class="dr-section-title">กิจกรรมของวันนี้ <span id="drActivityCount"></span></div>
+      <div class="dr-activity-sub">เรียงตามเวลาที่บันทึก</div>
     </div>
 
     <div class="report-list" id="reportList"></div>
@@ -3441,85 +3544,135 @@ async function init(){
     const d = new Date();
     return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   }
+  function todayISO(){
+    return new Date().toISOString().slice(0,10);
+  }
   // default date/time = right now (real-time)
   rfDate.value = new Date().toISOString().slice(0,10);
   rfTime.value = nowHHMM();
 
-  let reportDateFilter = '';
+  // ---- date-scoped daily dashboard: one day at a time, never mixed with other days ----
+  let currentReportDate = todayISO();
+  const DAILY_VISIT_TARGET_KEY = 'dailyVisitTarget';
+  function getDailyTarget(){ return parseInt(localStorage.getItem(DAILY_VISIT_TARGET_KEY), 10) || 5; }
+  function setDailyTarget(n){ localStorage.setItem(DAILY_VISIT_TARGET_KEY, String(n)); }
 
-  function renderArchiveStats(){
-    const list = loadReports();
-    const uniqueDates = new Set(list.map(e=>e.date));
-    const visitCount = list.filter(e=>e.visit !== false).length;
-    const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-    const closed = list.filter(e=>e.activities.includes('Confirm')).length;
-    document.getElementById('archiveStats').innerHTML = `
-      <div class="astat">บันทึกทั้งหมด <b>${uniqueDates.size}</b> วัน</div>
-      <div class="astat">เข้าพบสะสม (Visit) <b>${visitCount}</b> ครั้ง</div>
-      <div class="astat">กิจกรรมทั้งหมดสะสม <b>${list.length}</b> รายการ</div>
-      <div class="astat">ใบเสนอราคาสะสม <b>${quotes}</b> ใบ</div>
-      <div class="astat">Confirm สะสม <b>${closed}</b> งาน</div>
+  function entriesForDate(date){
+    return loadReports().filter(e=>e.date===date).sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+  }
+
+  function renderDayDashboard(){
+    const date = currentReportDate;
+    const entries = entriesForDate(date);
+    const isToday = date === todayISO();
+    const dObj = new Date(date+'T00:00:00');
+    const dLabel = dObj.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+    document.getElementById('drDateTitle').textContent = `Daily Report — ${dLabel}`;
+    const badge = document.getElementById('drDateBadge');
+    badge.textContent = isToday ? 'วันนี้' : 'ย้อนหลัง';
+    badge.className = isToday ? 'dr-dash-badge dr-badge-today' : 'dr-dash-badge dr-badge-past';
+    document.getElementById('drDatePicker').value = date;
+
+    const visits = entries.filter(e=>e.visit !== false).length;
+    const quotes = entries.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
+    const closed = entries.filter(e=>e.activities.includes('Confirm')).length;
+    const followups = entries.filter(e=>e.activities.includes('ติดตามงาน'));
+    const rejected = entries.filter(e=>e.activities.includes('ปฏิเสธงาน')).length;
+
+    document.getElementById('drKpiGrid').innerHTML = `
+      <div class="dr-kpi-card dr-kpi-blue">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="dr-kpi-value">${visits}</div>
+        <div class="dr-kpi-label">เข้าพบ (Visit) วันนี้</div>
+      </div>
+      <div class="dr-kpi-card dr-kpi-gold">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></div>
+        <div class="dr-kpi-value">${entries.length}</div>
+        <div class="dr-kpi-label">กิจกรรมทั้งหมดวันนี้</div>
+      </div>
+      <div class="dr-kpi-card dr-kpi-green">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 6.8L21 9l-5.5 4.6L17 21l-5-3.6L7 21l1.5-7.4L3 9l6.6-.2z"/></svg></div>
+        <div class="dr-kpi-value">${closed}</div>
+        <div class="dr-kpi-label">Confirm วันนี้</div>
+      </div>
+      <div class="dr-kpi-card dr-kpi-cyan">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></div>
+        <div class="dr-kpi-value">${followups.length}</div>
+        <div class="dr-kpi-label">ต้องติดตามต่อ</div>
+      </div>
     `;
+
+    const target = getDailyTarget();
+    const pct = Math.min(100, Math.round((visits / target) * 100));
+    const progressColor = pct >= 100 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--red)';
+    document.getElementById('drProgressCard').innerHTML = `
+      <div class="dr-progress-head">
+        <div class="dr-progress-title">Daily Progress — เข้าพบเทียบกับเป้าหมาย</div>
+        <div class="dr-progress-target">เป้าหมาย <input type="number" min="1" id="drTargetInput" value="${target}" class="dr-target-input"> ราย/วัน</div>
+      </div>
+      <div class="dr-progress-bar-track"><div class="dr-progress-bar-fill" style="width:${pct}%; background:${progressColor};"></div></div>
+      <div class="dr-progress-foot">${visits} / ${target} ราย (${pct}%)</div>
+    `;
+    document.getElementById('drTargetInput').addEventListener('change', (e)=>{
+      const n = parseInt(e.target.value, 10) || 1;
+      setDailyTarget(n);
+      renderDayDashboard();
+    });
+
+    // daily summary — key stats + notable feedback/issues + who needs follow-up
+    const feedbackNotes = entries.filter(e=>e.feedback && e.feedback.trim());
+    const rejectedNotes = entries.filter(e=>e.activities.includes('ปฏิเสธงาน'));
+    document.getElementById('drSummaryCard').innerHTML = entries.length === 0
+      ? `<div class="dr-summary-empty">ยังไม่มีบันทึกของวันนี้ — กรอกแบบฟอร์มด้านบนเพื่อเริ่มบันทึก</div>`
+      : `
+      <div class="dr-summary-title">Daily Summary</div>
+      <div class="dr-summary-grid">
+        <div class="dr-summary-col">
+          <div class="dr-summary-sub">ลูกค้าที่ต้องติดตามต่อ (${followups.length})</div>
+          ${followups.length ? followups.map(e=>`<div class="dr-summary-line">• ${e.company||'—'} <span class="dr-summary-time">${e.time||''}</span></div>`).join('') : '<div class="dr-summary-none">ไม่มี</div>'}
+        </div>
+        <div class="dr-summary-col">
+          <div class="dr-summary-sub">ประเด็นสำคัญ / ปฏิเสธงาน (${rejectedNotes.length})</div>
+          ${rejectedNotes.length ? rejectedNotes.map(e=>`<div class="dr-summary-line">• ${e.company||'—'}${e.feedback ? ' — '+e.feedback : ''}</div>`).join('') : '<div class="dr-summary-none">ไม่มี</div>'}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('drActivityCount').textContent = `(${entries.length} รายการ)`;
   }
 
   function renderReportList(){
-    renderArchiveStats();
-    let list = loadReports();
-    if (reportDateFilter) list = list.filter(e=>e.date===reportDateFilter);
+    renderDayDashboard();
+    const entries = entriesForDate(currentReportDate);
     const reportListEl = document.getElementById('reportList');
-    if (list.length === 0){
-      reportListEl.innerHTML = reportDateFilter
-        ? `<div class="report-empty">ไม่พบบันทึกของวันที่เลือก</div>`
-        : `<div class="report-empty">ยังไม่มีบันทึกการเข้าพบ — กรอกแบบฟอร์มด้านบนเพื่อเริ่มบันทึก</div>`;
+    if (entries.length === 0){
+      reportListEl.innerHTML = `<div class="report-empty">ยังไม่มีบันทึกของวันที่เลือก</div>`;
       return;
     }
-    // group by date, newest first — all historical days remain here permanently, never overwritten
-    const byDate = {};
-    list.forEach(e=>{ (byDate[e.date] = byDate[e.date] || []).push(e); });
-    const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
-
-    reportListEl.innerHTML = dates.map(date=>{
-      const entries = byDate[date].slice().sort((a,b)=> (a.time||'').localeCompare(b.time||''));
-      const visits = entries.filter(e=>e.visit !== false).length;
-      const quotes = entries.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-      const closed = entries.filter(e=>e.activities.includes('Confirm')).length;
-      const dObj = new Date(date+'T00:00:00');
-      const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-      const entriesHtml = entries.map(e=>{
-        const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
-        const visitTag = e.visit === false ? '' : '<span class="tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
-        return `<div class="report-entry" data-id="${e.id}">
-          <div class="re-time">${e.time || '--:--'}</div>
-          <div class="re-main">
-            <div class="re-company">${e.company || '—'} ${visitTag}</div>
-            <div class="re-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
-            <div class="re-activities">${tagsHtml}</div>
-            ${e.feedback ? `<div class="re-feedback">${e.feedback}</div>` : ''}
-          </div>
-          <div class="re-actions-col">
-            <button class="btn-report re-edit" data-id="${e.id}">แก้ไข</button>
-            <button class="re-delete" data-id="${e.id}">ลบ</button>
-          </div>
-        </div>`;
-      }).join('');
-      const roadSvg = buildDayRoadSvg(entries, date.replace(/-/g,''));
-      return `<div class="report-date-group" data-date="${date}">
-        <div class="report-date-head">
-          <div class="report-date-title">${dLabel}</div>
-          <div class="report-date-stats">
-            <div class="rstat">เข้าพบ (Visit) <b>${visits}</b> ราย</div>
-            <div class="rstat">กิจกรรมทั้งหมด <b>${entries.length}</b> รายการ</div>
-            <div class="rstat">ใบเสนอราคา <b>${quotes}</b> ใบ</div>
-            <div class="rstat">Confirm <b>${closed}</b> งาน</div>
-          </div>
-          <div class="report-date-actions">
-            <button class="btn-report btn-compile" data-date="${date}">สร้างรายงานทั้งวัน</button>
-          </div>
+    const entriesHtml = entries.map(e=>{
+      const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
+      const visitTag = e.visit === false ? '' : '<span class="tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
+      return `<div class="report-entry" data-id="${e.id}">
+        <div class="re-time">${e.time || '--:--'}</div>
+        <div class="re-main">
+          <div class="re-company">${e.company || '—'} ${visitTag}</div>
+          <div class="re-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
+          <div class="re-activities">${tagsHtml}</div>
+          ${e.feedback ? `<div class="re-feedback">${e.feedback}</div>` : ''}
         </div>
-        <div class="day-road-wrap">${roadSvg}</div>
-        <div class="report-entries">${entriesHtml}</div>
+        <div class="re-actions-col">
+          <button class="btn-report re-edit" data-id="${e.id}">แก้ไข</button>
+          <button class="re-delete" data-id="${e.id}">ลบ</button>
+        </div>
       </div>`;
     }).join('');
+    const roadSvg = buildDayRoadSvg(entries, currentReportDate.replace(/-/g,''));
+    reportListEl.innerHTML = `<div class="report-date-group" data-date="${currentReportDate}">
+      <div class="day-road-wrap">${roadSvg}</div>
+      <div class="report-entries">${entriesHtml}</div>
+      <div style="padding:12px 0 0;"><button class="btn-report btn-compile" data-date="${currentReportDate}">สร้างรายงานทั้งวัน</button></div>
+    </div>`;
 
     reportListEl.querySelectorAll('.btn-compile').forEach(btn=>{
       btn.addEventListener('click', ()=> openDayReport(btn.dataset.date));
@@ -3592,6 +3745,7 @@ async function init(){
     if (editingEntryId){
       await updateReportEntry(editingEntryId, {date, time, person, company, visit, activities, feedback});
       exitEditMode();
+      currentReportDate = date;
       renderReportList();
       return;
     }
@@ -3602,6 +3756,7 @@ async function init(){
       createdAt: new Date().toISOString(),
     };
     await addReportEntry(entry);
+    currentReportDate = date;
 
     // reset only company/customer/activities/feedback — keep date so you can log
     // another activity for the same day quickly; time refreshes to "now"
@@ -3896,10 +4051,10 @@ async function init(){
   const modalShareLink = document.getElementById('modalShareLink');
   const modalPrint = document.getElementById('modalPrint');
   const modalDownload = document.getElementById('modalDownload');
-  let currentReportDate = null;
+  let modalReportDate = null;
 
   function openDayReport(date){
-    currentReportDate = date;
+    modalReportDate = date;
     const dObj = new Date(date+'T00:00:00');
     modalTitle.textContent = 'รายงานประจำวัน — ' + dObj.toLocaleDateString('th-TH', {year:'numeric', month:'long', day:'numeric'});
     reportDoc.innerHTML = buildDayReportHtml(date);
@@ -3908,7 +4063,7 @@ async function init(){
   modalClose.addEventListener('click', ()=> reportModal.classList.remove('open'));
   reportModal.addEventListener('click', (e)=>{ if(e.target===reportModal) reportModal.classList.remove('open'); });
   modalCopy.addEventListener('click', ()=>{
-    const txt = buildDayReportText(currentReportDate);
+    const txt = buildDayReportText(modalReportDate);
     navigator.clipboard.writeText(txt).then(()=>{
       modalCopy.textContent = 'คัดลอกแล้ว ✓';
       setTimeout(()=>{ modalCopy.textContent = 'คัดลอกรายงาน (ข้อความ)'; }, 1500);
@@ -3932,7 +4087,7 @@ async function init(){
         logging: false,
       });
       const link = document.createElement('a');
-      link.download = `รายงานประจำวัน-${currentReportDate}.png`;
+      link.download = `รายงานประจำวัน-${modalReportDate}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       modalImage.textContent = 'บันทึกแล้ว ✓';
@@ -3944,7 +4099,7 @@ async function init(){
     }
   });
   modalShareLink.addEventListener('click', ()=>{
-    const url = location.origin + location.pathname + '?report=' + currentReportDate;
+    const url = location.origin + location.pathname + '?report=' + modalReportDate;
     navigator.clipboard.writeText(url).then(()=>{
       modalShareLink.textContent = 'คัดลอกลิงก์แล้ว ✓';
       setTimeout(()=>{ modalShareLink.textContent = 'คัดลอกลิงก์แชร์'; }, 1500);
@@ -3958,11 +4113,11 @@ async function init(){
   });
   modalPrint.addEventListener('click', ()=>{ window.print(); });
   modalDownload.addEventListener('click', ()=>{
-    const txt = buildDayReportText(currentReportDate);
+    const txt = buildDayReportText(modalReportDate);
     const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `รายงานประจำวัน-${currentReportDate}.txt`;
+    a.href = url; a.download = `รายงานประจำวัน-${modalReportDate}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -3977,16 +4132,23 @@ async function init(){
 
   renderReportList();
 
-  const rfSearchDate = document.getElementById('rfSearchDate');
-  const rfSearchClear = document.getElementById('rfSearchClear');
-  rfSearchDate.addEventListener('change', ()=>{
-    reportDateFilter = rfSearchDate.value;
+  function goToDate(date){
+    currentReportDate = date;
     renderReportList();
+  }
+  document.getElementById('drPrevDay').addEventListener('click', ()=>{
+    const d = new Date(currentReportDate+'T00:00:00');
+    d.setDate(d.getDate()-1);
+    goToDate(d.toISOString().slice(0,10));
   });
-  rfSearchClear.addEventListener('click', ()=>{
-    rfSearchDate.value = '';
-    reportDateFilter = '';
-    renderReportList();
+  document.getElementById('drNextDay').addEventListener('click', ()=>{
+    const d = new Date(currentReportDate+'T00:00:00');
+    d.setDate(d.getDate()+1);
+    goToDate(d.toISOString().slice(0,10));
+  });
+  document.getElementById('drTodayBtn').addEventListener('click', ()=> goToDate(todayISO()));
+  document.getElementById('drDatePicker').addEventListener('change', (e)=>{
+    if (e.target.value) goToDate(e.target.value);
   });
 
   // ================= Pending Quotes (รอราคา) =================
