@@ -216,10 +216,13 @@
   .dash-highlight .dash-detail-text{ border-top-color:rgba(201,169,110,.25); }
   .dash-highlight .dash-detail-btn{ color:var(--gold); }
   @media(max-width:520px){
-    .dash-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
-    .dash-card{ padding:12px; }
-    .dash-value{ font-size:21px; }
-    .dash-label{ font-size:11px; }
+    .dash-grid{ grid-template-columns:repeat(5, minmax(0,1fr)); gap:5px; }
+    .dash-card{ padding:8px 5px; text-align:center; }
+    .dash-card-top{ flex-direction:column; gap:3px; }
+    .dash-icon{ font-size:14px; }
+    .dash-dot{ width:9px; height:9px; margin:0 auto; }
+    .dash-value{ font-size:15px; margin-top:4px; }
+    .dash-label{ font-size:8px; line-height:1.2; }
     .dash-highlight{ flex-direction:column; }
   }
   .contact-summary{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin-top:14px; }
@@ -263,7 +266,7 @@
   .visited-card.open{ z-index:30; }
   .visited-card:hover{ box-shadow:0 0 0 1px var(--line), 0 4px 14px rgba(0,0,0,0.35); }
   .visited-card .vc-summary{ padding:12px 14px; position:relative; cursor:pointer; }
-  .visited-card .vc-name{ font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; color:#fff; line-height:1.4; padding-right:20px; }
+  .visited-card .vc-name{ font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; color:#fff; line-height:1.4; padding-right:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .visited-card .vc-check{ position:absolute; top:12px; right:12px; width:16px; height:16px; color:var(--green); }
   .visited-card .vc-loc{ display:flex; align-items:center; gap:5px; margin-top:8px; font-size:10.5px; color:var(--muted); }
   .visited-card .vc-loc svg{ width:11px; height:11px; stroke:var(--muted); flex-shrink:0; }
@@ -787,6 +790,11 @@
   .dss-target b{ color:#34D399; }
   .dss-nontarget b{ color:#EF4444; }
   .dss-unknown b{ color:#F59E0B; }
+  @media(max-width:600px){
+    .district-search-summary{ flex-wrap:nowrap; overflow-x:auto; gap:12px; padding:10px 12px; }
+    .dss-item{ font-size:10.5px; white-space:nowrap; flex-shrink:0; }
+    .dss-item b{ font-size:12px; margin-right:2px; }
+  }
 
   @media(max-width:760px){
     #pageHub{ min-height:auto; padding:30px 0 40px; }
@@ -1008,52 +1016,60 @@
   .modal-body{ padding:0; overflow-y:auto; background:#0D1420; }
   .modal-foot{ padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; }
 
-  /* ---- printable industrial report doc ---- */
+  /* ---- printable executive report doc: white professional corporate style ---- */
   @page{ size: A4; margin: 8mm; }
-  #reportDoc{ padding:16px 20px 18px; }
-  .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--gold); padding-bottom:10px; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+  #reportDoc{
+    padding:0; background:#FFFFFF; color:#1A2332; font-family:'Sarabun',sans-serif;
+    border-radius:8px; overflow:hidden;
+  }
+  .rd-topbar{ height:6px; background:linear-gradient(90deg, #0B2A4A 0%, #C9A227 100%); }
+  .rd-body-pad{ padding:26px 30px 22px; }
+
+  .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0B2A4A; padding-bottom:14px; margin-bottom:16px; flex-wrap:wrap; gap:14px; }
   .rd-header .rd-brand{ display:flex; align-items:center; gap:8px; }
-  .rd-header .rd-brand svg{ width:18px; height:18px; stroke:var(--gold); fill:none; }
-  .rd-header .rd-brand-text{ font-family:'Kanit',sans-serif; font-weight:700; font-size:9.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; }
-  .rd-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:16px; color:#fff; margin-top:5px; }
-  .rd-sub{ font-size:10.5px; color:var(--muted); margin-top:2px; }
-  .rd-kpis{ display:flex; gap:6px; text-align:center; }
-  .rd-kpi{ background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:6px 12px; min-width:52px; }
-  .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:16px; color:var(--gold); line-height:1.1; }
-  .rd-kpi .l{ font-size:8px; color:var(--muted); letter-spacing:0.3px; margin-top:2px; }
+  .rd-header .rd-brand svg{ width:20px; height:20px; stroke:#0B2A4A; fill:none; }
+  .rd-header .rd-brand-text{ font-family:'Kanit',sans-serif; font-weight:700; font-size:10.5px; letter-spacing:1.2px; color:#0B2A4A; text-transform:uppercase; }
+  .rd-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:19px; color:#0B1220; margin-top:7px; letter-spacing:-.2px; }
+  .rd-sub{ font-size:12px; color:#5B6B85; margin-top:3px; font-weight:500; }
+  .rd-kpis{ display:flex; gap:8px; text-align:center; }
+  .rd-kpi{ background:#F4F6F9; border:1px solid #E1E6ED; border-radius:8px; padding:8px 14px; min-width:56px; }
+  .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:18px; color:#0B2A4A; line-height:1.1; }
+  .rd-kpi .l{ font-size:8.5px; color:#7C8798; letter-spacing:0.3px; margin-top:3px; font-weight:600; }
 
   .rd-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
   .rd-table thead th{
-    font-family:'Kanit',sans-serif; font-size:9px; font-weight:600; letter-spacing:.4px; text-transform:uppercase;
-    color:var(--gold); text-align:left; padding:6px 8px; border-bottom:1.5px solid var(--gold-dim); background:rgba(201,169,110,.06);
+    font-family:'Kanit',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+    color:#fff; text-align:left; padding:9px 10px; background:#0B2A4A;
   }
-  .rd-th-time{ width:52px; }
-  .rd-table td{ padding:8px; vertical-align:top; border-bottom:1px solid var(--line); }
-  .rd-row-alt{ background:rgba(255,255,255,.02); }
-  .rd-td-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:10px; color:var(--gold); white-space:nowrap; }
+  .rd-table thead th:first-child{ border-radius:6px 0 0 0; }
+  .rd-table thead th:last-child{ border-radius:0 6px 0 0; }
+  .rd-th-time{ width:56px; }
+  .rd-table td{ padding:10px; vertical-align:top; border-bottom:1px solid #E7EAEF; }
+  .rd-row-alt{ background:#F8F9FB; }
+  .rd-td-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; color:#0B2A4A; white-space:nowrap; }
   .rd-td-main{ width:38%; }
-  .rd-row-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:10.5px; color:#fff; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .rd-row-person{ font-size:9px; color:#B7C0CC; margin-top:2px; }
-  .rd-tags{ display:flex; gap:3px; flex-wrap:wrap; margin-top:5px; }
-  .rd-tag{ font-size:8px; font-family:'Kanit',sans-serif; font-weight:600; padding:1.5px 6px; border-radius:6px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
-  .rd-td-note{ font-size:9.5px; color:#E8ECF1; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
-  .rd-note-none{ color:var(--muted); }
-  .rd-empty{ text-align:center; padding:24px 0; font-size:12px; color:var(--muted); }
+  .rd-row-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11.5px; color:#0B1220; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .rd-row-person{ font-size:10px; color:#5B6B85; margin-top:2px; }
+  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+  .rd-tag{ font-size:8.5px; font-family:'Kanit',sans-serif; font-weight:700; padding:2px 7px; border-radius:5px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
+  .rd-td-note{ font-size:10.5px; color:#2B3648; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .rd-note-none{ color:#9BA6B5; }
+  .rd-empty{ text-align:center; padding:30px 0; font-size:13px; color:#7C8798; }
 
   .rd-followup-bar{
-    margin-top:10px; padding:8px 10px; background:var(--gold-dim); border:1px solid rgba(201,169,110,.3); border-radius:7px;
-    font-size:9.5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    margin-top:14px; padding:11px 14px; background:#FFF8E8; border:1px solid #F0DDA6; border-radius:8px;
+    font-size:10.5px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
   }
-  .rd-followup-label{ font-family:'Kanit',sans-serif; font-weight:700; color:var(--gold); flex-shrink:0; }
-  .rd-fu-chip{ background:var(--panel2); border:1px solid var(--line); border-radius:5px; padding:2px 8px; color:#fff; font-size:9px; }
+  .rd-followup-label{ font-family:'Kanit',sans-serif; font-weight:700; color:#8A6212; flex-shrink:0; }
+  .rd-fu-chip{ background:#fff; border:1px solid #E9CE84; border-radius:5px; padding:3px 9px; color:#1A2332; font-size:10px; font-weight:600; }
 
-  .rd-footer{ margin-top:12px; padding-top:6px; border-top:1px dashed var(--line); font-size:8.5px; color:var(--muted); display:flex; justify-content:space-between; }
+  .rd-footer{ margin-top:18px; padding-top:10px; border-top:1px solid #E7EAEF; font-size:9px; color:#9BA6B5; display:flex; justify-content:space-between; }
 
   @media print{
     body *{ visibility:hidden; }
     #reportDoc, #reportDoc *{ visibility:visible; }
-    #reportDoc{ position:absolute; left:0; top:0; width:100%; background:#0D1420; }
-    .rd-item-inner{ break-inside:avoid; }
+    #reportDoc{ position:absolute; left:0; top:0; width:100%; background:#fff; }
+    .rd-table tr{ break-inside:avoid; }
   }
 
 
@@ -1180,11 +1196,11 @@
   .rayong-map{position:absolute;z-index:3;width:min(670px,81%);height:300px;left:48%;top:68px;transform:translateX(-50%);filter:drop-shadow(0 22px 17px rgba(0,0,0,.52));}.rayong-map .district{cursor:pointer;transform-box:fill-box;transform-origin:center;transition:transform .36s cubic-bezier(.2,.8,.2,1),filter .36s}.rayong-map .top{fill:#173d59;stroke:#5ab8e8;stroke-width:1.2;transition:fill .28s,stroke .28s}.rayong-map .side{fill:#09263e;stroke:#236c92;stroke-width:1}.rayong-map .grid{fill:url(#districtGrid);opacity:.5;pointer-events:none}.rayong-map .label{fill:#eef8ff;font-family:'Kanit',sans-serif;font-size:16px;font-weight:700;text-anchor:middle;paint-order:stroke;stroke:#071420;stroke-width:3px;stroke-linejoin:round;pointer-events:none}.rayong-map .district:hover,.rayong-map .district.active{transform:translateY(-16px);filter:drop-shadow(0 18px 10px rgba(0,0,0,.50))}.rayong-map .district:hover .top{fill:#226690;stroke:#8bd9ff}.rayong-map .district.active .top{fill:#287ba8;stroke:#d7b56e;stroke-width:1.6}.rayong-map .district.active .side{fill:#0d3652;stroke:#d7b56e}.map-tip{position:absolute;z-index:5;bottom:18px;left:27px;display:flex;align-items:center;gap:8px;color:#b4c8d8;font-size:11px;background:rgba(4,12,20,.56);border:1px solid rgba(99,168,205,.25);padding:8px 11px;border-radius:7px;backdrop-filter:blur(6px)}.map-tip i{width:7px;height:7px;background:#60c7f0;border-radius:50%;box-shadow:0 0 9px #60c7f0}.map-tip b{color:var(--gold-lt);font-weight:600}
   .territory-side{padding:22px;background:linear-gradient(180deg,rgba(22,35,52,.96),rgba(13,22,33,.98));border-left:1px solid #2f4356}.territory-side h3{font-family:'Kanit',sans-serif;font-size:15px;color:#fff;margin:0 0 4px}.territory-side p{font-size:11.5px;color:var(--muted);line-height:1.55;margin:0 0 13px}.territory-list{display:flex;flex-direction:column;gap:6px}.territory-item{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 10px;border:1px solid #2c4052;border-radius:7px;background:rgba(5,11,18,.28);font-family:'Kanit',sans-serif;color:#b9c9d5;font-size:11.5px;cursor:pointer;transition:.18s}.territory-item:hover,.territory-item.active{color:#fff;border-color:var(--gold);background:rgba(214,181,111,.10)}.territory-count{color:var(--gold);font-family:'Sarabun',sans-serif;font-weight:600;font-size:10px}.territory-legend{display:flex;gap:13px;margin-top:12px;color:var(--muted);font-size:10px}.territory-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:4px}.territory-legend i.blue{background:#38bdf8}
   .district-tabs{gap:10px;margin-top:24px}.district-tab{border-radius:11px;background:linear-gradient(145deg,rgba(19,31,46,.96),rgba(13,21,32,.96));padding:13px 17px}.district-tab.active{box-shadow:inset 0 0 0 1px rgba(214,181,111,.22),0 8px 18px rgba(0,0,0,.15)}.district-block{border:1px solid rgba(43,58,75,.72);border-radius:15px;padding:0 20px 20px;background:rgba(13,21,32,.46);margin-top:14px}.district-head{margin-top:0;padding-top:20px}.road-card,.company-table-wrap,.visited-section,.report-form-wrap,.report-list-wrap,.pq-card{border-radius:13px}.visited-section{background:linear-gradient(145deg,rgba(34,197,94,.075),rgba(16,25,38,.92) 42%)}
-  @media(max-width:760px){.page{padding:18px 14px 56px}.masthead{padding:23px 18px}.home-link{position:static;margin-bottom:17px;width:max-content}.territory-map{grid-template-columns:1fr}.territory-side{border-left:0;border-top:1px solid #2f4356}.territory-map-main{min-height:300px}.rayong-map{width:108%;height:225px;top:66px}.rayong-map .label{font-size:12px}.map-tip{bottom:12px;left:12px;font-size:9.5px}h1{font-size:27px}}
-  .estate-zones{margin-top:16px;border:1px solid #30465b;border-radius:15px;background:linear-gradient(145deg,rgba(18,33,49,.96),rgba(10,18,29,.96));overflow:hidden;box-shadow:0 15px 34px rgba(0,0,0,.15);position:relative}.estate-zones-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 23px 16px;border-bottom:1px solid rgba(104,148,177,.24)}.estate-add-btn{flex-shrink:0;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Kanit',sans-serif;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:.15s}.estate-add-btn:hover{background:var(--gold);color:#0B1220}body:not(.can-edit) .estate-add-btn,body:not(.can-edit) .estate-rename-btn{display:none}.estate-rename-btn{border:1px solid #4A7997;background:transparent;color:#9CC5DE;font-family:'Sarabun',sans-serif;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:.15s}.estate-rename-btn:hover{border-color:var(--gold);color:var(--gold)}.estate-zones-title{font-family:'Kanit',sans-serif;color:#fff;font-size:17px;font-weight:700}.estate-zones-desc{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:3px}.estate-zones-note{font-size:10.5px;color:var(--gold-lt);background:rgba(214,181,111,.10);border:1px solid rgba(214,181,111,.24);padding:6px 9px;border-radius:6px;white-space:nowrap}.estate-zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;padding:16px 20px}.estate-zone{position:relative;text-align:left;padding:12px 13px;border-radius:8px;border:1px solid #30465b;background:rgba(4,11,18,.34);color:#d9e6ee;font-family:'Kanit',sans-serif;font-size:12px;cursor:pointer;transition:.18s}.estate-zone:hover,.estate-zone.active{transform:translateY(-2px);border-color:var(--gold);background:rgba(214,181,111,.11);color:#fff}.estate-zone small{display:block;color:#86a0b3;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:5px}.estate-zone .zone-badge{position:absolute;right:8px;top:8px;min-width:18px;text-align:center;color:var(--gold);font-family:'Sarabun',sans-serif;font-size:10px}.estate-zone-detail{display:none;margin:0 20px 19px;padding:14px 16px;border-radius:10px;background:rgba(5,12,20,.55);border:1px solid rgba(74,121,151,.35)}.estate-zone-detail.open{display:block}.estate-zone-detail-title{font-family:'Kanit',sans-serif;color:#fff;font-size:14px;font-weight:700;margin-bottom:8px}.estate-location-list{display:flex;flex-wrap:wrap;gap:7px}.estate-location{border:1px solid #2e4a60;border-radius:6px;background:#101e2c;padding:6px 9px;color:#b7cad7;font-size:11px;cursor:pointer}.estate-location:hover{border-color:#61c7ef;color:#fff}.estate-location b{color:#71cbed;font-weight:600}.estate-empty{font-size:11px;color:var(--muted)}@media(max-width:760px){.estate-zones-head{padding:17px;display:block}.estate-zones-note{display:inline-block;margin-top:10px}.estate-zone-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}.estate-zone-detail{margin:0 12px 13px}}
+  @media(max-width:760px){.page{padding:18px 14px 56px}.masthead{padding:23px 18px}.home-link{position:static;margin-bottom:17px;width:max-content}.territory-map{grid-template-columns:1fr}.territory-side{border-left:0;border-top:1px solid #2f4356}.territory-map-main{min-height:220px;padding:16px}.rayong-map{width:min(420px,88%);height:190px;left:50%;top:50%;transform:translate(-50%,-50%);}.rayong-map .label{font-size:11px}.map-tip{bottom:10px;left:10px;font-size:9px;padding:6px 8px}h1{font-size:27px}.company-name{display:block;max-width:38vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}}
+  .estate-zones{margin-top:16px;border:1px solid #30465b;border-radius:15px;background:linear-gradient(145deg,rgba(18,33,49,.96),rgba(10,18,29,.96));overflow:hidden;box-shadow:0 15px 34px rgba(0,0,0,.15);position:relative}.estate-zones-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 23px 16px;border-bottom:1px solid rgba(104,148,177,.24)}.estate-add-btn{flex-shrink:0;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Kanit',sans-serif;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:.15s}.estate-add-btn:hover{background:var(--gold);color:#0B1220}body:not(.can-edit) .estate-add-btn,body:not(.can-edit) .estate-rename-btn{display:none}.estate-rename-btn{border:1px solid #4A7997;background:transparent;color:#9CC5DE;font-family:'Sarabun',sans-serif;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:.15s}.estate-rename-btn:hover{border-color:var(--gold);color:var(--gold)}.estate-zones-title{font-family:'Kanit',sans-serif;color:#fff;font-size:17px;font-weight:700}.estate-zones-desc{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:3px}.estate-zones-note{font-size:10.5px;color:var(--gold-lt);background:rgba(214,181,111,.10);border:1px solid rgba(214,181,111,.24);padding:6px 9px;border-radius:6px;white-space:nowrap}.estate-zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;padding:16px 20px}.estate-zone{position:relative;text-align:left;padding:12px 13px;border-radius:8px;border:1px solid #30465b;background:rgba(4,11,18,.34);color:#d9e6ee;font-family:'Kanit',sans-serif;font-size:12px;cursor:pointer;transition:.18s}.estate-zone:hover,.estate-zone.active{transform:translateY(-2px);border-color:var(--gold);background:rgba(214,181,111,.11);color:#fff}.estate-zone small{display:block;color:#86a0b3;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:5px}.estate-zone .zone-badge{position:absolute;right:8px;top:8px;min-width:18px;text-align:center;color:var(--gold);font-family:'Sarabun',sans-serif;font-size:10px}.estate-zone-detail{display:none;margin:0 20px 19px;padding:14px 16px;border-radius:10px;background:rgba(5,12,20,.55);border:1px solid rgba(74,121,151,.35)}.estate-zone-detail.open{display:block}.estate-zone-detail-title{font-family:'Kanit',sans-serif;color:#fff;font-size:14px;font-weight:700;margin-bottom:8px}.estate-location-list{display:flex;flex-wrap:wrap;gap:7px}.estate-location{border:1px solid #2e4a60;border-radius:6px;background:#101e2c;padding:6px 9px;color:#b7cad7;font-size:11px;cursor:pointer}.estate-location:hover{border-color:#61c7ef;color:#fff}.estate-location b{color:#71cbed;font-weight:600}.estate-empty{font-size:11px;color:var(--muted)}@media(max-width:760px){.estate-zones-head{padding:17px;display:block}.estate-zones-note{display:inline-block;margin-top:10px}.estate-zone-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px}.estate-zone{padding:8px 6px}.estate-zone-code{font-size:9px;padding-right:0;line-height:1.25;-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}.estate-zone-full{font-size:7px;line-height:1.3;-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}.estate-zone small{font-size:7px;margin-top:4px}.estate-zone .zone-badge{font-size:7px;top:4px;right:4px}.estate-zone-detail{margin:0 12px 13px}}
 
-  .estate-zone-full{ font-weight:700; font-size:13px; line-height:1.4; color:#fff; padding-right:26px; }
-  .estate-zone-code{ font-family:'Sarabun',sans-serif; font-size:10px; color:var(--gold-lt); margin-top:3px; }
+  .estate-zone-full{ font-family:'Sarabun',sans-serif; font-size:10px; color:var(--gold-lt); margin-top:3px; line-height:1.3; }
+  .estate-zone-code{ font-weight:700; font-size:13px; line-height:1.4; color:#fff; padding-right:26px; }
   .estate-zone-count{ font-family:'Sarabun',sans-serif; font-size:11px; color:#9CA3AF; margin-top:auto; padding-top:14px; }
 
   /* black-tone glow variant, reused for the compact estate zone grid tiles */
@@ -1215,35 +1231,52 @@
   }
   .estate-back-btn:hover{ color:var(--gold); border-color:var(--gold); }
   .estate-detail-header{ margin-bottom:14px; }
-  .estate-detail-full{ font-family:'Kanit',sans-serif; font-weight:800; font-size:22px; color:#fff; }
-  .estate-detail-code{ font-family:'Sarabun',sans-serif; font-size:12px; color:var(--gold-lt); margin-top:4px; }
+  .estate-detail-code{ font-family:'Kanit',sans-serif; font-weight:800; font-size:22px; color:#fff; letter-spacing:.3px; }
+  .estate-detail-full{ font-family:'Sarabun',sans-serif; font-size:12.5px; color:var(--gold-lt); margin-top:4px; }
   .estate-detail-stats{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
   .eds-chip{
     background:rgba(4,11,18,.5); border:1px solid #30465b; border-radius:9px; padding:9px 14px;
-    font-family:'Kanit',sans-serif; font-size:12px; color:#d9e6ee;
+    font-family:'Kanit',sans-serif; font-size:12px; color:#d9e6ee; white-space:nowrap;
   }
   .eds-chip b{ font-size:16px; margin-right:5px; }
   #estateDetailMapBtnWrap{ margin-bottom:16px; }
-  .estate-detail-companies{ max-height:520px; overflow-y:auto; border-top:1px solid rgba(104,148,177,.24); }
+  /* reusable pattern: any row of summary chips collapses to one scrollable line on mobile,
+     instead of wrapping to multiple rows and eating vertical space */
+  @media(max-width:600px){
+    .estate-detail-stats{ flex-wrap:nowrap; overflow-x:auto; gap:8px; padding-bottom:2px; }
+    .eds-chip{ flex-shrink:0; font-size:10.5px; padding:7px 11px; }
+    .eds-chip b{ font-size:13px; margin-right:3px; }
+  }
+  .estate-detail-companies{ max-height:560px; overflow-y:auto; border-top:1px solid rgba(104,148,177,.24); }
   .estate-company-row{
-    display:flex; align-items:center; gap:14px; padding:12px 6px; border-bottom:1px solid rgba(104,148,177,.16);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 14px; border-bottom:1px solid rgba(104,148,177,.14);
     cursor:pointer; transition:background .15s ease;
   }
-  .estate-company-row:hover{ background:rgba(214,181,111,.06); }
+  .estate-company-row:nth-child(even){ background:rgba(255,255,255,.015); }
+  .estate-company-row:hover{ background:rgba(214,181,111,.07); }
+  .ecr-main{ min-width:0; flex:1; display:flex; flex-direction:column; gap:4px; }
+  .ecr-meta-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .ecr-side{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
   .ecr-move-select{
     flex-shrink:0; background:#0F1E2C; border:1px solid #2e4a60; color:#9CC5DE; font-family:'Sarabun',sans-serif;
-    font-size:10.5px; padding:4px 6px; border-radius:6px; cursor:pointer; max-width:110px;
+    font-size:10px; padding:5px 6px; border-radius:6px; cursor:pointer; max-width:96px;
   }
   .ecr-move-select:hover{ border-color:var(--gold); color:var(--gold); }
   body:not(.can-edit) .ecr-move-select{ display:none; }
-  .ecr-name{ flex:1; min-width:0; font-family:'Kanit',sans-serif; font-size:13px; color:#fff; font-weight:600; }
-  .ecr-loc{ font-family:'Sarabun',sans-serif; font-size:11px; color:var(--muted); flex-shrink:0; }
+  .ecr-name{ font-family:'Kanit',sans-serif; font-size:13.5px; color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ecr-loc{ font-family:'Sarabun',sans-serif; font-size:10.5px; color:var(--muted); white-space:nowrap; }
   .ecr-badge{
-    font-family:'Kanit',sans-serif; font-size:10.5px; font-weight:600; padding:3px 10px; border-radius:12px;
-    border:1px solid; flex-shrink:0;
+    font-family:'Kanit',sans-serif; font-size:10px; font-weight:600; padding:3px 9px; border-radius:12px;
+    border:1px solid; flex-shrink:0; white-space:nowrap;
   }
+  .targets-group-head{ padding:14px 14px 8px; }
   @media(max-width:760px){
+    .estate-company-row{ padding:11px 12px; gap:8px; }
+    .ecr-name{ font-size:12px; }
     .ecr-loc{ display:none; }
+    .ecr-badge{ font-size:9px; padding:2px 7px; }
+    .ecr-move-select{ font-size:9px; max-width:74px; padding:4px 5px; }
     .estate-zone-detailview{ padding:16px; }
     .estate-detail-full{ font-size:18px; }
   }
@@ -2144,17 +2177,6 @@ function refreshContactSummaryFromCache(){
           <div class="dash-detail-text">คิดเป็น ${pct(contacted)}% ของบริษัททั้งหมด — บันทึกว่าเข้าพบเรียบร้อยแล้ว</div>
           <button class="dash-detail-btn" onclick="event.stopPropagation(); applyDashboardFilter('contacted')">ดูรายชื่อ →</button>
         </div>
-      </div>
-    </div>
-    <div class="dash-highlight dash-clickable" data-key="remaining" onclick="toggleDashCard(this)" role="button" tabindex="0">
-      <div class="dash-highlight-icon">🎯</div>
-      <div class="dash-highlight-body">
-        <div class="dash-highlight-label">บริษัทเป้าหมายที่ต้องดำเนินการ</div>
-        <div class="dash-highlight-value">${remainingTargets} <span>บริษัท</span></div>
-      </div>
-      <div class="dash-detail">
-        <div class="dash-detail-text">รวมบริษัทที่ทำเครื่องหมายว่าน่าสนใจ รอติดตาม หรือปิดการขายแล้ว (Customer / New customer) — ไม่รวมที่ไม่น่าสนใจหรือไม่เกี่ยวข้อง</div>
-        <button class="dash-detail-btn" onclick="event.stopPropagation(); document.getElementById('subtabTargetsBtn').click();">ไปที่หน้าเป้าหมาย →</button>
       </div>
     </div>
   `;
@@ -3816,9 +3838,10 @@ async function init(){
   function parseBulkLine(line){
     let parts;
     if (line.includes('\t')) parts = line.split('\t');
+    else if (line.includes('|')) parts = line.split('|');
     else if (line.includes(',')) parts = line.split(',');
     else parts = [line]; // no delimiter at all — treat the whole line as just the company name below
-    parts = parts.map(p=>p.trim());
+    parts = parts.map(p=>cleanFieldValue(p.trim()));
 
     // simplest case: just a bare list of company names, one per line — everything else defaults
     if (parts.length === 1){
@@ -3833,7 +3856,7 @@ async function init(){
 
     const date = normalizeBulkDate(get(0));
     const timeRaw = get(1);
-    const time = timeRaw === '-' ? nowHHMM() : timeRaw;
+    const time = extractCleanTime(timeRaw) || nowHHMM();
     const personRaw = get(2);
     const person = personRaw === '-' ? '' : personRaw;
     const companyRaw = get(3);
@@ -3865,6 +3888,47 @@ async function init(){
   const FIELD_LABEL_ALTS = Object.keys(FIELD_LABELS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
   const FIELD_LABEL_RE = new RegExp(`(?:^|\\s)(${FIELD_LABEL_ALTS})\\s*[:：]\\s*`, 'gi');
 
+  // strips stray separator characters (/, |, -, –, —, commas, semicolons, bullets) left over
+  // from how people naturally type between fields — e.g. "บริษัท ABC /" -> "บริษัท ABC"
+  // never strips a lone "-" that IS the whole value, since that means "not specified"
+  function cleanFieldValue(value){
+    if (value === '-') return value;
+    let v = value;
+    let prev;
+    do {
+      prev = v;
+      v = v.replace(/^[\/|\-–—,;•·]+\s*/, '').replace(/\s*[\/|\-–—,;•·]+$/, '').trim();
+    } while (v !== prev && v.length);
+    return v;
+  }
+
+  // "Visit" / "เข้าพบ" is often typed as a bare flag with no colon (e.g. just the word "Visit"
+  // on its own line) instead of "Visit: ใช่" — a bare flag like that doesn't match any field
+  // label pattern, so it silently gets absorbed into whichever field came right before it
+  // (usually รายละเอียด/feedback). This pulls it back out of every text field on the record
+  // and uses it to set the visit flag, instead of leaving it stuck in the wrong field.
+  function extractStrayVisitFlag(record){
+    const bareRe = /(?:^|\s)(?:ไม่ได้)?\s*(visit|เข้าพบ)\b\s*[:：]?\s*(ไม่ใช่|ไม่|no)?/i;
+    let found = null;
+    ['feedback','person','activity','company'].forEach(key=>{
+      if (found !== null || !record[key]) return;
+      const m = record[key].match(bareRe);
+      if (m){
+        found = !m[2]; // true unless negated
+        record[key] = record[key].replace(bareRe, ' ');
+      }
+    });
+    return found;
+  }
+
+  // pulls a clean HH:MM out of whatever text landed in the time field, ignoring any
+  // stray characters around it (e.g. "14:00 น." or "14.00/" both resolve to "14:00")
+  function extractCleanTime(raw){
+    if (!raw || raw === '-') return null;
+    const m = raw.match(/([01]?\d|2[0-3])[.:]([0-5]\d)/);
+    return m ? `${m[1].padStart(2,'0')}:${m[2]}` : null;
+  }
+
   function normalizeActivities(raw){
     if (!raw) return ['อื่นๆ'];
     const parts = raw.split(/[;,、]/).map(s=>s.trim()).filter(Boolean);
@@ -3893,7 +3957,7 @@ async function init(){
       const field = FIELD_LABELS[label] || FIELD_LABELS[label.toLowerCase()];
       const start = m.index + m[0].length;
       const end = (i+1 < matches.length) ? matches[i+1].index : text.length;
-      const value = text.slice(start, end).replace(/\s+/g, ' ').trim();
+      const value = cleanFieldValue(text.slice(start, end).replace(/\s+/g, ' ').trim());
       return {field, value};
     });
 
@@ -3910,14 +3974,19 @@ async function init(){
 
     return records.map(r=>{
       const date = r.date ? normalizeBulkDate(r.date) : new Date().toISOString().slice(0,10);
-      const time = r.time || nowHHMM();
+      const strayVisit = extractStrayVisitFlag(r); // may also clean up r.feedback etc. in place
+      const cleanTime = extractCleanTime(r.time);
+      const time = cleanTime || nowHHMM();
       const visitRaw = r.visit.toLowerCase();
-      const visit = visitRaw.includes('ไม่') ? false
+      const explicitVisit = visitRaw.includes('ไม่') ? false
         : (visitRaw.includes('visit') || visitRaw.includes('ใช่') || visitRaw === 'yes') ? true
-        : false; // not mentioned at all -> default to not-visit, easy to fix later by editing
+        : null;
+      // explicit "Visit:" field wins if present, otherwise fall back to a bare "Visit" flag
+      // found loose in the text, otherwise default to not-visit (easy to fix by editing)
+      const visit = explicitVisit !== null ? explicitVisit : (strayVisit !== null ? strayVisit : false);
       return {
         date, time, person: r.person, company: r.company, visit,
-        activities: normalizeActivities(r.activity), feedback: r.feedback,
+        activities: normalizeActivities(r.activity), feedback: cleanFieldValue(r.feedback),
       };
     });
   }
@@ -4000,6 +4069,13 @@ async function init(){
     document.title = 'รายงานประจำวัน ' + date + ' — EMT Sales Pipeline';
   }
 
+  function reportActivityBadge(name){
+    const meta = ACTIVITY_META[name] || ACTIVITY_META['อื่นๆ'];
+    const c = meta.color;
+    return `<span class="rd-tag" style="background:${c}1A; color:${c}; border:1px solid ${c}55;">`+
+      `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>${name}</span>`;
+  }
+
   function buildDayReportHtml(date){
     const list = loadReports().filter(e=>e.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     const dObj = new Date(date+'T00:00:00');
@@ -4010,10 +4086,10 @@ async function init(){
     const followups = list.filter(e=>e.activities.includes('ติดตามงาน'));
 
     const rowsHtml = list.map((e,i)=>{
-      const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
+      const tagsHtml = e.activities.map(a=>reportActivityBadge(a)).join('');
       const visitTag = e.visit === false
-        ? '<span class="rd-tag" style="background:rgba(148,163,184,.14); color:var(--muted);">กิจกรรม</span>'
-        : '<span class="rd-tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
+        ? '<span class="rd-tag" style="background:#EEF1F5; color:#5B6B85; border:1px solid #DCE1E8;">กิจกรรม</span>'
+        : '<span class="rd-tag" style="background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8;">Visit</span>';
       return `<tr class="rd-row${i%2?' rd-row-alt':''}">
         <td class="rd-td-time">${e.time || '--:--'}</td>
         <td class="rd-td-main">
@@ -4030,6 +4106,8 @@ async function init(){
       : '<span class="rd-note-none">ไม่มี</span>';
 
     return `
+      <div class="rd-topbar"></div>
+      <div class="rd-body-pad">
       <div class="rd-header">
         <div>
           <div class="rd-brand">
@@ -4054,6 +4132,7 @@ async function init(){
       <div class="rd-footer">
         <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
         <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
+      </div>
       </div>
     `;
   }
@@ -4562,8 +4641,8 @@ init();
           const total=locations.reduce((n,x)=>n+x.count,0);
           const full = fullNameOf(code);
           return `<button class="estate-zone" data-estate="${code}">
-            <div class="estate-zone-full">${full}</div>
             <div class="estate-zone-code">${code}</div>
+            <div class="estate-zone-full">${full}</div>
             <small>${total ? `${total} โรงงาน` : (available.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small>
           </button>`;
         }).join('')}</div>
@@ -4617,9 +4696,28 @@ init();
 
       const geo = IEAT_ESTATE_GEO[code];
       const mapBtnWrap = panel.querySelector('#estateDetailMapBtnWrap');
-      mapBtnWrap.innerHTML = geo ? `<button class="estate-map-btn" id="estateMapBtn">🗺️ ดูแผนที่จริง (พิกัดจริง + ขอบเขตจาก OpenStreetMap)</button>` : '';
+      const mapBtnHtml = geo ? `<button class="estate-map-btn" id="estateMapBtn">🗺️ ดูแผนที่จริง (พิกัดจริง + ขอบเขตจาก OpenStreetMap)</button>` : '';
+      const addZoneBtnHtml = code === 'นอกนิคม' ? `<button class="estate-map-btn" id="estateAddZoneBtn" style="margin-left:8px;">+ เพิ่มโซนย่อยในนอกนิคม</button>` : '';
+      mapBtnWrap.innerHTML = mapBtnHtml + addZoneBtnHtml;
       if (geo){
         mapBtnWrap.querySelector('#estateMapBtn').addEventListener('click', ()=> openRealEstateMap(code, geo));
+      }
+      if (code === 'นอกนิคม'){
+        mapBtnWrap.querySelector('#estateAddZoneBtn').addEventListener('click', ()=>{
+          const zoneCode = window.prompt('ชื่อย่อของโซนใหม่ในนอกนิคม เช่น "เขต A", "ถนนสาย331":');
+          if (!zoneCode || !zoneCode.trim()) return;
+          const trimmedCode = zoneCode.trim();
+          if (ESTATE_OPTIONS.some(o=>o.code===trimmedCode)){ alert('มีโซนรหัสนี้อยู่แล้ว'); return; }
+          const zoneFull = window.prompt('ชื่อเต็มของโซน (ถ้ามี):', trimmedCode);
+          if (zoneFull === null) return;
+          ESTATE_OPTIONS.push({code: trimmedCode, full: (zoneFull||'').trim() || trimmedCode});
+          if (!CATALOGUE.includes(trimmedCode)) CATALOGUE.splice(CATALOGUE.indexOf('นอกนิคม'), 0, trimmedCode);
+          window.persistEstateAdd(trimmedCode, (zoneFull||'').trim() || trimmedCode);
+          if (typeof refreshEstateFilterOptions === 'function') refreshEstateFilterOptions();
+          refreshEstateGridInner();
+          flashSaved();
+          openEstateDetail(code);
+        });
       }
 
       const listEl = panel.querySelector('#estateDetailCompanies');
@@ -4635,10 +4733,16 @@ init();
             const moveOptions = ESTATE_OPTIONS.map(o=>`<option value="${o.code}" ${o.code===c.estate?'selected':''}>${o.code}</option>`).join('');
             return `
             <div class="estate-company-row" data-id="${c.id}">
-              <div class="ecr-name">${c.name}</div>
-              <div class="ecr-loc">ตำบล${c.tambon} · อำเภอ${c.district}</div>
-              <div class="ecr-badge" style="color:${g.accent}; border-color:${g.accent};">${g.label}</div>
-              <select class="ecr-move-select" data-id="${c.id}" title="ย้ายไปนิคมอื่น (ถ้าใส่ผิดตอนแรก)">${moveOptions}</select>
+              <div class="ecr-main">
+                <div class="ecr-name">${c.name}</div>
+                <div class="ecr-meta-row">
+                  <div class="ecr-loc">ตำบล${c.tambon} · อำเภอ${c.district}</div>
+                  <div class="ecr-badge" style="color:${g.accent}; border-color:${g.accent};">${g.label}</div>
+                </div>
+              </div>
+              <div class="ecr-side">
+                <select class="ecr-move-select" data-id="${c.id}" title="ย้ายไปนิคมอื่น (ถ้าใส่ผิดตอนแรก)">${moveOptions}</select>
+              </div>
             </div>`;
           }).join('');
           return `<div class="targets-group">
@@ -4697,8 +4801,8 @@ init();
         const total=locations.reduce((n,x)=>n+x.count,0);
         const full = fullNameOf(code);
         return `<button class="estate-zone" data-estate="${code}">
-          <div class="estate-zone-full">${full}</div>
           <div class="estate-zone-code">${code}</div>
+          <div class="estate-zone-full">${full}</div>
           <small>${total ? `${total} โรงงาน` : (freshAvailable.has(code)?'พร้อมใช้งาน':'ยังไม่มีรายการ')}</small>
         </button>`;
       }).join('');
