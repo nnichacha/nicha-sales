@@ -868,13 +868,16 @@
   .dr-activity-sub{ font-size:11.5px; color:var(--muted); }
 
   @media(max-width:900px){
-    .dr-kpi-grid{ grid-template-columns:repeat(2, 1fr); }
     .dr-summary-grid{ grid-template-columns:1fr; }
     .dr-dash-header{ flex-direction:column; align-items:flex-start; }
   }
   @media(max-width:600px){
-    .dr-kpi-grid{ grid-template-columns:1fr 1fr; gap:10px; }
-    .dr-kpi-value{ font-size:24px; }
+    .dr-kpi-grid{ gap:6px; }
+    .dr-kpi-card{ padding:10px 6px; text-align:center; }
+    .dr-kpi-icon{ width:24px; height:24px; margin:0 auto 6px; border-radius:7px; }
+    .dr-kpi-icon svg{ width:13px; height:13px; }
+    .dr-kpi-value{ font-size:18px; }
+    .dr-kpi-label{ font-size:9px; line-height:1.3; margin-top:3px; }
     .dr-dash-title{ font-size:17px; }
   }
   .bulk-import-hint{
@@ -1007,36 +1010,44 @@
 
   /* ---- printable industrial report doc ---- */
   @page{ size: A4; margin: 8mm; }
-  #reportDoc{ padding:14px 18px 16px; }
-  .rd-road-wrap{ background:linear-gradient(180deg,#0E1522,#0B1220); border:1px solid var(--line); border-radius:8px; padding:4px 4px 0; margin-bottom:10px; max-height:110px; overflow:hidden; }
-  .rd-road-wrap svg{ width:100%; height:auto; display:block; }
-  .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--gold); padding-bottom:8px; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
+  #reportDoc{ padding:16px 20px 18px; }
+  .rd-header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--gold); padding-bottom:10px; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
   .rd-header .rd-brand{ display:flex; align-items:center; gap:8px; }
   .rd-header .rd-brand svg{ width:18px; height:18px; stroke:var(--gold); fill:none; }
   .rd-header .rd-brand-text{ font-family:'Kanit',sans-serif; font-weight:700; font-size:9.5px; letter-spacing:1px; color:var(--gold); text-transform:uppercase; }
-  .rd-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:15px; color:#fff; margin-top:5px; }
-  .rd-sub{ font-size:10px; color:var(--muted); margin-top:2px; }
-  .rd-kpis{ display:flex; gap:6px; text-align:right; }
-  .rd-kpi{ background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:5px 10px; min-width:58px; }
-  .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:15px; color:var(--gold); }
-  .rd-kpi .l{ font-size:8px; color:var(--muted); letter-spacing:0.3px; }
+  .rd-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:16px; color:#fff; margin-top:5px; }
+  .rd-sub{ font-size:10.5px; color:var(--muted); margin-top:2px; }
+  .rd-kpis{ display:flex; gap:6px; text-align:center; }
+  .rd-kpi{ background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:6px 12px; min-width:52px; }
+  .rd-kpi .n{ font-family:'Kanit',sans-serif; font-weight:800; font-size:16px; color:var(--gold); line-height:1.1; }
+  .rd-kpi .l{ font-size:8px; color:var(--muted); letter-spacing:0.3px; margin-top:2px; }
 
-  .rd-timeline{ position:relative; padding-left:20px; }
-  .rd-timeline::before{ content:""; position:absolute; left:6px; top:4px; bottom:4px; width:1.5px; background:linear-gradient(var(--gold), var(--line)); }
-  .rd-item{ position:relative; padding:0 0 6px 10px; }
-  .rd-item-inner{ background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:6px 10px; }
-  .rd-item::before{
-    content:""; position:absolute; left:-21px; top:9px; width:8px; height:8px; border-radius:50%;
-    background:var(--gold); border:1.5px solid #0D1420; box-shadow:0 0 0 1.5px var(--gold);
+  .rd-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
+  .rd-table thead th{
+    font-family:'Kanit',sans-serif; font-size:9px; font-weight:600; letter-spacing:.4px; text-transform:uppercase;
+    color:var(--gold); text-align:left; padding:6px 8px; border-bottom:1.5px solid var(--gold-dim); background:rgba(201,169,110,.06);
   }
-  .rd-item-head{ display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; }
-  .rd-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:9.5px; color:var(--gold); background:var(--gold-dim); padding:1px 6px; border-radius:4px; }
-  .rd-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; color:#FFFFFF; }
-  .rd-person{ font-size:9.5px; color:#B7C0CC; margin-top:2px; }
-  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
-  .rd-tag{ font-size:8.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:1.5px 7px; border-radius:7px; display:inline-flex; align-items:center; gap:3px; }
-  .rd-feedback{ font-size:9.5px; color:#E8ECF1; margin-top:4px; line-height:1.4; background:rgba(255,255,255,0.045); border-left:2px solid var(--gold); padding:4px 8px; border-radius:0 5px 5px 0; white-space:pre-wrap; }
-  .rd-footer{ margin-top:10px; padding-top:6px; border-top:1px dashed var(--line); font-size:8.5px; color:var(--muted); display:flex; justify-content:space-between; }
+  .rd-th-time{ width:52px; }
+  .rd-table td{ padding:8px; vertical-align:top; border-bottom:1px solid var(--line); }
+  .rd-row-alt{ background:rgba(255,255,255,.02); }
+  .rd-td-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:10px; color:var(--gold); white-space:nowrap; }
+  .rd-td-main{ width:38%; }
+  .rd-row-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:10.5px; color:#fff; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .rd-row-person{ font-size:9px; color:#B7C0CC; margin-top:2px; }
+  .rd-tags{ display:flex; gap:3px; flex-wrap:wrap; margin-top:5px; }
+  .rd-tag{ font-size:8px; font-family:'Kanit',sans-serif; font-weight:600; padding:1.5px 6px; border-radius:6px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
+  .rd-td-note{ font-size:9.5px; color:#E8ECF1; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+  .rd-note-none{ color:var(--muted); }
+  .rd-empty{ text-align:center; padding:24px 0; font-size:12px; color:var(--muted); }
+
+  .rd-followup-bar{
+    margin-top:10px; padding:8px 10px; background:var(--gold-dim); border:1px solid rgba(201,169,110,.3); border-radius:7px;
+    font-size:9.5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .rd-followup-label{ font-family:'Kanit',sans-serif; font-weight:700; color:var(--gold); flex-shrink:0; }
+  .rd-fu-chip{ background:var(--panel2); border:1px solid var(--line); border-radius:5px; padding:2px 8px; color:#fff; font-size:9px; }
+
+  .rd-footer{ margin-top:12px; padding-top:6px; border-top:1px dashed var(--line); font-size:8.5px; color:var(--muted); display:flex; justify-content:space-between; }
 
   @media print{
     body *{ visibility:hidden; }
@@ -3575,31 +3586,31 @@ async function init(){
     document.getElementById('drDatePicker').value = date;
 
     const visits = entries.filter(e=>e.visit !== false).length;
-    const quotes = entries.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-    const closed = entries.filter(e=>e.activities.includes('Confirm')).length;
+    const quoteRequests = entries.filter(e=>e.activities.includes('ขอราคา')).length;
+    const quotesSent = entries.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
     const followups = entries.filter(e=>e.activities.includes('ติดตามงาน'));
     const rejected = entries.filter(e=>e.activities.includes('ปฏิเสธงาน')).length;
 
     document.getElementById('drKpiGrid').innerHTML = `
-      <div class="dr-kpi-card dr-kpi-blue">
-        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-        <div class="dr-kpi-value">${visits}</div>
-        <div class="dr-kpi-label">เข้าพบ (Visit) วันนี้</div>
-      </div>
       <div class="dr-kpi-card dr-kpi-gold">
         <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></div>
         <div class="dr-kpi-value">${entries.length}</div>
         <div class="dr-kpi-label">กิจกรรมทั้งหมดวันนี้</div>
       </div>
+      <div class="dr-kpi-card dr-kpi-blue">
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="dr-kpi-value">${visits}</div>
+        <div class="dr-kpi-label">เข้าพบ (Visit) วันนี้</div>
+      </div>
       <div class="dr-kpi-card dr-kpi-green">
-        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 6.8L21 9l-5.5 4.6L17 21l-5-3.6L7 21l1.5-7.4L3 9l6.6-.2z"/></svg></div>
-        <div class="dr-kpi-value">${closed}</div>
-        <div class="dr-kpi-label">Confirm วันนี้</div>
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+        <div class="dr-kpi-value">${quoteRequests}</div>
+        <div class="dr-kpi-label">ลูกค้าขอราคา</div>
       </div>
       <div class="dr-kpi-card dr-kpi-cyan">
-        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></div>
-        <div class="dr-kpi-value">${followups.length}</div>
-        <div class="dr-kpi-label">ต้องติดตามต่อ</div>
+        <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l3 3v17H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></div>
+        <div class="dr-kpi-value">${quotesSent}</div>
+        <div class="dr-kpi-label">ทำใบเสนอราคา</div>
       </div>
     `;
 
@@ -3994,28 +4005,29 @@ async function init(){
     const dObj = new Date(date+'T00:00:00');
     const dLabel = dObj.toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const visitCount = list.filter(e=>e.visit !== false).length;
-    const quotes = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-    const closed = list.filter(e=>e.activities.includes('Confirm')).length;
-    const roadSvg = list.length ? buildDayRoadSvg(list, 'pdf'+date.replace(/-/g,'')) : '';
+    const quoteRequests = list.filter(e=>e.activities.includes('ขอราคา')).length;
+    const quotesSent = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
+    const followups = list.filter(e=>e.activities.includes('ติดตามงาน'));
 
-    const itemsHtml = list.map(e=>{
+    const rowsHtml = list.map((e,i)=>{
       const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
       const visitTag = e.visit === false
-        ? ''
+        ? '<span class="rd-tag" style="background:rgba(148,163,184,.14); color:var(--muted);">กิจกรรม</span>'
         : '<span class="rd-tag" style="background:var(--green-dim); color:#6EE7B7;">Visit</span>';
-      return `<div class="rd-item">
-        <div class="rd-item-inner">
-        <div class="rd-item-head">
-          <span class="rd-time">${e.time || '--:--'}</span>
-          <span class="rd-company">${e.company || '—'}</span>
-          ${visitTag}
-        </div>
-        <div class="rd-person">ลูกค้า/ผู้ติดต่อ: ${e.person || '—'}</div>
-        <div class="rd-tags">${tagsHtml}</div>
-        ${e.feedback ? `<div class="rd-feedback">${e.feedback}</div>` : ''}
-        </div>
-      </div>`;
+      return `<tr class="rd-row${i%2?' rd-row-alt':''}">
+        <td class="rd-td-time">${e.time || '--:--'}</td>
+        <td class="rd-td-main">
+          <div class="rd-row-company">${e.company || '—'} ${visitTag}</div>
+          <div class="rd-row-person">${e.person || '—'}</div>
+          <div class="rd-tags">${tagsHtml}</div>
+        </td>
+        <td class="rd-td-note">${e.feedback ? e.feedback : '<span class="rd-note-none">—</span>'}</td>
+      </tr>`;
     }).join('');
+
+    const followupHtml = followups.length
+      ? followups.map(e=>`<span class="rd-fu-chip">${e.company||'—'}</span>`).join('')
+      : '<span class="rd-note-none">ไม่มี</span>';
 
     return `
       <div class="rd-header">
@@ -4028,13 +4040,17 @@ async function init(){
           <div class="rd-sub">${dLabel}</div>
         </div>
         <div class="rd-kpis">
+          <div class="rd-kpi"><div class="n">${list.length}</div><div class="l">กิจกรรม</div></div>
           <div class="rd-kpi"><div class="n">${visitCount}</div><div class="l">เข้าพบ</div></div>
-          <div class="rd-kpi"><div class="n">${quotes}</div><div class="l">ใบเสนอราคา</div></div>
-          <div class="rd-kpi"><div class="n">${closed}</div><div class="l">Confirm</div></div>
+          <div class="rd-kpi"><div class="n">${quoteRequests}</div><div class="l">ขอราคา</div></div>
+          <div class="rd-kpi"><div class="n">${quotesSent}</div><div class="l">ใบเสนอราคา</div></div>
         </div>
       </div>
-      ${roadSvg ? `<div class="rd-road-wrap">${roadSvg}</div>` : ''}
-      <div class="rd-timeline">${itemsHtml || '<div style="color:var(--muted); font-size:12px;">ไม่มีบันทึกในวันนี้</div>'}</div>
+      ${list.length ? `<table class="rd-table">
+        <thead><tr><th class="rd-th-time">เวลา</th><th>บริษัท / ผู้ติดต่อ / กิจกรรม</th><th>บันทึกเพิ่มเติม</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
+      ${list.length ? `<div class="rd-followup-bar"><span class="rd-followup-label">ต้องติดตามต่อ:</span> ${followupHtml}</div>` : ''}
       <div class="rd-footer">
         <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
         <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
