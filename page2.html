@@ -915,6 +915,11 @@
   }
   .chip input{ accent-color:var(--gold); cursor:pointer; }
   .chip:has(input:checked){ border-color:var(--gold); background:var(--gold-dim); color:var(--gold-lt); }
+  .chip-focus{ border-color:rgba(201,162,39,.4); }
+  .chip-focus:has(input:checked){
+    background:linear-gradient(145deg, #C9A227, #E8C55A); border-color:#C9A227; color:#2A2000; font-weight:700;
+    box-shadow:0 3px 8px rgba(201,162,39,.4), inset 0 1px 0 rgba(255,255,255,.4); transform:translateY(-1px);
+  }
   .visit-toggle{ display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--text); cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:10px 14px; }
   .visit-toggle input{ width:17px; height:17px; accent-color:var(--green); cursor:pointer; flex-shrink:0; }
   .btn-primary{
@@ -954,6 +959,10 @@
   .dr-tl-item:last-child .dr-tl-rail::before{ display:none; }
   .dr-tl-dot{ position:relative; z-index:1; width:11px; height:11px; border-radius:50%; margin-top:13px; background:var(--gold); border:2px solid var(--ink); }
   .dr-tl-card{ flex:1; min-width:0; display:flex; gap:12px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .dr-tl-card-focus{
+    background:linear-gradient(155deg, rgba(201,162,39,.16), rgba(201,162,39,.05)); border:1.5px solid #C9A227;
+    box-shadow:0 4px 12px rgba(201,162,39,.28), inset 0 1px 0 rgba(255,255,255,.08);
+  }
   .dr-tl-left{ flex:0 0 32%; max-width:32%; min-width:0; border-right:1px dashed var(--line); padding-right:12px; }
   .dr-tl-right{ flex:1; min-width:0; display:flex; align-items:center; }
   .dr-tl-head{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
@@ -1054,12 +1063,16 @@
   .rd-tl-dot{ position:relative; z-index:1; width:13px; height:13px; border-radius:50%; margin-top:12px; border:3px solid #fff; box-shadow:0 0 0 1.5px #E1E6ED; }
   .rd-tl-card{ display:flex; gap:12px; background:#F8F9FB; border:1px solid #ECEFF3; border-radius:9px; padding:10px 12px; margin-bottom:7px; }
   .rd-tl-card-alt{ background:#fff; }
+  .rd-tl-card-focus{
+    background:linear-gradient(155deg, #FFF9E8, #FDF0CC); border:1.5px solid #E8C55A;
+    box-shadow:0 4px 10px rgba(201,162,39,.22), inset 0 1px 0 rgba(255,255,255,.6);
+  }
   .rd-tl-left{ flex:0 0 32%; max-width:32%; min-width:0; border-right:1px dashed #E1E6ED; padding-right:12px; }
-  .rd-tl-right{ flex:1; min-width:0; display:flex; align-items:center; }
+  .rd-tl-right{ flex:1; min-width:0; display:flex; align-items:flex-start; padding-top:1px; }
   .rd-tl-head{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
   .rd-tl-time{ display:inline-block; font-family:'Kanit',sans-serif; font-weight:800; font-size:11.5px; color:#0B2A4A; background:#EAF0F7; padding:2px 8px; border-radius:5px; }
   .rd-tag-visit{ background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8; }
-  .rd-tl-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; color:#0B1220; margin-top:5px; line-height:1.3; word-break:break-word; overflow-wrap:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .rd-tl-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; color:#0B1220; margin-top:5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .rd-tl-person{ font-size:10px; color:#5B6B85; margin-top:2px; }
   .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:5px; }
   .rd-tag{ font-size:8px; font-family:'Kanit',sans-serif; font-weight:700; padding:2px 6px; border-radius:5px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
@@ -1614,6 +1627,7 @@
           <label class="chip"><input type="checkbox" value="Confirm">Confirm</label>
           <label class="chip"><input type="checkbox" value="ปฏิเสธงาน">ปฏิเสธงาน</label>
           <label class="chip"><input type="checkbox" value="ติดตามงาน">ติดตามงาน</label>
+          <label class="chip chip-focus"><input type="checkbox" value="Focus">⭐ Focus</label>
           <label class="chip"><input type="checkbox" value="อื่นๆ">อื่นๆ</label>
         </div>
       </div>
@@ -1938,6 +1952,7 @@ const ACTIVITY_META = {
   'Confirm': { color:'#22C55E', icon:'<path d="M12 2l2.4 6.8L21 9l-5.5 4.6L17 21l-5-3.6L7 21l1.5-7.4L3 9l6.6-0.2z"/>' },
   'ปฏิเสธงาน': { color:'#F87171', icon:'<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>' },
   'ติดตามงาน': { color:'#22D3EE', icon:'<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>' },
+  'Focus': { color:'#C9A227', icon:'<path d="M12 2l2.9 6.5 7.1.6-5.4 4.7 1.6 7-6.2-3.8-6.2 3.8 1.6-7L2 9.1l7.1-.6z"/>' },
   'อื่นๆ': { color:'#94A3B8', icon:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' },
 };
 function activityBadge(name){
@@ -3805,12 +3820,13 @@ async function init(){
       return;
     }
     const entriesHtml = entries.map((e,i)=>{
+      const isFocus = e.activities.includes('Focus');
       const visitTag = e.visit === false ? '' : '<span class="dr-tl-visit-tag">Visit</span>';
-      const tagsHtml = e.activities.map(a=>activityBadge(a)).join('');
-      const dotColor = e.visit === false ? 'var(--muted)' : 'var(--gold)';
+      const tagsHtml = e.activities.filter(a=>a!=='Focus').map(a=>activityBadge(a)).join('');
+      const dotColor = isFocus ? '#C9A227' : (e.visit === false ? 'var(--muted)' : 'var(--gold)');
       return `<div class="dr-tl-item">
         <div class="dr-tl-rail"><div class="dr-tl-dot" style="background:${dotColor};"></div></div>
-        <div class="dr-tl-card" data-id="${e.id}">
+        <div class="dr-tl-card${isFocus?' dr-tl-card-focus':''}" data-id="${e.id}">
           <div class="dr-tl-left">
             <div class="dr-tl-head"><span class="dr-tl-time">${e.time || '--:--'}</span>${visitTag}</div>
             <div class="dr-tl-company">${e.company || '—'}</div>
@@ -4204,12 +4220,13 @@ async function init(){
   // shared timeline row builder — used identically by the live "กิจกรรมของวันนี้" list
   // and the compiled "สร้างรายงานทั้งวัน" report, so both look exactly the same
   function buildTimelineItemHtml(e, i){
+    const isFocus = e.activities.includes('Focus');
     const visitTag = e.visit === false ? '' : '<span class="rd-tag rd-tag-visit">Visit</span>';
-    const tagsHtml = e.activities.map(a=>reportActivityBadge(a)).join('');
-    const dotColor = e.visit === false ? '#94A3B8' : '#0B2A4A';
+    const tagsHtml = e.activities.filter(a=>a!=='Focus').map(a=>reportActivityBadge(a)).join('');
+    const dotColor = isFocus ? '#C9A227' : (e.visit === false ? '#94A3B8' : '#0B2A4A');
     return `<div class="rd-tl-item">
       <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
-      <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}" data-id="${e.id||''}">
+      <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}${isFocus?' rd-tl-card-focus':''}" data-id="${e.id||''}">
         <div class="rd-tl-left">
           <div class="rd-tl-head"><span class="rd-tl-time">${e.time || '--:--'}</span>${visitTag}</div>
           <div class="rd-tl-company">${e.company || '—'}</div>
@@ -4321,13 +4338,8 @@ async function init(){
     const visitCount = list.filter(e=>e.visit !== false).length;
     const quoteRequests = list.filter(e=>e.activities.includes('ขอราคา')).length;
     const quotesSent = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
-    const followups = list.filter(e=>e.activities.includes('ติดตามงาน'));
 
     const itemsHtml = list.map((e,i)=> buildTimelineItemHtml(e, i)).join('');
-
-    const followupHtml = followups.length
-      ? followups.map(e=>`<span class="rd-fu-chip">${e.company||'—'}</span>`).join('')
-      : '<span class="rd-note-none">ไม่มี</span>';
 
     return `
       <div class="rd-topbar"></div>
@@ -4349,7 +4361,6 @@ async function init(){
         </div>
       </div>
       ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
-      ${list.length ? `<div class="rd-followup-bar"><span class="rd-followup-label">งานที่ติดตามวันนี้:</span> ${followupHtml}</div>` : ''}
       <div class="rd-footer">
         <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
         <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
