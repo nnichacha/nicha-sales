@@ -259,6 +259,8 @@
     padding-bottom:8px; border-bottom:1px solid var(--line);
   }
   .targets-group-head span{ color:var(--muted); font-weight:500; font-size:12px; }
+  .targets-group-head-clickable{ cursor:pointer; user-select:none; transition:opacity .15s ease; }
+  .targets-group-head-clickable:hover{ opacity:.75; }
   .visited-card{
     background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--vc-accent, var(--green)); border-radius:8px;
     position:relative; transition:border-color .15s ease;
@@ -1548,10 +1550,6 @@
           <span>🔵 เข้าพบแล้ว</span>
         </label>
         <div class="field">
-          <label>เป็นบริษัทเป้าหมายหรือไม่</label>
-          <select class="vc-status-select" id="vcModalDiw"></select>
-        </div>
-        <div class="field">
           <label>ผลการเข้าพบ</label>
           <select class="vc-status-select" id="vcModalStatus"></select>
         </div>
@@ -2316,9 +2314,6 @@ function renderVisitedSection(){
 
   meta.textContent = `${visited.length} แห่ง`;
 
-  const diwRelevant = visited.filter(v=>v.info.diwStatus==='target').length;
-  const diwNotRelevant = visited.filter(v=>v.info.diwStatus==='nontarget').length;
-
   const trackingGroups = [
     {key:'customer', label:'Customer', accent:'#34D399'},
     {key:'new', label:'New customer', accent:'#38BDF8'},
@@ -2342,11 +2337,6 @@ function renderVisitedSection(){
 
   // top-level grid: one clickable box per สถานะติดตาม, click to drill into that group
   gridView.innerHTML = `
-    <div class="district-search-summary" style="margin-bottom:14px;">
-      <span class="dss-item"><b>${visited.length}</b> เข้าพบแล้วทั้งหมด</span>
-      <span class="dss-item dss-target"><b>${diwRelevant}</b> เกี่ยวข้อง</span>
-      <span class="dss-item dss-nontarget"><b>${diwNotRelevant}</b> ไม่เกี่ยวข้อง</span>
-    </div>
     <div class="estate-zone-grid">
       ${trackingGroups.map(g=>{
         const n = buckets[g.key].length;
@@ -2452,7 +2442,7 @@ function renderTargetsPage(){
       const fb = feedbackCache[c.id];
       const status = fb && fb.status;
       if (!status || !buckets[status]) return; // excludes blank, notinteresting, notrelevant
-      buckets[status].push({id:c.id, fb, info:{name:c.name, tambon:c.tambon, amphoe:dist, diwStatus:c.diwStatus}});
+      buckets[status].push({id:c.id, fb, info:{name:c.name, tambon:c.tambon, amphoe:dist, diwStatus:c.diwStatus, estate:c.estate||''}});
       total++;
     }));
   });
@@ -2465,10 +2455,14 @@ function renderTargetsPage(){
 
   const allEntries = [];
   const sectionsHtml = groups.map(g=>{
+    if (targetsFocusedGroup && targetsFocusedGroup !== g.key) return ''; // isolate mode: skip other groups entirely
     const items = buckets[g.key].sort((a,b)=> a.info.name.localeCompare(b.info.name,'th'));
     if (!items.length) return '';
     items.forEach(v=> allEntries.push(v));
-    const cards = items.map(v=>`
+    const cards = items.map(v=>{
+      const estateFull = v.info.estate ? fullNameOfEstate(v.info.estate) : '';
+      const estateBadge = v.info.estate ? `<div class="vc-estate-badge" title="นิคม: ${estateFull}">🏭 ${v.info.estate}</div>` : '';
+      return `
       <div class="visited-card" data-id="${v.id}" style="--vc-accent:${g.accent};">
         <div class="vc-summary">
           <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
@@ -2477,23 +2471,44 @@ function renderTargetsPage(){
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
           </div>
+          <div class="vc-badge-row">${estateBadge}</div>
           <div class="vc-expand-hint"><span>คลิกเพื่อดู/แก้ไขข้อมูล</span></div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
+    const isFocused = targetsFocusedGroup === g.key;
     return `
-      <div class="targets-group">
-        <div class="targets-group-head" style="color:${g.accent};">${g.label} <span>(${items.length})</span></div>
+      <div class="targets-group" data-group="${g.key}">
+        <div class="targets-group-head targets-group-head-clickable" style="color:${g.accent};" data-group="${g.key}" title="คลิกเพื่อดูเฉพาะกลุ่มนี้">
+          ${isFocused ? '☑' : '☐'} ${g.label} <span>(${items.length})</span>
+        </div>
         <div class="visited-grid">${cards}</div>
       </div>`;
   }).join('');
 
-  body.innerHTML = sectionsHtml;
+  // if isolate mode is on but that group happens to have zero items right now, show a note
+  // instead of an empty page, and offer a quick way back to the full view
+  const isolateEmptyNotice = (targetsFocusedGroup && allEntries.length === 0)
+    ? `<div class="visited-empty">กลุ่มนี้ไม่มีบริษัทตอนนี้ — <a href="#" id="targetsShowAllLink" style="color:var(--gold);">ดูทุกกลุ่ม</a></div>`
+    : '';
+
+  body.innerHTML = sectionsHtml + isolateEmptyNotice;
+  const showAllLink = document.getElementById('targetsShowAllLink');
+  if (showAllLink) showAllLink.addEventListener('click', (e)=>{ e.preventDefault(); targetsFocusedGroup = null; renderTargetsPage(); });
   body.querySelectorAll('.visited-card').forEach(card=>{
     const id = card.dataset.id;
     const match = allEntries.find(v=>v.id===id);
     card.querySelector('.vc-summary').addEventListener('click', ()=> openVcModal(match));
   });
+  body.querySelectorAll('.targets-group-head-clickable').forEach(head=>{
+    head.addEventListener('click', ()=>{
+      const key = head.dataset.group;
+      targetsFocusedGroup = (targetsFocusedGroup === key) ? null : key;
+      renderTargetsPage();
+    });
+  });
 }
+let targetsFocusedGroup = null;
 
 
 // ---- shared white detail modal for visited-company cards ----
@@ -2503,7 +2518,6 @@ function openVcModal(v){
   const loc = document.getElementById('vcModalLoc');
   const contactedCb = document.getElementById('vcModalContacted');
   const statusSel = document.getElementById('vcModalStatus');
-  const diwSel = document.getElementById('vcModalDiw');
   const contactEl = document.getElementById('vcModalContact');
   const phoneEl = document.getElementById('vcModalPhone');
   const noteEl = document.getElementById('vcModalNote');
@@ -2517,7 +2531,6 @@ function openVcModal(v){
   loc.textContent = `ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}`;
   contactedCb.checked = !!v.fb.contacted;
   statusSel.innerHTML = STATUS_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===v.fb.status?'selected':''}>${o.label}</option>`).join('');
-  diwSel.innerHTML = DIW_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===v.info.diwStatus?'selected':''}>${o.label}</option>`).join('');
   contactEl.value = v.fb.contactPerson || '';
   phoneEl.value = v.fb.phone || '';
   noteEl.value = v.fb.note || '';
@@ -2528,7 +2541,6 @@ function openVcModal(v){
   const freshPhone = phoneEl.cloneNode(true); phoneEl.replaceWith(freshPhone);
   const freshNote = noteEl.cloneNode(true); noteEl.replaceWith(freshNote);
   const freshStatus = statusSel.cloneNode(true); statusSel.replaceWith(freshStatus);
-  const freshDiw = diwSel.cloneNode(true); diwSel.replaceWith(freshDiw);
   const saveBtn = document.getElementById('vcModalSave');
   const freshSave = saveBtn.cloneNode(true); saveBtn.replaceWith(freshSave);
 
@@ -2554,24 +2566,6 @@ function openVcModal(v){
     box.style.setProperty('--vc-modal-color', freshStatus.value ? (colorMap[freshStatus.value]||'#C9A96E') : '#9CA3AF');
     persistVcModal(true);
     refreshContactSummaryFromCache();
-  });
-  freshDiw.addEventListener('change', ()=>{
-    v.info.diwStatus = freshDiw.value;
-    if (companyIdToInfo[v.id]) companyIdToInfo[v.id].diwStatus = freshDiw.value;
-    persistFieldEdit(v.id, {diwStatus: freshDiw.value});
-    // keep the same company's row in the main table in sync, if it's currently rendered
-    const tr = document.querySelector(`tr[data-id="${v.id}"]`);
-    if (tr){
-      const rowDiwSel = tr.querySelector('.diw-select');
-      if (rowDiwSel){
-        rowDiwSel.value = freshDiw.value;
-        const meta = DIW_OPTIONS.find(o=>o.v===freshDiw.value);
-        rowDiwSel.style.color = meta.color; rowDiwSel.style.borderColor = meta.color;
-      }
-      tr.dataset.diwStatus = freshDiw.value;
-    }
-    refreshContactSummaryFromCache();
-    renderVisitedSection();
   });
   freshSave.addEventListener('click', async ()=>{
     clearTimeout(vcNoteTimer);
