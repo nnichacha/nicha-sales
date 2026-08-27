@@ -2307,10 +2307,10 @@ function renderVisitedSection(){
   if (!gridView) return;
 
   const visited = Object.entries(feedbackCache)
-    .filter(([id, fb]) => fb && fb.contacted)
+    .filter(([id, fb]) => fb && fb.contacted && companyIdToInfo[id]) // skip deleted companies — they no longer exist in companyIdToInfo
     .map(([id, fb]) => ({
       id, fb,
-      info: companyIdToInfo[id] || {name:`(ไม่พบชื่อในฐานข้อมูล — id: ${id})`, tambon:'-', amphoe:'ไม่ทราบ', type:'', estate:''}
+      info: companyIdToInfo[id]
     }));
 
   meta.textContent = `${visited.length} แห่ง`;
@@ -2997,6 +2997,15 @@ async function renderCompanyRow(c, dist){
     if (syncConnected){
       fbDb.ref('companyOverrides/deletes/'+c.id).set(true).catch(e=>console.error(e));
     }
+    // remove from the live in-memory indexes right away, so every other view
+    // (Visited, Targets, Estate Zones) stops showing this company immediately —
+    // otherwise it would only disappear after a full page reload
+    delete companyIdToInfo[c.id];
+    if (window.companyIdToInfo) delete window.companyIdToInfo[c.id];
+    Object.values(SITE_DATA).forEach(d=> d.sections.forEach(s=>{
+      const idx = s.companies.findIndex(x=>x.id===c.id);
+      if (idx !== -1) s.companies.splice(idx, 1);
+    }));
     const dayCard = tr.closest('.day-card');
     tr.remove();
     if (dayCard){
@@ -3007,6 +3016,7 @@ async function renderCompanyRow(c, dist){
         dmeta.textContent = `${n} บริษัท`;
       }
     }
+    refreshContactSummaryFromCache();
     flashSaved();
   });
 
