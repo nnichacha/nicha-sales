@@ -2136,6 +2136,7 @@ window.loadFeedback = loadFeedback; // shared across script blocks
 
 async function saveFeedback(id, data){
   feedbackCache[id] = data;
+  window.lastSelfEditTime = Date.now();
   const dot = document.getElementById('saveDot');
   const txt = document.getElementById('saveText');
   try{
@@ -2830,16 +2831,24 @@ window.persistEstateAdd = function(code, full){
   const ov = loadEstateOverrides();
   ov.additions[code] = {code, full};
   saveEstateOverrides(ov);
+  if (typeof window.flashSaved === 'function') window.flashSaved();
   if (typeof syncConnected !== 'undefined' && syncConnected && typeof fbDb !== 'undefined'){
-    fbDb.ref('estateOverrides/additions/'+code).set({code, full}).catch(e=>console.error(e));
+    fbDb.ref('estateOverrides/additions/'+code).set({code, full}).catch(e=>{
+      console.error('persistEstateAdd sync failed', e);
+      if (typeof window.flashSaveError === 'function') window.flashSaveError();
+    });
   }
 };
 window.persistEstateRename = function(code, full){
   const ov = loadEstateOverrides();
   ov.edits[code] = {full};
   saveEstateOverrides(ov);
+  if (typeof window.flashSaved === 'function') window.flashSaved();
   if (typeof syncConnected !== 'undefined' && syncConnected && typeof fbDb !== 'undefined'){
-    fbDb.ref('estateOverrides/edits/'+code).set({full}).catch(e=>console.error(e));
+    fbDb.ref('estateOverrides/edits/'+code).set({full}).catch(e=>{
+      console.error('persistEstateRename sync failed', e);
+      if (typeof window.flashSaveError === 'function') window.flashSaveError();
+    });
   }
 };
 window.persistEstateCodeRename = function(oldCode, newCode, full){
@@ -2850,8 +2859,12 @@ window.persistEstateCodeRename = function(oldCode, newCode, full){
   delete ov.additions[oldCode];
   delete ov.edits[oldCode];
   saveEstateOverrides(ov);
+  if (typeof window.flashSaved === 'function') window.flashSaved();
   if (typeof syncConnected !== 'undefined' && syncConnected && typeof fbDb !== 'undefined'){
-    fbDb.ref('estateOverrides/renames/'+oldCode).set({newCode, full}).catch(e=>console.error(e));
+    fbDb.ref('estateOverrides/renames/'+oldCode).set({newCode, full}).catch(e=>{
+      console.error('persistEstateCodeRename sync failed', e);
+      if (typeof window.flashSaveError === 'function') window.flashSaveError();
+    });
   }
 };
 
@@ -2859,10 +2872,16 @@ function persistFieldEdit(id, fields){
   const ov = loadCompanyOverrides();
   ov.edits[id] = {...(ov.edits[id]||{}), ...fields};
   saveCompanyOverrides(ov);
-  if (syncConnected){
-    fbDb.ref('companyOverrides/edits/'+id).set(ov.edits[id]).catch(e=>console.error(e));
-  }
+  // localStorage save above always succeeds synchronously, so the change is safe on
+  // THIS device even if the network/Firebase write below fails — flashSaved() reflects
+  // that immediately, then flashSaveError() overrides it only if the sync actually fails
   flashSaved();
+  if (syncConnected){
+    fbDb.ref('companyOverrides/edits/'+id).set(ov.edits[id]).catch(e=>{
+      console.error('persistFieldEdit sync failed', e);
+      flashSaveError();
+    });
+  }
 }
 window.persistFieldEdit = persistFieldEdit; // shared across script blocks
 
@@ -3261,6 +3280,15 @@ function flashSaved(){
   setTimeout(()=>{ txt.textContent = 'ข้อมูล Feedback บันทึกอัตโนมัติ'; }, 1200);
 }
 window.flashSaved = flashSaved; // shared across script blocks
+
+function flashSaveError(){
+  const dot = document.getElementById('saveDot');
+  const txt = document.getElementById('saveText');
+  if (!dot) return;
+  dot.style.background = 'var(--red)';
+  txt.textContent = '⚠ ซิงค์กับทีมไม่สำเร็จ (บันทึกไว้ในเครื่องนี้แล้ว แต่ยังไม่ขึ้นเซิร์ฟเวอร์ — ตรวจสอบอินเทอร์เน็ต)';
+}
+window.flashSaveError = flashSaveError; // shared across script blocks
 
 async function init(){
   const urlParams = new URLSearchParams(location.search);
