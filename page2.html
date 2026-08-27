@@ -261,6 +261,7 @@
   .targets-group-head span{ color:var(--muted); font-weight:500; font-size:12px; }
   .targets-group-head-clickable{ cursor:pointer; user-select:none; transition:opacity .15s ease; }
   .targets-group-head-clickable:hover{ opacity:.75; }
+  .targets-group-head-active{ text-decoration:underline; text-underline-offset:4px; }
   .visited-card{
     background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--vc-accent, var(--green)); border-radius:8px;
     position:relative; transition:border-color .15s ease;
@@ -2479,8 +2480,8 @@ function renderTargetsPage(){
     const isFocused = targetsFocusedGroup === g.key;
     return `
       <div class="targets-group" data-group="${g.key}">
-        <div class="targets-group-head targets-group-head-clickable" style="color:${g.accent};" data-group="${g.key}" title="คลิกเพื่อดูเฉพาะกลุ่มนี้">
-          ${isFocused ? '☑' : '☐'} ${g.label} <span>(${items.length})</span>
+        <div class="targets-group-head targets-group-head-clickable${isFocused ? ' targets-group-head-active' : ''}" style="color:${g.accent};" data-group="${g.key}" title="คลิกเพื่อดูเฉพาะกลุ่มนี้ (คลิกซ้ำเพื่อดูทุกกลุ่ม)">
+          ${g.label} <span>(${items.length})</span>
         </div>
         <div class="visited-grid">${cards}</div>
       </div>`;
