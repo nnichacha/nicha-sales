@@ -2323,11 +2323,8 @@ function renderVisitedSection(){
     {key:'notinteresting', label:'ไม่น่าสนใจ', accent:'#9CA3AF'},
     {key:'', label:'ยังไม่ทราบข้อมูล', accent:'#9CA3AF'},
   ];
-  const buckets = {customer:[], new:[], interesting:[], followup:[], notinteresting:[], '':[]};
-  visited.forEach(v=>{
-    const st = v.fb.status && buckets[v.fb.status] ? v.fb.status : '';
-    buckets[st].push(v);
-  });
+  const groupMeta = {};
+  trackingGroups.forEach(g=> groupMeta[g.key] = g);
 
   if (visited.length === 0){
     gridView.innerHTML = `<div class="visited-empty">ยังไม่มีบริษัทที่ติ๊ก "ไปพบแล้ว" — ติ๊กในตารางด้านล่าง หรือบันทึก Visit ใน Daily Report เพื่อให้ขึ้นที่นี่อัตโนมัติ</div>`;
@@ -2336,13 +2333,22 @@ function renderVisitedSection(){
     return;
   }
 
-  // top-level grid: one clickable box per สถานะติดตาม, click to drill into that group
+  // primary grouping is by นิคมอุตสาหกรรม (estate) — click a nikhom box to drill into
+  // the visited companies there, sub-grouped by สถานะติดตาม
+  const byEstate = {};
+  visited.forEach(v=>{
+    const code = v.info.estate || 'นอกนิคม/ไม่ระบุ';
+    (byEstate[code] = byEstate[code] || []).push(v);
+  });
+  const estateCodes = Object.keys(byEstate).sort((a,b)=> byEstate[b].length - byEstate[a].length || a.localeCompare(b,'th'));
+
   gridView.innerHTML = `
     <div class="estate-zone-grid">
-      ${trackingGroups.map(g=>{
-        const n = buckets[g.key].length;
-        return `<button class="estate-zone" data-status="${g.key}" style="border-color:${n?g.accent+'55':''};">
-          <div class="estate-zone-code" style="color:${n?g.accent:'#fff'};">${g.label}</div>
+      ${estateCodes.map(code=>{
+        const n = byEstate[code].length;
+        const label = code === 'นอกนิคม/ไม่ระบุ' ? 'นอกนิคม/ไม่ระบุ' : code;
+        return `<button class="estate-zone" data-estate="${code}">
+          <div class="estate-zone-code">${label}</div>
           <small>${n} บริษัท</small>
         </button>`;
       }).join('')}
@@ -2350,34 +2356,35 @@ function renderVisitedSection(){
   `;
 
   gridView.querySelectorAll('.estate-zone').forEach(btn=>{
-    btn.addEventListener('click', ()=> openVisitedStatusDetail(btn.dataset.status));
+    btn.addEventListener('click', ()=> openVisitedEstateDetail(btn.dataset.estate));
   });
 
-  function openVisitedStatusDetail(statusKey){
-    window.currentOpenVisitedStatus = statusKey;
-    const group = trackingGroups.find(g=>g.key===statusKey);
-    const items = buckets[statusKey] || [];
-    document.getElementById('visitedDetailTitle').textContent = group.label;
+  function openVisitedEstateDetail(estateCode){
+    window.currentOpenVisitedEstate = estateCode;
+    const items = byEstate[estateCode] || [];
+    const estateFull = estateCode === 'นอกนิคม/ไม่ระบุ' ? '' : fullNameOfEstate(estateCode);
+    document.getElementById('visitedDetailTitle').textContent = estateCode + (estateFull && estateFull !== estateCode ? ' — ' + estateFull : '');
 
-    const byEstate = {};
+    const byStatus = {customer:[], new:[], interesting:[], followup:[], notinteresting:[], '':[]};
     items.forEach(v=>{
-      const code = v.info.estate || 'นอกนิคม/ไม่ระบุ';
-      (byEstate[code] = byEstate[code] || []).push(v);
+      const st = v.fb.status && byStatus[v.fb.status] ? v.fb.status : '';
+      byStatus[st].push(v);
     });
-    const estateCodes = Object.keys(byEstate).sort((a,b)=> a.localeCompare(b,'th'));
+    const statCounts = trackingGroups.map(g=> ({...g, count: byStatus[g.key].length}));
 
     document.getElementById('visitedDetailStats').innerHTML = `
-      <div class="eds-chip" style="color:${group.accent};"><b>${items.length}</b> บริษัทในกลุ่มนี้</div>
-      <div class="eds-chip"><b>${estateCodes.length}</b> นิคม/พื้นที่</div>
+      <div class="eds-chip"><b>${items.length}</b> บริษัทในนิคมนี้</div>
+      ${statCounts.map(g=> `<div class="eds-chip" style="color:${g.accent};"><b>${g.count}</b> ${g.label}</div>`).join('')}
     `;
 
     const listEl = document.getElementById('visitedDetailCompanies');
     if (!items.length){
-      listEl.innerHTML = `<div class="estate-empty">ไม่มีบริษัทในกลุ่มนี้</div>`;
+      listEl.innerHTML = `<div class="estate-empty">ไม่มีบริษัทในนิคมนี้</div>`;
     } else {
-      listEl.innerHTML = estateCodes.map(code=>{
-        const estateFull = code === 'นอกนิคม/ไม่ระบุ' ? '' : fullNameOfEstate(code);
-        const rows = byEstate[code].slice().sort((a,b)=> a.info.name.localeCompare(b.info.name,'th')).map(v=>`
+      listEl.innerHTML = trackingGroups.map(g=>{
+        const rows2 = byStatus[g.key];
+        if (!rows2.length) return '';
+        const rowsHtml = rows2.slice().sort((a,b)=> a.info.name.localeCompare(b.info.name,'th')).map(v=>`
           <div class="estate-company-row" data-id="${v.id}">
             <div class="ecr-main">
               <div class="ecr-name">${v.info.name}</div>
@@ -2387,8 +2394,8 @@ function renderVisitedSection(){
             </div>
           </div>`).join('');
         return `<div class="targets-group">
-          <div class="targets-group-head" style="color:#38BDF8;">🏭 ${code}${estateFull ? ' — '+estateFull : ''} <span>(${byEstate[code].length})</span></div>
-          ${rows}
+          <div class="targets-group-head" style="color:${g.accent};">${g.label} <span>(${rows2.length})</span></div>
+          ${rowsHtml}
         </div>`;
       }).join('');
       listEl.querySelectorAll('.estate-company-row').forEach(row=>{
@@ -2403,12 +2410,12 @@ function renderVisitedSection(){
     detailView.style.display = '';
   }
   window.refreshOpenVisitedDetail = function(){
-    if (window.currentOpenVisitedStatus !== null && window.currentOpenVisitedStatus !== undefined){
-      openVisitedStatusDetail(window.currentOpenVisitedStatus);
+    if (window.currentOpenVisitedEstate !== null && window.currentOpenVisitedEstate !== undefined){
+      openVisitedEstateDetail(window.currentOpenVisitedEstate);
     }
   };
   window.resetVisitedView = function(){
-    window.currentOpenVisitedStatus = null;
+    window.currentOpenVisitedEstate = null;
     gridView.style.display = '';
     detailView.style.display = 'none';
   };
@@ -2960,10 +2967,14 @@ async function renderCompanyRow(c, dist){
     const val = estateEl.value;
     tr.dataset.estate = val.toLowerCase();
     c.estate = val;
+    if (companyIdToInfo[c.id]) companyIdToInfo[c.id].estate = val;
     persistFieldEdit(c.id, {estate: val});
     refreshEstateFilterOptions();
     if (typeof window.refreshEstateGridInner === 'function') window.refreshEstateGridInner();
     if (typeof window.refreshOpenEstateDetail === 'function') window.refreshOpenEstateDetail();
+    if (typeof window.refreshOpenVisitedDetail === 'function') window.refreshOpenVisitedDetail();
+    if (typeof renderVisitedSection === 'function') renderVisitedSection();
+    if (typeof renderTargetsPage === 'function') renderTargetsPage();
   });
 
   function persist(){
@@ -3496,7 +3507,15 @@ async function init(){
       if (typeof window.selectDistrictArea === 'function') window.selectDistrictArea(null);
     }
   }
-  searchInput.addEventListener('input', applyFilters);
+  function debounce(fn, delay){
+    let t;
+    return function(...args){
+      clearTimeout(t);
+      t = setTimeout(()=> fn.apply(this, args), delay);
+    };
+  }
+  const debouncedApplyFilters = debounce(applyFilters, 220);
+  searchInput.addEventListener('input', debouncedApplyFilters);
   filterRelation.addEventListener('change', applyFilters);
   filterContacted.addEventListener('change', applyFilters);
   filterDiw.addEventListener('change', applyFilters);
@@ -3578,8 +3597,9 @@ async function init(){
     });
   }
 
+  const debouncedRenderSuggestions = debounce((val)=> renderSuggestions(val), 150);
   searchInput.addEventListener('input', ()=>{
-    renderSuggestions(searchInput.value.trim().toLowerCase());
+    debouncedRenderSuggestions(searchInput.value.trim().toLowerCase());
   });
   searchInput.addEventListener('focus', ()=>{
     if (searchInput.value.trim()) renderSuggestions(searchInput.value.trim().toLowerCase());
