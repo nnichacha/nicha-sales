@@ -5210,6 +5210,9 @@ init();
             persistFieldEdit(id, {estate: newCode});
             if (typeof refreshEstateFilterOptions === 'function') refreshEstateFilterOptions();
             if (typeof window.refreshEstateGridInner === 'function') window.refreshEstateGridInner();
+            if (typeof renderTargetsPage === 'function') renderTargetsPage();
+            if (typeof renderVisitedSection === 'function') renderVisitedSection();
+            if (typeof window.refreshOpenVisitedDetail === 'function') window.refreshOpenVisitedDetail();
             flashSaved();
             openEstateDetail(code); // re-render this same estate's list without the moved company
           });
@@ -5310,6 +5313,9 @@ init();
       if (typeof refreshEstateFilterOptions === 'function') refreshEstateFilterOptions();
       refreshEstateGridInner();
       openEstateDetail(window.currentOpenEstateCode);
+      if (typeof renderTargetsPage === 'function') renderTargetsPage();
+      if (typeof renderVisitedSection === 'function') renderVisitedSection();
+      if (typeof window.refreshOpenVisitedDetail === 'function') window.refreshOpenVisitedDetail();
       flashSaved();
     });
   }
