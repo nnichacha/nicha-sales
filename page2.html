@@ -1915,8 +1915,14 @@ function attachRealtimeListeners(){
       if (el && document.activeElement !== el) el.textContent = all[key];
     });
   });
-  // company overrides: notify user rather than silently restructure the page
+  // company overrides: notify user rather than silently restructure the page —
+  // but skip the notification if this is just our own edit echoing back (Firebase
+  // fires 'value' for the writer's own writes too, not just other clients' changes)
+  let isFirstOverridesSnapshot = true;
   fbDb.ref('companyOverrides').on('value', ()=>{
+    if (isFirstOverridesSnapshot){ isFirstOverridesSnapshot = false; return; } // initial load, not a change
+    const justEditedBySelf = window.lastSelfEditTime && (Date.now() - window.lastSelfEditTime < 4000);
+    if (justEditedBySelf) return;
     const banner = document.getElementById('overrideChangeBanner');
     if (banner) banner.style.display = 'flex';
   });
@@ -3246,6 +3252,7 @@ async function bindEditableTexts(root){
 }
 
 function flashSaved(){
+  window.lastSelfEditTime = Date.now(); // used to suppress the "team changed data" banner from firing on our own writes echoing back
   const dot = document.getElementById('saveDot');
   const txt = document.getElementById('saveText');
   if (!dot) return;
