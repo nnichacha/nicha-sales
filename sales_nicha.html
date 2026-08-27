@@ -1108,6 +1108,45 @@ function donutArcPath(cx, cy, rOuter, rInner, startAngle, endAngle) {
     "L", endInner.x, endInner.y, "A", rInner, rInner, 0, largeArc, 1, startInner.x, startInner.y, "Z"].join(" ");
 }
 
+/* Elliptical variants — used for the tilted "3D" donut projection */
+function polarToCartesianE(cx, cy, rx, ry, angleDeg) {
+  var rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + rx * Math.cos(rad), y: cy + ry * Math.sin(rad) };
+}
+function donutArcPathE(cx, cy, rOutX, rOutY, rInX, rInY, startAngle, endAngle) {
+  var so = polarToCartesianE(cx, cy, rOutX, rOutY, endAngle);
+  var eo = polarToCartesianE(cx, cy, rOutX, rOutY, startAngle);
+  var si = polarToCartesianE(cx, cy, rInX, rInY, endAngle);
+  var ei = polarToCartesianE(cx, cy, rInX, rInY, startAngle);
+  var largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+  return ["M", so.x, so.y, "A", rOutX, rOutY, 0, largeArc, 0, eo.x, eo.y,
+    "L", ei.x, ei.y, "A", rInX, rInY, 0, largeArc, 1, si.x, si.y, "Z"].join(" ");
+}
+function darkenColor(hex, factor) {
+  hex = hex.replace("#", "");
+  if (hex.length === 3) hex = hex.split("").map(function (c) { return c + c; }).join("");
+  var r = Math.round(parseInt(hex.slice(0, 2), 16) * factor);
+  var g = Math.round(parseInt(hex.slice(2, 4), 16) * factor);
+  var b = Math.round(parseInt(hex.slice(4, 6), 16) * factor);
+  return "#" + [r, g, b].map(function (v) { return Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0"); }).join("");
+}
+function lightenColor(hex, factor) {
+  hex = hex.replace("#", "");
+  if (hex.length === 3) hex = hex.split("").map(function (c) { return c + c; }).join("");
+  var r = Math.round(parseInt(hex.slice(0, 2), 16));
+  var g = Math.round(parseInt(hex.slice(2, 4), 16));
+  var b = Math.round(parseInt(hex.slice(4, 6), 16));
+  r = Math.round(r + (255 - r) * factor); g = Math.round(g + (255 - g) * factor); b = Math.round(b + (255 - b) * factor);
+  return "#" + [r, g, b].map(function (v) { return Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0"); }).join("");
+}
+function endCapPathE(cx, cy, rOutX, rOutY, rInX, rInY, angleDeg, wall) {
+  var to = polarToCartesianE(cx, cy, rOutX, rOutY, angleDeg);
+  var ti = polarToCartesianE(cx, cy, rInX, rInY, angleDeg);
+  var bo = { x: to.x, y: to.y + wall };
+  var bi = { x: ti.x, y: ti.y + wall };
+  return ["M", to.x, to.y, "L", bo.x, bo.y, "L", bi.x, bi.y, "L", ti.x, ti.y, "Z"].join(" ");
+}
+
 /* Interactive bar chart — click a bar to highlight it and dim the rest. */
 function svgInteractiveBar(data, xKey, yKey, opts) {
   opts = opts || {};
@@ -1184,34 +1223,93 @@ function detailStripHtml(label, value, sub, color) {
 }
 
 
+var Q3D_INSTANCE_COUNTER = 0;
 function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
   onClickFn = onClickFn || "toggleFocusSegment";
   size = size || 230;
+  Q3D_INSTANCE_COUNTER++;
+  var uid = "d" + Q3D_INSTANCE_COUNTER;
   var total = data.reduce(function (s, d) { return s + (d[valueKey] || 0); }, 0) || 1;
-  var CX = 110, CY = 110, R_OUT = 92, R_IN = 56, POP = 12;
+  var CX = 110, CY = 96;
+  var R_OUT_X = 90, R_OUT_Y = 50, R_IN_X = 0, R_IN_Y = 0; // tilted ellipse projection, full pie (no hole)
+  var WALL = 22;    // extrusion depth — gives the chunky "pillow" thickness
+  var GAP = 3.2;    // degrees of visual separation between segments
+  var POP_OUT = 12; // outward radial pop for the selected segment
+  var LIFT = 16;    // upward float for the selected segment
   var acc = 0;
   var segs = data.map(function (d, i) {
     var frac = (d[valueKey] || 0) / total;
-    var start = acc * 360; var end = (acc + frac) * 360;
+    var rawStart = acc * 360; var rawEnd = (acc + frac) * 360;
     acc += frac;
+    var start = rawStart + GAP / 2, end = rawEnd - GAP / 2;
+    if (end < start) end = start; // guard against slivers narrower than the gap
     var mid = (start + end) / 2;
     var dir = polarToCartesian(0, 0, 1, mid);
     var popped = poppedIndex === i;
+    var color = (colors && colors[i]) || PIE_COLORS[i % PIE_COLORS.length];
     return {
-      i: i, path: donutArcPath(CX, CY, R_OUT, R_IN, start, end),
-      hitPath: donutArcPath(CX, CY, R_OUT + 16, Math.max(4, R_IN - 20), start, end),
-      color: (colors && colors[i]) || PIE_COLORS[i % PIE_COLORS.length],
-      dx: dir.x * POP, dy: dir.y * POP, frac: frac, popped: popped, name: d[nameKey], value: d[valueKey], count: d.count
+      i: i, start: start, end: end, mid: mid,
+      topPath: donutArcPathE(CX, CY, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, start, end),
+      hitPath: donutArcPathE(CX, CY, R_OUT_X + 14, R_OUT_Y + 9, Math.max(4, R_IN_X - 18), Math.max(2, R_IN_Y - 11), start, end),
+      color: color, frac: frac, popped: popped, name: d[nameKey], value: d[valueKey], count: d.count
     };
   });
 
-  var svg = '<svg viewBox="0 0 220 220" style="width:' + size + 'px;height:' + size + 'px;flex-shrink:0;overflow:visible">';
+  var svg = '<svg viewBox="0 0 220 168" style="width:' + size + 'px;height:' + (size * 168 / 220) + 'px;flex-shrink:0;overflow:visible">';
+  svg += '<defs><filter id="q3dsoft' + uid + '" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>';
   segs.forEach(function (s) {
-    var tf = s.popped ? "translate(" + s.dx.toFixed(1) + "px," + s.dy.toFixed(1) + "px)" : "translate(0,0)";
+    svg += '<linearGradient id="top' + uid + s.i + '" x1="15%" y1="10%" x2="85%" y2="95%">' +
+      '<stop offset="0%" stop-color="' + lightenColor(s.color, 0.55) + '"/>' +
+      '<stop offset="45%" stop-color="' + lightenColor(s.color, 0.08) + '"/>' +
+      '<stop offset="100%" stop-color="' + darkenColor(s.color, 0.8) + '"/>' +
+      '</linearGradient>';
+    svg += '<linearGradient id="wall' + uid + s.i + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" stop-color="' + darkenColor(s.color, 0.88) + '"/>' +
+      '<stop offset="100%" stop-color="' + darkenColor(s.color, 0.48) + '"/>' +
+      '</linearGradient>';
+    svg += '<linearGradient id="cap' + uid + s.i + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" stop-color="' + darkenColor(s.color, 0.72) + '"/>' +
+      '<stop offset="100%" stop-color="' + darkenColor(s.color, 0.38) + '"/>' +
+      '</linearGradient>';
+  });
+  svg += '</defs>';
+
+  // pass 1: walls + end caps for every UNPOPPED segment (popped one is redrawn later in its floated position)
+  segs.forEach(function (s) {
+    if (s.popped) return;
+    var wallPath = donutArcPathE(CX, CY + WALL, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, s.start, s.end);
+    svg += '<path d="' + wallPath + '" fill="url(#wall' + uid + s.i + ')"></path>';
+    svg += '<path d="' + endCapPathE(CX, CY, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, s.start, WALL) + '" fill="url(#cap' + uid + s.i + ')"></path>';
+    svg += '<path d="' + endCapPathE(CX, CY, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, s.end, WALL) + '" fill="url(#cap' + uid + s.i + ')"></path>';
+  });
+
+  // drop-shadow for the floating popped segment (cast on the "floor")
+  segs.forEach(function (s) {
+    if (!s.popped) return;
+    var dir = polarToCartesian(0, 0, 1, s.mid);
+    var shadowCx = CX + dir.x * POP_OUT * 1.3, shadowCy = CY + WALL + 8 + dir.y * POP_OUT * 0.5;
+    svg += '<ellipse cx="' + shadowCx.toFixed(1) + '" cy="' + shadowCy.toFixed(1) + '" rx="' + (R_OUT_X * s.frac * 1.05 + 12).toFixed(1) + '" ry="9" fill="rgba(0,0,0,0.42)" filter="url(#q3dsoft' + uid + ')"></ellipse>';
+  });
+
+  // pass 2: top faces (unpopped first, popped one painted last so it visually sits above)
+  var order = segs.slice().sort(function (a, b) { return (a.popped ? 1 : 0) - (b.popped ? 1 : 0); });
+  order.forEach(function (s) {
+    var dir = polarToCartesian(0, 0, 1, s.mid);
+    var tx = 0, ty = 0;
+    if (s.popped) { tx = dir.x * POP_OUT; ty = dir.y * POP_OUT * 0.55 - LIFT; }
+    var tf = "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px)";
+    if (s.popped) {
+      var wallPathPopped = donutArcPathE(CX, CY + WALL, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, s.start, s.end);
+      svg += '<g style="transform:' + tf + ';transition:transform .32s cubic-bezier(.34,1.56,.64,1)">' +
+        '<path d="' + wallPathPopped + '" fill="url(#wall' + uid + s.i + ')"></path>' +
+        '<path d="' + endCapPathE(CX, CY, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, s.start, WALL) + '" fill="url(#cap' + uid + s.i + ')"></path>' +
+        '<path d="' + endCapPathE(CX, CY, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, s.end, WALL) + '" fill="url(#cap' + uid + s.i + ')"></path>' +
+        '</g>';
+    }
     svg += '<path d="' + s.hitPath + '" class="chart-clickable" fill="rgba(0,0,0,0.001)" style="cursor:pointer;transform:' + tf + '" onclick="' + onClickFn + '(' + s.i + ')"></path>';
-    svg += '<path d="' + s.path + '" class="chart-clickable" fill="' + s.color + '" stroke="#0B1220" stroke-width="1.5" ' +
-      'style="cursor:pointer;transition:transform .22s cubic-bezier(.34,1.56,.64,1);transform:' + tf + ';' +
-      (s.popped ? 'filter:drop-shadow(0 6px 10px rgba(0,0,0,0.45));' : 'opacity:' + (poppedIndex !== null && poppedIndex !== undefined ? '0.55' : '1') + ';') +
+    svg += '<path d="' + s.topPath + '" class="chart-clickable" fill="url(#top' + uid + s.i + ')" stroke="' + lightenColor(s.color, 0.35) + '" stroke-width="1.2" stroke-linejoin="round" ' +
+      'style="cursor:pointer;transition:transform .32s cubic-bezier(.34,1.56,.64,1);transform:' + tf + ';' +
+      (s.popped ? 'filter:drop-shadow(0 10px 14px rgba(0,0,0,0.5));' : 'opacity:' + (poppedIndex !== null && poppedIndex !== undefined ? '0.62' : '1') + ';') +
       '" onclick="' + onClickFn + '(' + s.i + ')">' +
       '<title>' + esc(s.name) + ": " + fmtTHB(s.value) + " (" + (s.frac * 100).toFixed(1) + '%)</title></path>';
   });
@@ -1228,10 +1326,11 @@ function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, total
     centerValue = fmtTHB(total);
     centerSub = totalCount + " งาน จาก " + data.length + " รายการ";
   }
-  svg += '<g style="pointer-events:none">' +
-    '<text x="110" y="103" text-anchor="middle" font-size="11" fill="#94A3B8" font-family="Arial">' + esc(centerLabel) + '</text>' +
-    '<text x="110" y="123" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="Arial">' + centerValue + '</text>' +
-    '<text x="110" y="139" text-anchor="middle" font-size="9" fill="#C9A227" font-family="Arial">' + esc(centerSub) + '</text>' +
+  svg += '<ellipse cx="110" cy="114" rx="56" ry="32" fill="rgba(11,18,32,0.72)" stroke="rgba(255,255,255,0.15)" stroke-width="1" style="pointer-events:none"></ellipse>' +
+    '<g style="pointer-events:none">' +
+    '<text x="110" y="97" text-anchor="middle" font-size="11" fill="#94A3B8" font-family="Arial">' + esc(centerLabel) + '</text>' +
+    '<text x="110" y="117" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="Arial">' + centerValue + '</text>' +
+    '<text x="110" y="133" text-anchor="middle" font-size="9" fill="#C9A227" font-family="Arial">' + esc(centerSub) + '</text>' +
     '</g>';
   svg += "</svg>";
   return svg;
@@ -1589,10 +1688,25 @@ function buildForecastChartInner() {
   var d = computeDerived();
   var rows = computeForecastRows(d);
   if (rows.length === 0) return '<div style="font-size:12px;color:' + COLORS.muted + ';padding:10px 0">ไม่มีงานที่กำลังเสนอราคาอยู่ตอนนี้</div>';
-  var chartData = rows.slice(0, 8).map(function (p) { return { label: p.customer, value: p.sale || 0, count: 1, jobId: p.id, desc: p.description }; });
-  if (rows.length > 8) {
-    var rest = rows.slice(8);
-    chartData.push({ label: "อื่นๆ (" + rest.length + " งาน)", value: rest.reduce(function (s, p) { return s + (p.sale || 0); }, 0), count: rest.length, jobId: null, desc: "" });
+
+  // aggregate by company so the same customer's multiple On-process jobs combine into one slice
+  var byCompany = {}, order = [];
+  rows.forEach(function (p) {
+    var c = p.customer || "(ไม่ระบุ)";
+    if (!byCompany[c]) { byCompany[c] = { label: c, value: 0, count: 0, jobs: [] }; order.push(c); }
+    byCompany[c].value += p.sale || 0;
+    byCompany[c].count += 1;
+    byCompany[c].jobs.push(p);
+  });
+  var companyArr = order.map(function (c) { return byCompany[c]; }).sort(function (a, b) { return b.value - a.value; });
+
+  var chartData = companyArr.slice(0, 8);
+  if (companyArr.length > 8) {
+    var rest = companyArr.slice(8);
+    chartData.push({
+      label: "อื่นๆ (" + rest.length + " ราย)", value: rest.reduce(function (s, c) { return s + c.value; }, 0),
+      count: rest.reduce(function (s, c) { return s + c.count; }, 0), jobs: []
+    });
   }
   var colors = chartData.map(function (_, i) { return PIE_COLORS[i % PIE_COLORS.length]; });
   var donut = svgFocusDonut(chartData, "value", "label", colors, STATE.forecastPopped, 170, "รวม Forecast", "toggleForecastSlice");
@@ -1601,12 +1715,20 @@ function buildForecastChartInner() {
     return '<div onclick="toggleForecastSlice(' + i + ')" style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? colors[i] + "1A" : "transparent") + '">' +
       '<span style="width:8px;height:8px;border-radius:3px;background:' + colors[i] + ';flex-shrink:0"></span>' +
       '<span style="font-size:10.5px;color:' + COLORS.text + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.label) + '</span>' +
+      '<span class="mono" style="font-size:9px;color:' + COLORS.muted + '">' + x.count + ' งาน</span>' +
       '<span class="mono" style="font-size:10.5px;color:' + COLORS.ink + ';font-weight:700">' + fmtTHB(x.value) + '</span></div>';
   }).join("");
-  var clickHint = STATE.forecastPopped !== null && chartData[STATE.forecastPopped].jobId
-    ? '<button onclick="openEditProjectForm(' + chartData[STATE.forecastPopped].jobId + ')" class="btn-secondary" style="margin-top:8px;width:100%;font-size:11px;padding:6px">' + icon("edit", 12) + ' เปิดดูรายละเอียดงานนี้</button>'
-    : "";
-  return '<div style="display:flex;align-items:center;gap:14px">' + donut + '<div style="flex:1;min-width:0;max-height:170px;overflow-y:auto">' + legend + clickHint + '</div></div>';
+  var jobsDetail = "";
+  if (STATE.forecastPopped !== null && chartData[STATE.forecastPopped] && chartData[STATE.forecastPopped].jobs.length) {
+    var selJobs = chartData[STATE.forecastPopped].jobs;
+    jobsDetail = '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed ' + COLORS.line + '">' +
+      selJobs.map(function (p) {
+        return '<div onclick="openEditProjectForm(' + p.id + ')" style="display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px;cursor:pointer" onmouseover="this.style.background=\'' + COLORS.canvas + '\'" onmouseout="this.style.background=\'transparent\'">' +
+          '<span style="font-size:10px;color:' + COLORS.muted + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</span>' +
+          '<span class="mono" style="font-size:10px;color:' + COLORS.ink + '">' + fmtTHB(p.sale) + '</span></div>';
+      }).join("") + '</div>';
+  }
+  return '<div style="display:flex;align-items:center;gap:14px">' + donut + '<div style="flex:1;min-width:0;max-height:190px;overflow-y:auto">' + legend + jobsDetail + '</div></div>';
 }
 function refreshForecastChart() {
   var wrap = document.getElementById("forecast-chart-wrap");
