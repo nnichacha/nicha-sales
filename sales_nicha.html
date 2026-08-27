@@ -42,6 +42,19 @@
   .kpi-rivet { position: absolute; width: 5px; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.35); box-shadow: 0 1px 1px rgba(0,0,0,0.4) inset; }
   .kpi-shine { position: absolute; top: -60%; left: -20%; width: 60%; height: 220%; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.10) 50%, transparent 60%); pointer-events: none; }
   /* ---- 3D quarterly presentation cards ---- */
+  /* ---- CSS 3D petal/flower pie chart (rotated rounded-square pieces) ---- */
+  .cpie-wrap { position: relative; flex-shrink: 0; }
+  .cpie-pie { position: absolute; transform-style: preserve-3d; }
+  .cpie-piece { position: absolute; transform-origin: 50% 50%; cursor: pointer; transition: transform .42s cubic-bezier(.2,.8,.2,1), filter .3s ease; }
+  .cpie-piece.active { z-index: 40; }
+  .cpie-piece::after { content: ""; position: absolute; inset: 0; background: inherit; transform: translateY(16px); filter: brightness(.6); border-radius: inherit; z-index: -1; }
+  .cpie-shape { position: relative; width: 100%; height: 100%; overflow: hidden; box-shadow: inset 0 2px 4px rgba(255,255,255,.28), 0 8px 16px rgba(0,0,0,.3); }
+  .cpie-shape::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%); pointer-events: none; }
+  .cpie-chip { position: absolute; left: 50%; top: 46%; transform: translate(-50%,-50%); background: #FFF8E7; border: 2px solid #FFD23F; border-radius: 12px; padding: 6px 12px; text-align: center; pointer-events: none; z-index: 50; box-shadow: 0 3px 10px rgba(255,210,63,.4); white-space: nowrap; }
+  .cpie-chip .l1 { font-size: 9.5px; color: #2BA8A2; font-weight: 700; }
+  .cpie-chip .l2 { font-size: 15px; color: #1E8C86; font-weight: 800; }
+  .cpie-chip .l3 { font-size: 8px; color: #EF6C4A; font-weight: 700; }
+
   .q3d-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; perspective: 1400px; align-items: end; padding-top: 22px; }
   .q3d-card {
     position: relative; border-radius: 18px; padding: 22px 18px 20px; cursor: pointer; min-height: 176px;
@@ -259,6 +272,8 @@ var COLORS = {
   teal: "#0E9AA8", violet: "#7C4FE0", emerald: "#1FAE63", coral: "#F0793C", rose: "#E0446B", vividRed: "#DC2626"
 };
 var PIE_COLORS = [COLORS.blue, COLORS.teal, COLORS.gold, COLORS.emerald, COLORS.coral, COLORS.violet, COLORS.rose, COLORS.sky];
+/* Retro-playful "game piece" palette for the 3D donut/pie charts specifically (teal-coral-gold) */
+var DONUT_COLORS = ["#2BA8A2", "#FFD23F", "#EF6C4A", "#5DADE2", "#27AE60", "#3CC4BD", "#E6B800", "#D45233"];
 
 var DEFAULT_STATUSES = [
   { name: "Done Q1", category: "Won", color: COLORS.green },
@@ -1223,6 +1238,131 @@ function detailStripHtml(label, value, sub, color) {
 }
 
 
+function pieSectorPath(cx, cy, r, startAngle, endAngle) {
+  var start = polarToCartesian(cx, cy, r, startAngle);
+  var end = polarToCartesian(cx, cy, r, endAngle);
+  var largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+  return ["M", cx, cy, "L", start.x, start.y, "A", r, r, 0, largeArc, 1, end.x, end.y, "Z"].join(" ");
+}
+
+function buildRoundPie3D(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
+  onClickFn = onClickFn || "toggleFocusSegment";
+  size = size || 200;
+  var total = data.reduce(function (s, d) { return s + (d[valueKey] || 0); }, 0) || 1;
+  var CX = 150, CY = 128, R = 108, DEPTH = 22;
+  var acc = 0;
+  var filterId = 'rp3dsoft' + (++Q3D_INSTANCE_COUNTER);
+  var svg = '<svg viewBox="0 0 300 270" style="width:' + size + 'px;height:' + (size * 270 / 300) + 'px;flex-shrink:0;overflow:visible">' +
+    '<defs><filter id="' + filterId + '" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5"/></filter></defs>';
+  var segs = data.map(function (d, i) {
+    var frac = (d[valueKey] || 0) / total;
+    var start = acc * 360, end = (acc + frac) * 360;
+    acc += frac;
+    var mid = (start + end) / 2;
+    var dir = polarToCartesian(0, 0, 1, mid);
+    var color = (colors && colors[i]) || DONUT_COLORS[i % DONUT_COLORS.length];
+    return { i: i, start: start, end: end, dirX: dir.x, dirY: dir.y, color: color, dark: darkenColor(color, 0.62), frac: frac, popped: poppedIndex === i, name: d[nameKey], value: d[valueKey], count: d.count };
+  });
+
+  segs.forEach(function (s) {
+    if (s.popped) return;
+    var path = pieSectorPath(CX, CY, R, s.start, s.end);
+    svg += '<path d="' + path + '" fill="rgba(0,0,0,0.16)" transform="translate(3 ' + (DEPTH + 7) + ')" filter="url(#' + filterId + ')"></path>';
+    svg += '<path d="' + path + '" fill="' + s.dark + '" transform="translate(0 ' + DEPTH + ')"></path>';
+  });
+  var order = segs.slice().sort(function (a, b) { return (a.popped ? 1 : 0) - (b.popped ? 1 : 0); });
+  order.forEach(function (s) {
+    var path = pieSectorPath(CX, CY, R, s.start, s.end);
+    var tx = 0, ty = 0;
+    if (s.popped) { tx = s.dirX * 22; ty = s.dirY * 22 - 6; }
+    var tf = "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px)";
+    if (s.popped) {
+      svg += '<path d="' + path + '" fill="rgba(0,0,0,0.22)" transform="translate(3 ' + (DEPTH + 7) + ')" filter="url(#' + filterId + ')" style="transform:' + tf + '"></path>';
+      svg += '<path d="' + path + '" fill="' + s.dark + '" style="transform:' + tf + ' translateY(' + DEPTH + 'px)"></path>';
+    }
+    svg += '<path d="' + path + '" fill="' + s.color + '" stroke="rgba(255,255,255,0.55)" stroke-width="2.5" ' +
+      'style="cursor:pointer;transition:transform .32s cubic-bezier(.2,.8,.2,1);transform:' + tf + ';' +
+      (s.popped ? 'filter:drop-shadow(0 12px 10px rgba(0,0,0,0.28));' : 'opacity:' + (poppedIndex !== null && poppedIndex !== undefined ? '0.68' : '1') + ';') +
+      '" onclick="' + onClickFn + '(' + s.i + ')"><title>' + esc(s.name) + ": " + fmtTHB(s.value) + " (" + (s.frac * 100).toFixed(1) + '%)</title></path>';
+  });
+
+  var centerLabel, centerValue, centerSub;
+  var totalCount = data.reduce(function (s, x) { return s + (x.count || 0); }, 0);
+  if (poppedIndex !== null && poppedIndex !== undefined && segs[poppedIndex]) {
+    var sel = segs[poppedIndex];
+    centerLabel = sel.name.length > 12 ? sel.name.slice(0, 11) + "…" : sel.name;
+    centerValue = fmtTHB(sel.value);
+    centerSub = (sel.frac * 100).toFixed(1) + "% · " + sel.count + " งาน";
+  } else {
+    centerLabel = totalLabel || "รวม Won";
+    centerValue = fmtTHB(total);
+    centerSub = totalCount + " งาน จาก " + data.length + " รายการ";
+  }
+  svg += '<ellipse cx="' + CX + '" cy="' + CY + '" rx="46" ry="30" fill="#FFF8E7" stroke="#FFD23F" stroke-width="2.5" filter="drop-shadow(0 3px 8px rgba(255,210,63,0.4))" style="pointer-events:none"></ellipse>' +
+    '<g style="pointer-events:none">' +
+    '<text x="' + CX + '" y="' + (CY - 11) + '" text-anchor="middle" font-size="10" fill="#2BA8A2" font-weight="700" font-family="Arial">' + esc(centerLabel) + '</text>' +
+    '<text x="' + CX + '" y="' + (CY + 8) + '" text-anchor="middle" font-size="16" font-weight="800" fill="#1E8C86" font-family="Arial">' + centerValue + '</text>' +
+    '<text x="' + CX + '" y="' + (CY + 22) + '" text-anchor="middle" font-size="8" fill="#EF6C4A" font-weight="700" font-family="Arial">' + esc(centerSub) + '</text>' +
+    '</g>';
+  svg += "</svg>";
+  return svg;
+}
+
+function buildCssPetalChart(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
+  onClickFn = onClickFn || "toggleFocusSegment";
+  size = size || 200;
+  var total = data.reduce(function (s, d) { return s + (d[valueKey] || 0); }, 0) || 1;
+  var maxV = Math.max.apply(null, [1].concat(data.map(function (d) { return d[valueKey] || 0; })));
+  var N = data.length;
+
+  var containerSize = size * 1.85;
+  var pieSize = containerSize * 0.62;
+  var pieOffset = (containerSize - pieSize) / 2;
+  var center = pieSize / 2;
+  var baseRatio = N <= 3 ? 0.42 : N <= 5 ? 0.34 : 0.26;
+  var restRatio = N <= 3 ? 0.19 : N <= 5 ? 0.215 : 0.235;
+  var BASE = pieSize * baseRatio;
+  var REST = pieSize * restRatio;
+  var MINSCALE = 0.6;
+
+  var piecesHtml = data.map(function (d, i) {
+    var val = d[valueKey] || 0;
+    var angle = i * (360 / N);
+    var scale = MINSCALE + (1 - MINSCALE) * (val / maxV);
+    var sz = BASE * scale;
+    var left = center - sz / 2, top = center - sz / 2;
+    var popped = poppedIndex === i;
+    var color = (colors && colors[i]) || DONUT_COLORS[i % DONUT_COLORS.length];
+    var restTf = "rotate(" + angle + "deg) translateY(-" + REST.toFixed(1) + "px)";
+    var activeTf = "rotate(" + angle + "deg) translateY(-" + (REST + BASE * 0.36).toFixed(1) + "px) scale(1.12)";
+    var tf = popped ? activeTf : restTf;
+    return '<div class="cpie-piece' + (popped ? " active" : "") + '" onclick="' + onClickFn + '(' + i + ')" title="' + esc(d[nameKey]) + ": " + fmtTHB(val) + '" style="width:' + sz.toFixed(1) + 'px;height:' + sz.toFixed(1) + 'px;left:' + left.toFixed(1) + 'px;top:' + top.toFixed(1) + 'px;' +
+      'transform:' + tf + ';background:linear-gradient(145deg,' + lightenColor(color, 0.4) + ',' + color + ');' +
+      (popped ? 'filter:drop-shadow(0 16px 16px ' + color + '88) drop-shadow(0 4px 8px rgba(0,0,0,.35));' : (poppedIndex !== null && poppedIndex !== undefined ? 'opacity:0.6;' : '')) + '">' +
+      '<div class="cpie-shape" style="border-radius:' + (sz * 0.3).toFixed(1) + 'px"></div></div>';
+  }).join("");
+
+  var centerLabel, centerValue, centerSub;
+  var totalCount = data.reduce(function (s, x) { return s + (x.count || 0); }, 0);
+  if (poppedIndex !== null && poppedIndex !== undefined && data[poppedIndex]) {
+    var sel = data[poppedIndex];
+    var selName = String(sel[nameKey]);
+    centerLabel = selName.length > 12 ? selName.slice(0, 11) + "…" : selName;
+    centerValue = fmtTHB(sel[valueKey]);
+    centerSub = ((sel[valueKey] || 0) / total * 100).toFixed(1) + "% · " + (sel.count || 1) + " งาน";
+  } else {
+    centerLabel = totalLabel || "รวม Won";
+    centerValue = fmtTHB(total);
+    centerSub = totalCount + " งาน จาก " + data.length + " รายการ";
+  }
+
+  return '<div class="cpie-wrap" style="width:' + containerSize.toFixed(0) + 'px;height:' + (containerSize * 0.82).toFixed(0) + 'px">' +
+    '<div class="cpie-pie" style="width:' + pieSize.toFixed(0) + 'px;height:' + pieSize.toFixed(0) + 'px;left:' + pieOffset.toFixed(0) + 'px;top:' + (pieOffset * 0.55).toFixed(0) + 'px;transform:rotateX(55deg) rotateZ(-10deg)">' +
+    piecesHtml + '</div>' +
+    '<div class="cpie-chip"><div class="l1">' + esc(centerLabel) + '</div><div class="l2">' + centerValue + '</div><div class="l3">' + esc(centerSub) + '</div></div>' +
+    '</div>';
+}
+
 var Q3D_INSTANCE_COUNTER = 0;
 function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
   onClickFn = onClickFn || "toggleFocusSegment";
@@ -1230,9 +1370,9 @@ function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, total
   Q3D_INSTANCE_COUNTER++;
   var uid = "d" + Q3D_INSTANCE_COUNTER;
   var total = data.reduce(function (s, d) { return s + (d[valueKey] || 0); }, 0) || 1;
-  var CX = 110, CY = 96;
-  var R_OUT_X = 90, R_OUT_Y = 50, R_IN_X = 0, R_IN_Y = 0; // tilted ellipse projection, full pie (no hole)
-  var WALL = 22;    // extrusion depth — gives the chunky "pillow" thickness
+  var CX = 150, CY = 118;
+  var R_OUT_X = 78, R_OUT_Y = 44, R_IN_X = 0, R_IN_Y = 0; // tilted ellipse projection, full pie (no hole)
+  var WALL = 20;    // extrusion depth — gives the chunky "pillow" thickness
   var GAP = 3.2;    // degrees of visual separation between segments
   var POP_OUT = 12; // outward radial pop for the selected segment
   var LIFT = 16;    // upward float for the selected segment
@@ -1246,7 +1386,7 @@ function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, total
     var mid = (start + end) / 2;
     var dir = polarToCartesian(0, 0, 1, mid);
     var popped = poppedIndex === i;
-    var color = (colors && colors[i]) || PIE_COLORS[i % PIE_COLORS.length];
+    var color = (colors && colors[i]) || DONUT_COLORS[i % DONUT_COLORS.length];
     return {
       i: i, start: start, end: end, mid: mid,
       topPath: donutArcPathE(CX, CY, R_OUT_X, R_OUT_Y, R_IN_X, R_IN_Y, start, end),
@@ -1255,7 +1395,7 @@ function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, total
     };
   });
 
-  var svg = '<svg viewBox="0 0 220 168" style="width:' + size + 'px;height:' + (size * 168 / 220) + 'px;flex-shrink:0;overflow:visible">';
+  var svg = '<svg viewBox="0 0 320 236" style="width:' + (size * 320 / 220) + 'px;height:' + (size * 320 / 220 * 236 / 320) + 'px;flex-shrink:0;overflow:visible">';
   svg += '<defs><filter id="q3dsoft' + uid + '" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>';
   segs.forEach(function (s) {
     svg += '<linearGradient id="top' + uid + s.i + '" x1="15%" y1="10%" x2="85%" y2="95%">' +
@@ -1288,7 +1428,7 @@ function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, total
     if (!s.popped) return;
     var dir = polarToCartesian(0, 0, 1, s.mid);
     var shadowCx = CX + dir.x * POP_OUT * 1.3, shadowCy = CY + WALL + 8 + dir.y * POP_OUT * 0.5;
-    svg += '<ellipse cx="' + shadowCx.toFixed(1) + '" cy="' + shadowCy.toFixed(1) + '" rx="' + (R_OUT_X * s.frac * 1.05 + 12).toFixed(1) + '" ry="9" fill="rgba(0,0,0,0.42)" filter="url(#q3dsoft' + uid + ')"></ellipse>';
+    svg += '<ellipse cx="' + shadowCx.toFixed(1) + '" cy="' + shadowCy.toFixed(1) + '" rx="' + (R_OUT_X * s.frac * 1.05 + 12).toFixed(1) + '" ry="9" fill="rgba(20,20,30,0.4)" filter="url(#q3dsoft' + uid + ')"></ellipse>';
   });
 
   // pass 2: top faces (unpopped first, popped one painted last so it visually sits above)
@@ -1309,29 +1449,40 @@ function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, total
     svg += '<path d="' + s.hitPath + '" class="chart-clickable" fill="rgba(0,0,0,0.001)" style="cursor:pointer;transform:' + tf + '" onclick="' + onClickFn + '(' + s.i + ')"></path>';
     svg += '<path d="' + s.topPath + '" class="chart-clickable" fill="url(#top' + uid + s.i + ')" stroke="' + lightenColor(s.color, 0.35) + '" stroke-width="1.2" stroke-linejoin="round" ' +
       'style="cursor:pointer;transition:transform .32s cubic-bezier(.34,1.56,.64,1);transform:' + tf + ';' +
-      (s.popped ? 'filter:drop-shadow(0 10px 14px rgba(0,0,0,0.5));' : 'opacity:' + (poppedIndex !== null && poppedIndex !== undefined ? '0.62' : '1') + ';') +
+      (s.popped ? 'filter:drop-shadow(0 10px 16px ' + s.color + 'aa) drop-shadow(0 4px 8px rgba(0,0,0,0.35));' : 'opacity:' + (poppedIndex !== null && poppedIndex !== undefined ? '0.62' : '1') + ';') +
       '" onclick="' + onClickFn + '(' + s.i + ')">' +
       '<title>' + esc(s.name) + ": " + fmtTHB(s.value) + " (" + (s.frac * 100).toFixed(1) + '%)</title></path>';
   });
 
-  var centerLabel, centerValue, centerSub;
-  var totalCount = data.reduce(function (s, x) { return s + (x.count || 0); }, 0);
-  if (poppedIndex !== null && poppedIndex !== undefined && segs[poppedIndex]) {
-    var sel = segs[poppedIndex];
-    centerLabel = sel.name.length > 12 ? sel.name.slice(0, 11) + "…" : sel.name;
-    centerValue = fmtTHB(sel.value);
-    centerSub = (sel.frac * 100).toFixed(1) + "% · " + sel.count + " งาน";
-  } else {
-    centerLabel = totalLabel || "รวม Won";
-    centerValue = fmtTHB(total);
-    centerSub = totalCount + " งาน จาก " + data.length + " รายการ";
+  // leader-line labels around the outside for segments with a meaningful share (skip tiny slivers to avoid clutter)
+  var LABEL_R = 1.42; // radius multiplier beyond the pie's outer edge
+  segs.forEach(function (s) {
+    if (s.frac < 0.045) return;
+    var dir = polarToCartesian(0, 0, 1, s.mid);
+    var edgeX = CX + dir.x * R_OUT_X, edgeY = CY + dir.y * R_OUT_Y * 1.15;
+    var labelX = CX + dir.x * R_OUT_X * LABEL_R, labelY = CY + dir.y * R_OUT_Y * LABEL_R * 1.15;
+    var isRight = dir.x >= 0;
+    var kinkX = labelX + (isRight ? 10 : -10);
+    svg += '<polyline points="' + edgeX.toFixed(1) + ',' + edgeY.toFixed(1) + ' ' + labelX.toFixed(1) + ',' + labelY.toFixed(1) + ' ' + kinkX.toFixed(1) + ',' + labelY.toFixed(1) + '" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2.5,2.5" style="pointer-events:none"></polyline>' +
+      '<circle cx="' + edgeX.toFixed(1) + '" cy="' + edgeY.toFixed(1) + '" r="2" fill="rgba(255,255,255,0.75)" style="pointer-events:none"></circle>' +
+      '<text x="' + (kinkX + (isRight ? 3 : -3)).toFixed(1) + '" y="' + (labelY - 2).toFixed(1) + '" text-anchor="' + (isRight ? "start" : "end") + '" font-size="9.5" font-weight="700" fill="' + s.color + '" font-family="Arial" style="pointer-events:none">' + (s.frac * 100).toFixed(0) + '%</text>' +
+      '<text x="' + (kinkX + (isRight ? 3 : -3)).toFixed(1) + '" y="' + (labelY + 9).toFixed(1) + '" text-anchor="' + (isRight ? "start" : "end") + '" font-size="7.5" fill="rgba(255,255,255,0.55)" font-family="Arial" style="pointer-events:none">' + esc(s.name.length > 10 ? s.name.slice(0, 9) + "…" : s.name) + '</text>';
+  });
+
+  // callout bubble for the featured segment: the popped one, or the largest by default
+  var featuredIdx = (poppedIndex !== null && poppedIndex !== undefined) ? poppedIndex : segs.reduce(function (best, s, i) { return s.value > segs[best].value ? i : best; }, 0);
+  var feat = segs[featuredIdx];
+  if (feat) {
+    var fdir = polarToCartesian(0, 0, 1, feat.mid);
+    var bubbleCx = CX + fdir.x * R_OUT_X * 0.55, bubbleCy = CY - R_OUT_Y * 1.75 + fdir.y * 6;
+    var bubbleW = 66, bubbleH = 38;
+    var connX = CX + fdir.x * R_OUT_X * 0.7, connY = CY + fdir.y * R_OUT_Y * 0.55 - WALL * 0.2;
+    svg += '<line x1="' + connX.toFixed(1) + '" y1="' + connY.toFixed(1) + '" x2="' + bubbleCx.toFixed(1) + '" y2="' + (bubbleCy + bubbleH / 2).toFixed(1) + '" stroke="rgba(255,255,255,0.4)" stroke-width="1" style="pointer-events:none"></line>' +
+      '<rect x="' + (bubbleCx - bubbleW / 2).toFixed(1) + '" y="' + (bubbleCy - bubbleH / 2).toFixed(1) + '" width="' + bubbleW + '" height="' + bubbleH + '" rx="10" fill="#fff" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.28))" style="pointer-events:none"></rect>' +
+      '<text x="' + bubbleCx.toFixed(1) + '" y="' + (bubbleCy - 3).toFixed(1) + '" text-anchor="middle" font-size="14" font-weight="800" fill="#1F2937" font-family="Arial" style="pointer-events:none">' + (feat.frac * 100).toFixed(0) + '%</text>' +
+      '<text x="' + bubbleCx.toFixed(1) + '" y="' + (bubbleCy + 12).toFixed(1) + '" text-anchor="middle" font-size="7.5" fill="#6B7280" font-family="Arial" style="pointer-events:none">' + (feat.count || 1) + ' รายการ</text>';
   }
-  svg += '<ellipse cx="110" cy="114" rx="56" ry="32" fill="rgba(11,18,32,0.72)" stroke="rgba(255,255,255,0.15)" stroke-width="1" style="pointer-events:none"></ellipse>' +
-    '<g style="pointer-events:none">' +
-    '<text x="110" y="97" text-anchor="middle" font-size="11" fill="#94A3B8" font-family="Arial">' + esc(centerLabel) + '</text>' +
-    '<text x="110" y="117" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="Arial">' + centerValue + '</text>' +
-    '<text x="110" y="133" text-anchor="middle" font-size="9" fill="#C9A227" font-family="Arial">' + esc(centerSub) + '</text>' +
-    '</g>';
+
   svg += "</svg>";
   return svg;
 }
@@ -1572,7 +1723,7 @@ function focusToggleBtn(value, current, label) {
 
 function buildFocusCardInner() {
   var data = computeFocusData();
-  var colors = data.map(function (_, i) { return PIE_COLORS[i % PIE_COLORS.length]; });
+  var colors = data.map(function (_, i) { return DONUT_COLORS[i % DONUT_COLORS.length]; });
   var donut = svgFocusDonut(data, "value", "label", colors, STATE.focusPopped, 200);
   var total = data.reduce(function (s, x) { return s + (x.value || 0); }, 0) || 1;
   var legend = data.map(function (x, i) {
@@ -1649,7 +1800,7 @@ function buildSegCardInner() {
   var d = computeDerived();
   var data = d.segmentSplit;
   var total = data.reduce(function (s, x) { return s + x.value; }, 0) || 1;
-  var segColors = [COLORS.blue, COLORS.coral, COLORS.violet];
+  var segColors = [DONUT_COLORS[0], DONUT_COLORS[2], DONUT_COLORS[3]];
   var colors = data.map(function (_, i) { return segColors[i % segColors.length]; });
   var donut = svgFocusDonut(data, "value", "name", colors, STATE.segPopped, 170, null, "toggleSegSlice");
   var legend = data.map(function (x, i) {
@@ -1708,7 +1859,7 @@ function buildForecastChartInner() {
       count: rest.reduce(function (s, c) { return s + c.count; }, 0), jobs: []
     });
   }
-  var colors = chartData.map(function (_, i) { return PIE_COLORS[i % PIE_COLORS.length]; });
+  var colors = chartData.map(function (_, i) { return DONUT_COLORS[i % DONUT_COLORS.length]; });
   var donut = svgFocusDonut(chartData, "value", "label", colors, STATE.forecastPopped, 170, "รวม Forecast", "toggleForecastSlice");
   var legend = chartData.map(function (x, i) {
     var popped = STATE.forecastPopped === i;
