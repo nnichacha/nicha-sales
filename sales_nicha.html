@@ -1459,6 +1459,7 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
       mesh.userData = { index: i, dirX: Math.cos(midAngle), dirY: Math.sin(midAngle), isSliced: poppedIndex === i };
       var dist = mesh.userData.isSliced ? 28 : 0;
       mesh.position.set(mesh.userData.dirX * dist, mesh.userData.dirY * dist, 0);
+      mesh.scale.z = mesh.userData.isSliced ? 1.5 : 1; // grows taller from its base, not just floats — extrusion is along local Z so this stretches height directly
 
       group.add(mesh);
       slices.push(mesh);
@@ -1482,6 +1483,7 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
           var d2 = m.userData.isSliced ? 32 : 0;
           m.position.x = m.userData.dirX * d2;
           m.position.y = m.userData.dirY * d2;
+          m.scale.z = m.userData.isSliced ? 1.5 : 1; // grows taller from its base, not just floats
         });
         renderer.render(scene, camera);
         if (typeof window[onClickFn] === "function") window[onClickFn](clicked.userData.index); // onClickFn arrives as a global function *name* (string), matching this app's convention — must be looked up, not called directly
@@ -1501,24 +1503,27 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
 function mountThreePieEnhancement(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn) {
   var fastPath = THREE_CONFIRMED_READY && typeof THREE !== "undefined";
   var tries = 0;
-  var maxTries = fastPath ? 10 : 20; // fast path still needs a few short retries in case the container hasn't landed in the DOM yet (this render's HTML string is often inserted a moment after this call runs)
-  var delay = fastPath ? 16 : 300; // ~one frame when we already know THREE is ready, otherwise a slower poll while we wait for the CDN
+  var maxTries = fastPath ? 12 : 20; // fast path still needs a few retries in case the container hasn't landed in the DOM yet (this render's HTML string is often inserted a moment after this call runs)
   function attempt() {
     tries++;
     var container = document.getElementById(containerId);
     if (!container) {
-      if (tries < maxTries) window.setTimeout(attempt, delay);
+      if (tries < maxTries) scheduleRetry();
       return; // section not in the DOM yet (or no longer on screen) — retry a few times, then give up quietly
     }
     if (typeof THREE !== "undefined") {
       initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn);
       return;
     }
-    if (tries < maxTries) window.setTimeout(attempt, delay); // keep polling in case the CDN is still loading; otherwise the SVG chart already showing stays as-is
+    if (tries < maxTries) scheduleRetry(); // keep polling in case the CDN is still loading; otherwise the SVG chart already showing stays as-is
   }
-  window.setTimeout(attempt, fastPath ? 0 : 50);
+  function scheduleRetry() {
+    if (fastPath) window.requestAnimationFrame(attempt); // paint-synchronized — avoids the browser ever painting an intermediate blank frame between the old and new chart
+    else window.setTimeout(attempt, 300);
+  }
+  if (fastPath) window.requestAnimationFrame(attempt);
+  else window.setTimeout(attempt, 50);
 }
-
 
 
 function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
