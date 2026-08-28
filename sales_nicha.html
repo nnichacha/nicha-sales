@@ -296,6 +296,13 @@ function fmtTHB(n) {
   if (n === null || n === undefined || isNaN(n)) return "-";
   return new Intl.NumberFormat("en-US").format(Math.round(n));
 }
+function fmtCompactTHB(n) {
+  if (n === null || n === undefined || isNaN(n)) return "-";
+  var abs = Math.abs(n);
+  if (abs >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (abs >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+  return String(Math.round(n));
+}
 function fmtPct(n) {
   if (n === null || n === undefined || isNaN(n)) return "-";
   return (n * 100).toFixed(1) + "%";
@@ -1366,12 +1373,15 @@ function buildCssPetalChart(data, valueKey, nameKey, colors, poppedIndex, size, 
 }
 
 var Q3D_INSTANCE_COUNTER = 0;
+
 /* ============================== THREE.JS WEBGL 3D PIE ============================== */
 var THREE_PIE_INSTANCES = {};
+var THREE_CONFIRMED_READY = false; // once true, later mounts skip the polling delay entirely — avoids an "SVG flashes, then swaps to WebGL" handoff on every click
 
 function disposeThreePie(containerId) {
   var inst = THREE_PIE_INSTANCES[containerId];
   if (!inst) return;
+  try { cancelAnimationFrame(inst.frameId); } catch (e) {}
   try {
     inst.slices.forEach(function (m) {
       m.geometry.dispose(); m.material.dispose();
@@ -1386,6 +1396,7 @@ function disposeThreePie(containerId) {
 function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn) {
   var container = document.getElementById(containerId);
   if (!container || typeof THREE === "undefined") return; // library still loading over the network, or container not mounted yet — caller retries
+  THREE_CONFIRMED_READY = true;
   disposeThreePie(containerId);
 
   var renderer;
@@ -1395,17 +1406,15 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
 
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 1000);
-    camera.position.set(0, -300, 200);
+    camera.position.set(0, -320, 240);
     camera.lookAt(0, 0, 0); // fixed, static view — no drag-to-rotate
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
     renderer.domElement.style.cursor = "pointer";
     // note: the container's existing content (the SVG fallback) is left untouched until the scene below is fully built —
     // if anything throws before that, the SVG chart stays exactly as it was, instead of being left blank.
-
-    var slices = [];
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.75));
     var dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -1414,6 +1423,7 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
 
     var group = new THREE.Group();
     scene.add(group);
+    var slices = [];
     var startAngle = 0;
     var radius = 105;
 
@@ -1429,7 +1439,7 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
       var innerR = radius * 0.34; // center hole
 
       var shape = new THREE.Shape();
-      var steps = Math.max(6, Math.round(angleSpan / (Math.PI * 2) * 64));
+      var steps = 35;
       shape.moveTo(Math.cos(drawStart) * innerR, Math.sin(drawStart) * innerR);
       shape.lineTo(Math.cos(drawStart) * radius, Math.sin(drawStart) * radius);
       for (var k = 0; k <= steps; k++) {
@@ -1443,18 +1453,13 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
       }
       shape.closePath();
 
-      var geometry = new THREE.ExtrudeGeometry(shape, { steps: 1, depth: 46, bevelEnabled: true, bevelThickness: 5, bevelSize: 5, bevelSegments: 6 });
-      var material = new THREE.MeshStandardMaterial({ color: parseInt(color.replace("#", "0x"), 16), roughness: 0.45, metalness: 0.05 });
-      var edgeGeo = new THREE.EdgesGeometry(geometry, 1);
-      var edgeMat = new THREE.LineBasicMaterial({ color: 0x2b3648, transparent: true, opacity: 0.25 });
-      var edgeLines = new THREE.LineSegments(edgeGeo, edgeMat);
+      var geometry = new THREE.ExtrudeGeometry(shape, { steps: 1, depth: 50, bevelEnabled: true, bevelThickness: 6, bevelSize: 6, bevelSegments: 8 });
+      var material = new THREE.MeshStandardMaterial({ color: parseInt(color.replace("#", "0x"), 16), roughness: 0.25, metalness: 0.05 });
       var mesh = new THREE.Mesh(geometry, material);
-      mesh.add(edgeLines);
       var midAngle = startAngle + angleSpan / 2;
-      mesh.userData = { index: i, dirX: Math.cos(midAngle), dirY: Math.sin(midAngle), popped: poppedIndex === i, name: d[nameKey], value: d[valueKey], frac: frac };
-      var dist = mesh.userData.popped ? 20 : 0; // pop outward from center like a cut cake slice
-      var lift = mesh.userData.popped ? 22 : 0; // + rise up
-      mesh.position.set(mesh.userData.dirX * dist, mesh.userData.dirY * dist, lift);
+      mesh.userData = { index: i, dirX: Math.cos(midAngle), dirY: Math.sin(midAngle), isSliced: poppedIndex === i };
+      var dist = mesh.userData.isSliced ? 28 : 0;
+      mesh.position.set(mesh.userData.dirX * dist, mesh.userData.dirY * dist, 0);
 
       group.add(mesh);
       slices.push(mesh);
@@ -1472,44 +1477,55 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
         var intersects = raycaster.intersectObjects(slices);
         if (intersects.length === 0) return;
         var clicked = intersects[0].object;
-        // instant local feedback: pop the clicked slice out + up, settle any other slice back — the app's own re-render (via onClickFn) will follow shortly after and stays the source of truth
-        slices.forEach(function (m) {
-          var isClicked = m === clicked;
-          var willBePopped = isClicked ? !m.userData.popped : false;
-          m.userData.popped = willBePopped;
-          var d2 = willBePopped ? 20 : 0;
-          var lift2 = willBePopped ? 22 : 0;
-          m.position.set(m.userData.dirX * d2, m.userData.dirY * d2, lift2);
+        var willBePopped = !clicked.userData.isSliced;
+        slices.forEach(function (m) { // only one slice popped at a time, matching the app's single-selection state (also resets any previously popped slice immediately, without waiting for the full re-render)
+          m.userData.isSliced = (m === clicked) && willBePopped;
+          var d2 = m.userData.isSliced ? 32 : 0;
+          m.position.x = m.userData.dirX * d2;
+          m.position.y = m.userData.dirY * d2;
         });
         renderer.render(scene, camera);
-        onClickFn(clicked.userData.index);
+        if (typeof window[onClickFn] === "function") window[onClickFn](clicked.userData.index); // onClickFn arrives as a global function *name* (string), matching this app's convention — must be looked up, not called directly
       } catch (e) { /* swallow — leave the last good frame on screen rather than breaking the page */ }
     });
 
     // everything above succeeded — safe to swap the SVG fallback out for the live 3D canvas now
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
-    THREE_PIE_INSTANCES[containerId] = { renderer: renderer, slices: slices };
-    renderer.render(scene, camera);
+    var instRef = { renderer: renderer, slices: slices, frameId: null };
+    THREE_PIE_INSTANCES[containerId] = instRef;
+    function animate() {
+      instRef.frameId = requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
   } catch (e) {
     if (renderer) { try { renderer.dispose(); } catch (e2) {} } // discard whatever partial WebGL state was built — the container/SVG was never touched, so it's still showing correctly
   }
 }
 
 function mountThreePieEnhancement(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn) {
+  var fastPath = THREE_CONFIRMED_READY && typeof THREE !== "undefined";
   var tries = 0;
+  var maxTries = fastPath ? 10 : 20; // fast path still needs a few short retries in case the container hasn't landed in the DOM yet (this render's HTML string is often inserted a moment after this call runs)
+  var delay = fastPath ? 16 : 300; // ~one frame when we already know THREE is ready, otherwise a slower poll while we wait for the CDN
   function attempt() {
     tries++;
     var container = document.getElementById(containerId);
-    if (!container) return; // section no longer on screen (user navigated away) — stop trying
+    if (!container) {
+      if (tries < maxTries) window.setTimeout(attempt, delay);
+      return; // section not in the DOM yet (or no longer on screen) — retry a few times, then give up quietly
+    }
     if (typeof THREE !== "undefined") {
       initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn);
       return;
     }
-    if (tries < 20) window.setTimeout(attempt, 300); // keep polling for ~6s in case the CDN is still loading; otherwise the SVG chart already showing stays as-is
+    if (tries < maxTries) window.setTimeout(attempt, delay); // keep polling in case the CDN is still loading; otherwise the SVG chart already showing stays as-is
   }
-  window.setTimeout(attempt, 50);
+  window.setTimeout(attempt, fastPath ? 0 : 50);
 }
+
+
 
 function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
   onClickFn = onClickFn || "toggleFocusSegment";
@@ -1991,7 +2007,7 @@ function buildForecastChartInner() {
   var rows = computeForecastRows(d);
   if (rows.length === 0) return '<div style="font-size:12px;color:' + COLORS.muted + ';padding:10px 0">ไม่มีงานที่กำลังเสนอราคาอยู่ตอนนี้</div>';
 
-  // aggregate by company so the same customer's multiple On-process jobs combine into one slice
+  // aggregate by company so the same customer's multiple On-process jobs combine into one bar
   var byCompany = {}, order = [];
   rows.forEach(function (p) {
     var c = p.customer || "(ไม่ระบุ)";
@@ -2011,28 +2027,38 @@ function buildForecastChartInner() {
     });
   }
   var colors = chartData.map(function (_, i) { return DONUT_COLORS[i % DONUT_COLORS.length]; });
-  var donutSvg = svgFocusDonut(chartData, "value", "label", colors, STATE.forecastPopped, 170, "รวม Forecast", "toggleForecastSlice");
-  var donut = '<div id="forecast-3d-container" style="width:247px;height:182px;flex-shrink:0">' + donutSvg + '</div>';
-  mountThreePieEnhancement("forecast-3d-container", chartData, "value", "label", colors, STATE.forecastPopped, "toggleForecastSlice");
-  var legend = chartData.map(function (x, i) {
+  var maxVal = Math.max.apply(null, [1].concat(chartData.map(function (x) { return x.value; })));
+  var CHART_H = 150;
+
+  var columns = chartData.map(function (x, i) {
     var popped = STATE.forecastPopped === i;
-    return '<div onclick="toggleForecastSlice(' + i + ')" style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? colors[i] + "1A" : "transparent") + '">' +
-      '<span style="width:8px;height:8px;border-radius:3px;background:' + colors[i] + ';flex-shrink:0"></span>' +
-      '<span style="font-size:10.5px;color:' + COLORS.text + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.label) + '</span>' +
-      '<span class="mono" style="font-size:9px;color:' + COLORS.muted + '">' + x.count + ' งาน</span>' +
-      '<span class="mono" style="font-size:10.5px;color:' + COLORS.ink + ';font-weight:700">' + fmtTHB(x.value) + '</span></div>';
+    var barH = maxVal ? Math.max(4, (x.value / maxVal) * CHART_H) : 4;
+    return '<div onclick="toggleForecastSlice(' + i + ')" style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;cursor:pointer;padding:4px 2px;border-radius:8px;background:' + (popped ? colors[i] + "14" : "transparent") + '">' +
+      '<div class="mono" style="font-size:9.5px;color:' + COLORS.ink + ';font-weight:700;white-space:nowrap;margin-bottom:3px">' + fmtCompactTHB(x.value) + '</div>' +
+      '<div style="height:' + CHART_H + 'px;display:flex;align-items:flex-end;width:100%;justify-content:center">' +
+      '<div style="width:70%;height:' + barH.toFixed(0) + 'px;background:' + colors[i] + ';border-radius:6px 6px 3px 3px;transition:height .3s ease;' + (popped ? "box-shadow:0 0 0 2px " + colors[i] + ";" : "") + '"></div></div>' +
+      '<div style="font-size:9.5px;color:' + COLORS.text + ';margin-top:5px;text-align:center;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">' + esc(x.label) + '</div>' +
+      '<div class="mono" style="font-size:8px;color:' + COLORS.muted + '">' + x.count + ' งาน</div>' +
+      '</div>';
   }).join("");
+
   var jobsDetail = "";
   if (STATE.forecastPopped !== null && chartData[STATE.forecastPopped] && chartData[STATE.forecastPopped].jobs.length) {
     var selJobs = chartData[STATE.forecastPopped].jobs;
-    jobsDetail = '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed ' + COLORS.line + '">' +
+    jobsDetail = '<div style="margin-top:10px;padding:8px 10px;background:' + COLORS.canvas + ';border-radius:8px">' +
+      '<div style="font-size:10px;color:' + COLORS.muted + ';margin-bottom:4px;font-weight:700">' + esc(chartData[STATE.forecastPopped].label) + ' — รายการงาน</div>' +
       selJobs.map(function (p) {
-        return '<div onclick="openEditProjectForm(' + p.id + ')" style="display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px;cursor:pointer" onmouseover="this.style.background=\'' + COLORS.canvas + '\'" onmouseout="this.style.background=\'transparent\'">' +
-          '<span style="font-size:10px;color:' + COLORS.muted + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</span>' +
-          '<span class="mono" style="font-size:10px;color:' + COLORS.ink + '">' + fmtTHB(p.sale) + '</span></div>';
+        return '<div onclick="openEditProjectForm(' + p.id + ')" style="display:flex;align-items:center;gap:6px;padding:3px 4px;border-radius:5px;cursor:pointer" onmouseover="this.style.background=\'#fff\'" onmouseout="this.style.background=\'transparent\'">' +
+          '<span style="font-size:10.5px;color:' + COLORS.muted + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</span>' +
+          '<span class="mono" style="font-size:10.5px;color:' + COLORS.ink + '">' + fmtTHB(p.sale) + '</span></div>';
       }).join("") + '</div>';
   }
-  return '<div style="display:flex;align-items:center;gap:14px">' + donut + '<div style="flex:1;min-width:0;max-height:190px;overflow-y:auto">' + legend + jobsDetail + '</div></div>';
+
+  var totalVal = chartData.reduce(function (s, x) { return s + x.value; }, 0);
+  return '<div>' +
+    '<div style="font-size:10.5px;color:' + COLORS.muted + ';margin-bottom:12px">รวม Forecast ' + fmtTHB(totalVal) + ' บาท จาก ' + chartData.reduce(function (s, x) { return s + x.count; }, 0) + ' งาน</div>' +
+    '<div style="display:flex;align-items:flex-end;gap:4px">' + columns + '</div>' +
+    jobsDetail + '</div>';
 }
 function refreshForecastChart() {
   var wrap = document.getElementById("forecast-chart-wrap");
