@@ -1381,7 +1381,6 @@ var THREE_CONFIRMED_READY = false; // once true, later mounts skip the polling d
 function disposeThreePie(containerId) {
   var inst = THREE_PIE_INSTANCES[containerId];
   if (!inst) return;
-  try { cancelAnimationFrame(inst.frameId); } catch (e) {}
   try {
     inst.slices.forEach(function (m) {
       m.geometry.dispose(); m.material.dispose();
@@ -1492,13 +1491,8 @@ function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex,
     // everything above succeeded — safe to swap the SVG fallback out for the live 3D canvas now
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
-    var instRef = { renderer: renderer, slices: slices, frameId: null };
-    THREE_PIE_INSTANCES[containerId] = instRef;
-    function animate() {
-      instRef.frameId = requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-    animate();
+    THREE_PIE_INSTANCES[containerId] = { renderer: renderer, slices: slices };
+    renderer.render(scene, camera); // render once — nothing in this scene animates on its own, so no continuous loop is needed (a continuous loop risks a disposed/detached instance still rendering a stray frame if disposal and a fresh mount ever overlap)
   } catch (e) {
     if (renderer) { try { renderer.dispose(); } catch (e2) {} } // discard whatever partial WebGL state was built — the container/SVG was never touched, so it's still showing correctly
   }
