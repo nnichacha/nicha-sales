@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="Sales_Nicha" />
 <link rel="icon" href="icon-192.png" type="image/png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -272,8 +273,8 @@ var COLORS = {
   teal: "#0E9AA8", violet: "#7C4FE0", emerald: "#1FAE63", coral: "#F0793C", rose: "#E0446B", vividRed: "#DC2626"
 };
 var PIE_COLORS = [COLORS.blue, COLORS.teal, COLORS.gold, COLORS.emerald, COLORS.coral, COLORS.violet, COLORS.rose, COLORS.sky];
-/* Retro-playful "game piece" palette for the 3D donut/pie charts specifically (teal-coral-gold) */
-var DONUT_COLORS = ["#2BA8A2", "#FFD23F", "#EF6C4A", "#5DADE2", "#27AE60", "#3CC4BD", "#E6B800", "#D45233"];
+/* Donut/pie charts reuse the site's own established palette for visual consistency (credible, modern — matches every other chart on the dashboard) */
+var DONUT_COLORS = PIE_COLORS;
 
 var DEFAULT_STATUSES = [
   { name: "Done Q1", category: "Won", color: COLORS.green },
@@ -779,10 +780,9 @@ function parseBulkText(text) {
       note: get(0),
       status: get(1),
       requestedDate: parseThaiDateSlash(get(2)),
-      invoice: get(3),
-      customer: get(4),
-      description: get(5),
-      sale: parseSaleNumber(get(6)),
+      customer: get(3),
+      description: get(4),
+      sale: parseSaleNumber(get(5)),
       _raw: line
     };
   });
@@ -832,7 +832,7 @@ function submitBulkAdd() {
       id: nextId + i,
       customer: r.customer, segment: defaults.segment, type: defaults.type, name: "", phone: "",
       description: r.description, workType: defaults.workType, requestedDate: r.requestedDate, deadline: "", sendQu: "",
-      note: r.note, invoice: r.invoice,
+      note: r.note, invoice: "",
       status: knownStatusNames.indexOf(r.status) !== -1 ? r.status : (r.status || (STATE.statuses[0] || {}).name || ""),
       sale: r.sale, month: ""
     };
@@ -895,13 +895,15 @@ function computeDerived() {
   withCat.forEach(function (p) {
     if (!custMap[p.customer]) {
       custMap[p.customer] = {
-        customer: p.customer, segment: p.segment, type: p.type,
+        customer: p.customer, segTypeSet: {}, segTypeOrder: [],
         totalQuoted: 0, won: 0, lost: 0, pending: 0, machineWon: 0, fabWon: 0,
         totalJobs: 0, wonJobs: 0, lostJobs: 0
       };
       custOrder.push(p.customer);
     }
     var c = custMap[p.customer];
+    var segKey = (p.segment || "-") + "|" + (p.type || "-");
+    if ((p.segment || p.type) && !c.segTypeSet[segKey]) { c.segTypeSet[segKey] = true; c.segTypeOrder.push({ segment: p.segment || "-", type: p.type || "-" }); }
     var sale = p.sale || 0;
     c.totalQuoted += sale;
     c.totalJobs += 1;
@@ -1364,6 +1366,151 @@ function buildCssPetalChart(data, valueKey, nameKey, colors, poppedIndex, size, 
 }
 
 var Q3D_INSTANCE_COUNTER = 0;
+/* ============================== THREE.JS WEBGL 3D PIE ============================== */
+var THREE_PIE_INSTANCES = {};
+
+function disposeThreePie(containerId) {
+  var inst = THREE_PIE_INSTANCES[containerId];
+  if (!inst) return;
+  try {
+    inst.slices.forEach(function (m) {
+      m.geometry.dispose(); m.material.dispose();
+      m.children.forEach(function (c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+    });
+    inst.renderer.dispose();
+  } catch (e) {}
+  try { if (inst.renderer.domElement && inst.renderer.domElement.parentNode) inst.renderer.domElement.parentNode.removeChild(inst.renderer.domElement); } catch (e) {}
+  delete THREE_PIE_INSTANCES[containerId];
+}
+
+function initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn) {
+  var container = document.getElementById(containerId);
+  if (!container || typeof THREE === "undefined") return; // library still loading over the network, or container not mounted yet — caller retries
+  disposeThreePie(containerId);
+
+  var renderer;
+  try {
+    var total = data.reduce(function (s, d) { return s + (d[valueKey] || 0); }, 0) || 1;
+    var w = container.clientWidth || 200, h = container.clientHeight || 180;
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 1000);
+    camera.position.set(0, -300, 200);
+    camera.lookAt(0, 0, 0); // fixed, static view — no drag-to-rotate
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.domElement.style.cursor = "pointer";
+    // note: the container's existing content (the SVG fallback) is left untouched until the scene below is fully built —
+    // if anything throws before that, the SVG chart stays exactly as it was, instead of being left blank.
+
+    var slices = [];
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+    var dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(150, -200, 350);
+    scene.add(dirLight);
+
+    var group = new THREE.Group();
+    scene.add(group);
+    var startAngle = 0;
+    var radius = 105;
+
+    data.forEach(function (d, i) {
+      var frac = (d[valueKey] || 0) / total;
+      var angleSpan = frac * Math.PI * 2;
+      var endAngle = startAngle + angleSpan;
+      var color = (colors && colors[i]) || DONUT_COLORS[i % DONUT_COLORS.length]; // each slice gets its own distinct color
+
+      var gap = Math.min(0.1, angleSpan * 0.4); // radians of visual separation — scaled down for tiny slices so they never collapse to zero width
+      var drawStart = startAngle + gap / 2, drawEnd = endAngle - gap / 2;
+      if (drawEnd < drawStart) drawEnd = drawStart;
+      var innerR = radius * 0.34; // center hole
+
+      var shape = new THREE.Shape();
+      var steps = Math.max(6, Math.round(angleSpan / (Math.PI * 2) * 64));
+      shape.moveTo(Math.cos(drawStart) * innerR, Math.sin(drawStart) * innerR);
+      shape.lineTo(Math.cos(drawStart) * radius, Math.sin(drawStart) * radius);
+      for (var k = 0; k <= steps; k++) {
+        var a = drawStart + (drawEnd - drawStart) * k / steps;
+        shape.lineTo(Math.cos(a) * radius, Math.sin(a) * radius);
+      }
+      shape.lineTo(Math.cos(drawEnd) * innerR, Math.sin(drawEnd) * innerR);
+      for (var k2 = steps; k2 >= 0; k2--) {
+        var a2 = drawStart + (drawEnd - drawStart) * k2 / steps;
+        shape.lineTo(Math.cos(a2) * innerR, Math.sin(a2) * innerR);
+      }
+      shape.closePath();
+
+      var geometry = new THREE.ExtrudeGeometry(shape, { steps: 1, depth: 46, bevelEnabled: true, bevelThickness: 5, bevelSize: 5, bevelSegments: 6 });
+      var material = new THREE.MeshStandardMaterial({ color: parseInt(color.replace("#", "0x"), 16), roughness: 0.45, metalness: 0.05 });
+      var edgeGeo = new THREE.EdgesGeometry(geometry, 1);
+      var edgeMat = new THREE.LineBasicMaterial({ color: 0x2b3648, transparent: true, opacity: 0.25 });
+      var edgeLines = new THREE.LineSegments(edgeGeo, edgeMat);
+      var mesh = new THREE.Mesh(geometry, material);
+      mesh.add(edgeLines);
+      var midAngle = startAngle + angleSpan / 2;
+      mesh.userData = { index: i, dirX: Math.cos(midAngle), dirY: Math.sin(midAngle), popped: poppedIndex === i, name: d[nameKey], value: d[valueKey], frac: frac };
+      var dist = mesh.userData.popped ? 20 : 0; // pop outward from center like a cut cake slice
+      var lift = mesh.userData.popped ? 22 : 0; // + rise up
+      mesh.position.set(mesh.userData.dirX * dist, mesh.userData.dirY * dist, lift);
+
+      group.add(mesh);
+      slices.push(mesh);
+      startAngle = endAngle;
+    });
+
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+    renderer.domElement.addEventListener("click", function (e) {
+      try {
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(slices);
+        if (intersects.length === 0) return;
+        var clicked = intersects[0].object;
+        // instant local feedback: pop the clicked slice out + up, settle any other slice back — the app's own re-render (via onClickFn) will follow shortly after and stays the source of truth
+        slices.forEach(function (m) {
+          var isClicked = m === clicked;
+          var willBePopped = isClicked ? !m.userData.popped : false;
+          m.userData.popped = willBePopped;
+          var d2 = willBePopped ? 20 : 0;
+          var lift2 = willBePopped ? 22 : 0;
+          m.position.set(m.userData.dirX * d2, m.userData.dirY * d2, lift2);
+        });
+        renderer.render(scene, camera);
+        onClickFn(clicked.userData.index);
+      } catch (e) { /* swallow — leave the last good frame on screen rather than breaking the page */ }
+    });
+
+    // everything above succeeded — safe to swap the SVG fallback out for the live 3D canvas now
+    container.innerHTML = "";
+    container.appendChild(renderer.domElement);
+    THREE_PIE_INSTANCES[containerId] = { renderer: renderer, slices: slices };
+    renderer.render(scene, camera);
+  } catch (e) {
+    if (renderer) { try { renderer.dispose(); } catch (e2) {} } // discard whatever partial WebGL state was built — the container/SVG was never touched, so it's still showing correctly
+  }
+}
+
+function mountThreePieEnhancement(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn) {
+  var tries = 0;
+  function attempt() {
+    tries++;
+    var container = document.getElementById(containerId);
+    if (!container) return; // section no longer on screen (user navigated away) — stop trying
+    if (typeof THREE !== "undefined") {
+      initThreePie(containerId, data, valueKey, nameKey, colors, poppedIndex, onClickFn);
+      return;
+    }
+    if (tries < 20) window.setTimeout(attempt, 300); // keep polling for ~6s in case the CDN is still loading; otherwise the SVG chart already showing stays as-is
+  }
+  window.setTimeout(attempt, 50);
+}
+
 function svgFocusDonut(data, valueKey, nameKey, colors, poppedIndex, size, totalLabel, onClickFn) {
   onClickFn = onClickFn || "toggleFocusSegment";
   size = size || 230;
@@ -1724,7 +1871,9 @@ function focusToggleBtn(value, current, label) {
 function buildFocusCardInner() {
   var data = computeFocusData();
   var colors = data.map(function (_, i) { return DONUT_COLORS[i % DONUT_COLORS.length]; });
-  var donut = svgFocusDonut(data, "value", "label", colors, STATE.focusPopped, 200);
+  var donutSvg = svgFocusDonut(data, "value", "label", colors, STATE.focusPopped, 200);
+  var donut = '<div id="focus-3d-container" style="width:291px;height:214px;flex-shrink:0">' + donutSvg + '</div>';
+  mountThreePieEnhancement("focus-3d-container", data, "value", "label", colors, STATE.focusPopped, "toggleFocusSegment");
   var total = data.reduce(function (s, x) { return s + (x.value || 0); }, 0) || 1;
   var legend = data.map(function (x, i) {
     var pct = ((x.value || 0) / total * 100).toFixed(1);
@@ -1802,7 +1951,9 @@ function buildSegCardInner() {
   var total = data.reduce(function (s, x) { return s + x.value; }, 0) || 1;
   var segColors = [DONUT_COLORS[0], DONUT_COLORS[2], DONUT_COLORS[3]];
   var colors = data.map(function (_, i) { return segColors[i % segColors.length]; });
-  var donut = svgFocusDonut(data, "value", "name", colors, STATE.segPopped, 170, null, "toggleSegSlice");
+  var donutSvg = svgFocusDonut(data, "value", "name", colors, STATE.segPopped, 170, null, "toggleSegSlice");
+  var donut = '<div id="seg-3d-container" style="width:247px;height:182px;flex-shrink:0">' + donutSvg + '</div>';
+  mountThreePieEnhancement("seg-3d-container", data, "value", "name", colors, STATE.segPopped, "toggleSegSlice");
   var legend = data.map(function (x, i) {
     var pct = ((x.value || 0) / total * 100).toFixed(1);
     var popped = STATE.segPopped === i;
@@ -1860,7 +2011,9 @@ function buildForecastChartInner() {
     });
   }
   var colors = chartData.map(function (_, i) { return DONUT_COLORS[i % DONUT_COLORS.length]; });
-  var donut = svgFocusDonut(chartData, "value", "label", colors, STATE.forecastPopped, 170, "รวม Forecast", "toggleForecastSlice");
+  var donutSvg = svgFocusDonut(chartData, "value", "label", colors, STATE.forecastPopped, 170, "รวม Forecast", "toggleForecastSlice");
+  var donut = '<div id="forecast-3d-container" style="width:247px;height:182px;flex-shrink:0">' + donutSvg + '</div>';
+  mountThreePieEnhancement("forecast-3d-container", chartData, "value", "label", colors, STATE.forecastPopped, "toggleForecastSlice");
   var legend = chartData.map(function (x, i) {
     var popped = STATE.forecastPopped === i;
     return '<div onclick="toggleForecastSlice(' + i + ')" style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? colors[i] + "1A" : "transparent") + '">' +
@@ -2558,7 +2711,9 @@ function refreshCustomersTable(d) {
     var bg = i % 2 ? COLORS.canvas : "#fff";
     return '<tr class="row-hover" style="background:' + bg + '">' +
       '<td class="td-cell"><strong style="font-size:12.5px">' + esc(c.customer) + '</strong></td>' +
-      '<td class="td-cell"><div style="font-size:12px">' + esc(c.segment) + '</div><div style="font-size:11px;color:' + COLORS.muted + '">' + esc(c.type) + '</div></td>' +
+      '<td class="td-cell">' + c.segTypeOrder.map(function (st) {
+        return '<div style="margin-bottom:2px"><span style="font-size:12px">' + esc(st.segment) + '</span><span style="font-size:11px;color:' + COLORS.muted + '"> / ' + esc(st.type) + '</span></div>';
+      }).join("") + '</td>' +
       '<td class="td-cell num-td">' + fmtTHB(c.totalQuoted) + '</td>' +
       '<td class="td-cell num-td" style="color:' + COLORS.green + ';font-weight:600">' + fmtTHB(c.won) + '</td>' +
       '<td class="td-cell num-td" style="color:' + COLORS.red + '">' + fmtTHB(c.lost) + '</td>' +
@@ -3303,10 +3458,10 @@ function renderBulkAddModal() {
   return '<div class="modal-overlay" onmousedown="if(event.target===this) closeBulkAddModal()">' +
     '<div class="modal-panel" style="width:700px">' +
     '<div class="modal-header"><div><div class="disp" style="font-size:17px">เพิ่มงานหลายรายการ (วางจาก Excel)</div>' +
-    '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:2px">คัดลอกแถวจาก Excel มาวางได้เลย เรียงคอลัมน์: Job No. → Status → วันที่ (dd/mm/yy) → Invoice → ลูกค้า → รายละเอียดงาน → มูลค่า</div></div>' +
+    '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:2px">คัดลอกแถวจาก Excel มาวางได้เลย เรียงคอลัมน์: Job No. → Status → วันที่ (dd/mm/yy) → ลูกค้า → รายละเอียดงาน → มูลค่า</div></div>' +
     '<button type="button" class="icon-btn" onclick="closeBulkAddModal()">' + icon("x", 17) + '</button></div>' +
     '<div style="padding:18px 22px;overflow-y:auto;flex:1">' +
-    '<textarea id="bulk-add-textarea" class="field-input" style="min-height:130px;font-family:Consolas,monospace;font-size:12px;resize:vertical" placeholder="J1774&#9;On process&#9;31/07/26&#9;&#9;SNU&#9;Ball valve 6&quot; 600# welding&#9;15,000.00" oninput="refreshBulkPreview()"></textarea>' +
+    '<textarea id="bulk-add-textarea" class="field-input" style="min-height:130px;font-family:Consolas,monospace;font-size:12px;resize:vertical" placeholder="J1774&#9;On process&#9;31/07/26&#9;SNU&#9;Ball valve 6&quot; 600# welding&#9;15,000.00" oninput="refreshBulkPreview()"></textarea>' +
     '<div style="margin-top:14px" id="bulk-preview-wrap">' + '<div style="font-size:12px;color:' + COLORS.muted + ';padding:10px 0">วางข้อมูลด้านบนเพื่อดูตัวอย่าง</div>' + '</div>' +
     '<div style="font-size:10.5px;color:' + COLORS.muted + ';margin-top:10px">ช่องที่ไม่ได้ระบุ (Segment, Type, ประเภทงาน, ผู้ติดต่อ, เบอร์โทร, Deadline ฯลฯ) จะเว้นว่างไว้ให้แก้ไขเพิ่มทีหลังในตาราง</div>' +
     '</div>' +
