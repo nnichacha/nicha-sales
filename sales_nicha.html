@@ -902,15 +902,14 @@ function computeDerived() {
   withCat.forEach(function (p) {
     if (!custMap[p.customer]) {
       custMap[p.customer] = {
-        customer: p.customer, segTypeSet: {}, segTypeOrder: [],
+        customer: p.customer, latestSegType: null, latestId: -Infinity,
         totalQuoted: 0, won: 0, lost: 0, pending: 0, machineWon: 0, fabWon: 0,
         totalJobs: 0, wonJobs: 0, lostJobs: 0
       };
       custOrder.push(p.customer);
     }
     var c = custMap[p.customer];
-    var segKey = (p.segment || "-") + "|" + (p.type || "-");
-    if ((p.segment || p.type) && !c.segTypeSet[segKey]) { c.segTypeSet[segKey] = true; c.segTypeOrder.push({ segment: p.segment || "-", type: p.type || "-" }); }
+    if ((p.segment || p.type) && p.id > c.latestId) { c.latestId = p.id; c.latestSegType = { segment: p.segment || "-", type: p.type || "-" }; } // always reflects the most recently added/edited job for this customer
     var sale = p.sale || 0;
     c.totalQuoted += sale;
     c.totalJobs += 1;
@@ -2738,9 +2737,9 @@ function refreshCustomersTable(d) {
     var bg = i % 2 ? COLORS.canvas : "#fff";
     return '<tr class="row-hover" style="background:' + bg + '">' +
       '<td class="td-cell"><strong style="font-size:12.5px">' + esc(c.customer) + '</strong></td>' +
-      '<td class="td-cell">' + c.segTypeOrder.map(function (st) {
-        return '<div style="margin-bottom:2px"><span style="font-size:12px">' + esc(st.segment) + '</span><span style="font-size:11px;color:' + COLORS.muted + '"> / ' + esc(st.type) + '</span></div>';
-      }).join("") + '</td>' +
+      '<td class="td-cell">' + (c.latestSegType
+        ? '<div><span style="font-size:12px">' + esc(c.latestSegType.segment) + '</span><span style="font-size:11px;color:' + COLORS.muted + '"> / ' + esc(c.latestSegType.type) + '</span></div>'
+        : '<span style="font-size:12px;color:' + COLORS.muted + '">-</span>') + '</td>' +
       '<td class="td-cell num-td">' + fmtTHB(c.totalQuoted) + '</td>' +
       '<td class="td-cell num-td" style="color:' + COLORS.green + ';font-weight:600">' + fmtTHB(c.won) + '</td>' +
       '<td class="td-cell num-td" style="color:' + COLORS.red + '">' + fmtTHB(c.lost) + '</td>' +
