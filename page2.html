@@ -1519,7 +1519,16 @@
             </div>
           </div>
         </div>
-        <div class="visited-body open" id="targetsBody"></div>
+        <div class="visited-body open" id="targetsBody">
+          <div id="targetsGridView"></div>
+          <div id="targetsDetailView" style="display:none;">
+            <button class="estate-back-btn" id="targetsBackBtn">← กลับไปเลือกกลุ่ม</button>
+            <div class="estate-detail-header">
+              <div class="estate-detail-code" id="targetsDetailTitle"></div>
+            </div>
+            <div class="visited-grid" id="targetsDetailCards"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2290,6 +2299,7 @@ function refreshContactSummaryFromCache(){
   renderVisitedSection();
   if (typeof window.refreshOpenVisitedDetail === 'function') window.refreshOpenVisitedDetail();
   if (typeof renderTargetsPage === 'function') renderTargetsPage();
+  if (typeof window.refreshOpenTargetsDetail === 'function') window.refreshOpenTargetsDetail();
   if (typeof window.refreshOpenEstateDetail === 'function') window.refreshOpenEstateDetail();
   if (typeof window.refreshEstateGridInner === 'function') window.refreshEstateGridInner();
 }
@@ -2436,13 +2446,15 @@ function renderVisitedSection(){
 
 // ---- companies still needing action: เกี่ยวข้อง + ยังไม่ได้เข้าพบ ----
 function renderTargetsPage(){
-  const body = document.getElementById('targetsBody');
+  const gridView = document.getElementById('targetsGridView');
+  const detailView = document.getElementById('targetsDetailView');
   const meta = document.getElementById('targetsMeta');
-  if (!body) return;
+  if (!gridView) return;
 
   // pipeline groups: companies actively being worked (interesting/follow-up) plus
   // the ones already won (Customer / New customer) — never anything marked not
   // interesting or not relevant, and never anything with no outcome set yet
+  // (order kept exactly as before: น่าสนใจ, รอติดตาม, Customer, New customer)
   const groups = [
     {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
     {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
@@ -2464,66 +2476,83 @@ function renderTargetsPage(){
 
   meta.textContent = `${total} แห่ง`;
   if (total === 0){
-    body.innerHTML = `<div class="visited-empty">ยังไม่มีบริษัทในกลุ่มนี้ตอนนี้</div>`;
+    gridView.innerHTML = `<div class="visited-empty">ยังไม่มีบริษัทในกลุ่มนี้ตอนนี้</div>`;
+    detailView.style.display = 'none';
+    gridView.style.display = '';
     return;
   }
 
-  const allEntries = [];
-  const sectionsHtml = groups.map(g=>{
-    if (targetsFocusedGroup && targetsFocusedGroup !== g.key) return ''; // isolate mode: skip other groups entirely
-    const items = buckets[g.key].sort((a,b)=> a.info.name.localeCompare(b.info.name,'th'));
-    if (!items.length) return '';
-    items.forEach(v=> allEntries.push(v));
-    const cards = items.map(v=>{
-      const estateFull = v.info.estate ? fullNameOfEstate(v.info.estate) : '';
-      const estateBadge = v.info.estate ? `<div class="vc-estate-badge" title="นิคม: ${estateFull}">🏭 ${v.info.estate}</div>` : '';
-      return `
-      <div class="visited-card" data-id="${v.id}" style="--vc-accent:${g.accent};">
-        <div class="vc-summary">
-          <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
-          <div class="vc-name">${v.info.name}</div>
-          <div class="vc-loc">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
+  // top-level grid: one clickable box per group, in the same order as before
+  gridView.innerHTML = `
+    <div class="estate-zone-grid">
+      ${groups.map(g=>{
+        const n = buckets[g.key].length;
+        return `<button class="estate-zone" data-group="${g.key}" style="border-color:${n?g.accent+'55':''};">
+          <div class="estate-zone-code" style="color:${n?g.accent:'#fff'};">${g.label}</div>
+          <small>${n} บริษัท</small>
+        </button>`;
+      }).join('')}
+    </div>
+  `;
+  gridView.querySelectorAll('.estate-zone').forEach(btn=>{
+    btn.addEventListener('click', ()=> openTargetsGroupDetail(btn.dataset.group));
+  });
+
+  function openTargetsGroupDetail(key){
+    window.currentOpenTargetsGroup = key;
+    const g = groups.find(x=>x.key===key);
+    const items = buckets[key].slice().sort((a,b)=> a.info.name.localeCompare(b.info.name,'th'));
+    document.getElementById('targetsDetailTitle').textContent = g.label;
+
+    const cardsEl = document.getElementById('targetsDetailCards');
+    if (!items.length){
+      cardsEl.innerHTML = `<div class="visited-empty">ไม่มีบริษัทในกลุ่มนี้ตอนนี้</div>`;
+    } else {
+      cardsEl.innerHTML = items.map(v=>{
+        const estateFull = v.info.estate ? fullNameOfEstate(v.info.estate) : '';
+        const estateBadge = v.info.estate ? `<div class="vc-estate-badge" title="นิคม: ${estateFull}">🏭 ${v.info.estate}</div>` : '';
+        return `
+        <div class="visited-card" data-id="${v.id}" style="--vc-accent:${g.accent};">
+          <div class="vc-summary">
+            <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+            <div class="vc-name">${v.info.name}</div>
+            <div class="vc-loc">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
+            </div>
+            <div class="vc-badge-row">${estateBadge}</div>
+            <div class="vc-expand-hint"><span>คลิกเพื่อดู/แก้ไขข้อมูล</span></div>
           </div>
-          <div class="vc-badge-row">${estateBadge}</div>
-          <div class="vc-expand-hint"><span>คลิกเพื่อดู/แก้ไขข้อมูล</span></div>
-        </div>
-      </div>`;
-    }).join('');
-    const isFocused = targetsFocusedGroup === g.key;
-    return `
-      <div class="targets-group" data-group="${g.key}">
-        <div class="targets-group-head targets-group-head-clickable${isFocused ? ' targets-group-head-active' : ''}" style="color:${g.accent};" data-group="${g.key}" title="คลิกเพื่อดูเฉพาะกลุ่มนี้ (คลิกซ้ำเพื่อดูทุกกลุ่ม)">
-          ${g.label} <span>(${items.length})</span>
-        </div>
-        <div class="visited-grid">${cards}</div>
-      </div>`;
-  }).join('');
+        </div>`;
+      }).join('');
+      cardsEl.querySelectorAll('.visited-card').forEach(card=>{
+        const id = card.dataset.id;
+        const match = items.find(v=>v.id===id);
+        card.querySelector('.vc-summary').addEventListener('click', ()=> openVcModal(match));
+      });
+    }
 
-  // if isolate mode is on but that group happens to have zero items right now, show a note
-  // instead of an empty page, and offer a quick way back to the full view
-  const isolateEmptyNotice = (targetsFocusedGroup && allEntries.length === 0)
-    ? `<div class="visited-empty">กลุ่มนี้ไม่มีบริษัทตอนนี้ — <a href="#" id="targetsShowAllLink" style="color:var(--gold);">ดูทุกกลุ่ม</a></div>`
-    : '';
+    gridView.style.display = 'none';
+    detailView.style.display = '';
+  }
+  window.refreshOpenTargetsDetail = function(){
+    if (window.currentOpenTargetsGroup !== null && window.currentOpenTargetsGroup !== undefined){
+      openTargetsGroupDetail(window.currentOpenTargetsGroup);
+    }
+  };
+  window.resetTargetsView = function(){
+    window.currentOpenTargetsGroup = null;
+    gridView.style.display = '';
+    detailView.style.display = 'none';
+  };
 
-  body.innerHTML = sectionsHtml + isolateEmptyNotice;
-  const showAllLink = document.getElementById('targetsShowAllLink');
-  if (showAllLink) showAllLink.addEventListener('click', (e)=>{ e.preventDefault(); targetsFocusedGroup = null; renderTargetsPage(); });
-  body.querySelectorAll('.visited-card').forEach(card=>{
-    const id = card.dataset.id;
-    const match = allEntries.find(v=>v.id===id);
-    card.querySelector('.vc-summary').addEventListener('click', ()=> openVcModal(match));
-  });
-  body.querySelectorAll('.targets-group-head-clickable').forEach(head=>{
-    head.addEventListener('click', ()=>{
-      const key = head.dataset.group;
-      targetsFocusedGroup = (targetsFocusedGroup === key) ? null : key;
-      renderTargetsPage();
-    });
-  });
+  const backBtn = document.getElementById('targetsBackBtn');
+  if (backBtn && !backBtn.dataset.wired){
+    backBtn.dataset.wired = 'true';
+    backBtn.addEventListener('click', ()=> window.resetTargetsView());
+  }
 }
-let targetsFocusedGroup = null;
+
 
 
 // ---- shared white detail modal for visited-company cards ----
@@ -3000,6 +3029,7 @@ async function renderCompanyRow(c, dist){
     if (typeof window.refreshOpenVisitedDetail === 'function') window.refreshOpenVisitedDetail();
     if (typeof renderVisitedSection === 'function') renderVisitedSection();
     if (typeof renderTargetsPage === 'function') renderTargetsPage();
+  if (typeof window.refreshOpenTargetsDetail === 'function') window.refreshOpenTargetsDetail();
   });
 
   function persist(){
@@ -3696,6 +3726,7 @@ async function init(){
     page3.style.display = which==='quotes' ? '' : 'none';
     if (which==='info' && typeof window.resetEstateZoneView === 'function') window.resetEstateZoneView();
     if (which==='info' && typeof window.resetVisitedView === 'function') window.resetVisitedView();
+    if (which==='info' && typeof window.resetTargetsView === 'function') window.resetTargetsView();
     window.scrollTo({top:0, behavior:'instant'});
   }
   document.getElementById('tabHome').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
@@ -3763,6 +3794,7 @@ async function init(){
     if (which==='targets' && typeof renderTargetsPage==='function') renderTargetsPage();
     if (which==='estate' && typeof window.resetEstateZoneView === 'function') window.resetEstateZoneView();
     if (which==='visited' && typeof window.resetVisitedView === 'function') window.resetVisitedView();
+    if (which==='targets' && typeof window.resetTargetsView === 'function') window.resetTargetsView();
   }
   subtabHomeBtn.addEventListener('click', ()=> showSubtab('home'));
   subtabTargetsBtn.addEventListener('click', ()=> showSubtab('targets'));
@@ -5246,6 +5278,7 @@ init();
             if (typeof refreshEstateFilterOptions === 'function') refreshEstateFilterOptions();
             if (typeof window.refreshEstateGridInner === 'function') window.refreshEstateGridInner();
             if (typeof renderTargetsPage === 'function') renderTargetsPage();
+  if (typeof window.refreshOpenTargetsDetail === 'function') window.refreshOpenTargetsDetail();
             if (typeof renderVisitedSection === 'function') renderVisitedSection();
             if (typeof window.refreshOpenVisitedDetail === 'function') window.refreshOpenVisitedDetail();
             flashSaved();
@@ -5349,6 +5382,7 @@ init();
       refreshEstateGridInner();
       openEstateDetail(window.currentOpenEstateCode);
       if (typeof renderTargetsPage === 'function') renderTargetsPage();
+  if (typeof window.refreshOpenTargetsDetail === 'function') window.refreshOpenTargetsDetail();
       if (typeof renderVisitedSection === 'function') renderVisitedSection();
       if (typeof window.refreshOpenVisitedDetail === 'function') window.refreshOpenVisitedDetail();
       flashSaved();
