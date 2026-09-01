@@ -1065,7 +1065,7 @@
   .rd-tl-item:last-child .rd-tl-rail::before{ display:none; }
   .rd-tl-dot{ position:relative; z-index:1; width:13px; height:13px; border-radius:50%; margin-top:12px; border:3px solid #fff; box-shadow:0 0 0 1.5px #E1E6ED, 0 1px 3px rgba(0,0,0,.15); }
   .rd-tl-card{
-    display:flex; gap:14px; background:#FBFCFD; border:1px solid #EAEDF1; border-left:3px solid var(--rd-accent, #3B82F6);
+    display:flex; gap:14px; background:#FBFCFD; border:1px solid #EAEDF1; border-left:3px solid #3B82F6;
     border-radius:8px; padding:11px 13px; margin-bottom:8px; box-shadow:0 1px 2px rgba(16,24,40,.04);
   }
   .rd-tl-card-alt{ background:#fff; }
@@ -1073,10 +1073,10 @@
     background:linear-gradient(155deg, #FFFAEC, #FDF1CE); border-color:#E8C55A; border-left:3px solid #C9A227;
     box-shadow:0 3px 8px rgba(201,162,39,.2), inset 0 1px 0 rgba(255,255,255,.6);
   }
-  .rd-tl-left{ flex:0 0 31%; max-width:31%; min-width:0; border-right:1px solid #EEF1F4; padding-right:13px; }
+  .rd-tl-left{ flex:0 0 31%; max-width:31%; min-width:0; border-right:1px solid #EEF1F4; padding-right:13px; display:flex; flex-direction:column; justify-content:center; }
   .rd-tl-right{ flex:1; min-width:0; display:flex; align-items:flex-start; padding-top:1px; }
   .rd-tl-head{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
-  .rd-tl-time{ display:inline-block; font-family:'Kanit',sans-serif; font-weight:800; font-size:11px; letter-spacing:.2px; color:#fff; background:var(--rd-accent, #0B2A4A); padding:2px 8px; border-radius:5px; }
+  .rd-tl-time{ display:inline-block; font-family:'Kanit',sans-serif; font-weight:800; font-size:11px; letter-spacing:.2px; color:#fff; background:#0B2A4A; padding:2px 8px; border-radius:5px; }
   .rd-tag-visit{ background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8; }
   .rd-tl-company{
     font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:#0B1220; margin-top:6px; line-height:1.32;
@@ -4327,9 +4327,9 @@ async function init(){
     const dotColor = isFocus ? '#C9A227' : (e.visit === false ? '#94A3B8' : '#0B2A4A');
     return `<div class="rd-tl-item">
       <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
-      <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}${isFocus?' rd-tl-card-focus':''}" style="--rd-accent:${accentColor};" data-id="${e.id||''}">
+      <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}${isFocus?' rd-tl-card-focus':''}" style="border-left-color:${accentColor};" data-id="${e.id||''}">
         <div class="rd-tl-left">
-          <div class="rd-tl-head"><span class="rd-tl-time">${e.time || '--:--'}</span>${visitTag}</div>
+          <div class="rd-tl-head"><span class="rd-tl-time" style="background:${accentColor};">${e.time || '--:--'}</span>${visitTag}</div>
           <div class="rd-tl-company">${e.company || '—'}</div>
           ${e.person ? `<div class="rd-tl-person">${e.person}</div>` : ''}
           ${tagsHtml ? `<div class="rd-tags">${tagsHtml}</div>` : ''}
