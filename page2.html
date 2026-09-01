@@ -925,6 +925,13 @@
   }
   .visit-toggle{ display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--text); cursor:pointer; background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:10px 14px; }
   .visit-toggle input{ width:17px; height:17px; accent-color:var(--green); cursor:pointer; flex-shrink:0; }
+  .rf-time-slots{ display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+  .rf-time-chip{
+    background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:4px 9px; font-size:10.5px;
+    color:var(--muted); cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600; transition:all .12s ease;
+  }
+  .rf-time-chip:hover{ border-color:var(--gold); color:var(--gold-lt); }
+  .rf-time-chip.rf-time-used{ opacity:.4; }
   .btn-primary{
     margin-top:16px; background:var(--gold); color:#0B1220; border:none; border-radius:8px; padding:10px 22px;
     font-family:'Kanit',sans-serif; font-weight:700; font-size:13.5px; cursor:pointer;
@@ -1089,6 +1096,21 @@
   .rd-tl-note-empty, .rd-note-none{ color:#B0B8C4; font-style:italic; }
   .rd-empty{ text-align:center; padding:30px 0; font-size:13px; color:#7C8798; }
 
+  .rd-table{ width:100%; border-collapse:collapse; font-family:'Sarabun',sans-serif; }
+  .rd-table thead th{
+    background:#0B2A4A; color:#fff; font-family:'Kanit',sans-serif; font-weight:700; font-size:10px;
+    letter-spacing:.4px; text-transform:uppercase; text-align:left; padding:8px 10px;
+  }
+  .rd-th-time{ width:70px; }
+  .rd-th-company{ width:22%; }
+  .rd-th-status{ width:16%; }
+  .rd-row{ border-bottom:1px solid #EEF1F4; border-left:3px solid #3B82F6; background:#fff; }
+  .rd-row-alt{ background:#FAFBFD; }
+  .rd-row-focus{ background:linear-gradient(155deg, #FFFAEC, #FDF1CE); }
+  .rd-row td{ padding:9px 10px; vertical-align:top; }
+  .rd-td-time{ white-space:nowrap; }
+  .rd-tags-td{ margin-top:0; }
+
   .rd-followup-bar{
     margin-top:10px; padding:8px 12px; background:#FFF8E8; border:1px solid #F0DDA6; border-radius:8px;
     font-size:10.5px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
@@ -1129,13 +1151,51 @@
     .rd-followup-label{ font-size:9.5px; }
     .rd-fu-chip{ font-size:9px; padding:2px 7px; }
     .rd-footer{ font-size:8px; flex-direction:column; gap:3px; }
+
+    .rd-table{ min-width:560px; font-size:11px; }
+    .rd-table thead th{ font-size:9px; padding:6px 8px; }
+    .rd-row td{ padding:7px 8px; }
+    .rd-tl-time{ font-size:10px; padding:2px 6px; }
+    .rd-tl-company{ font-size:11px; }
+    .rd-tl-person{ font-size:9px; }
+    .rd-tl-note{ font-size:10.5px; }
+    .rd-tag{ font-size:7px; padding:2px 5px; }
+    #reportDoc{ overflow-x:auto; }
   }
 
   @media print{
     body *{ visibility:hidden; }
     #reportDoc, #reportDoc *{ visibility:visible; }
     #reportDoc{ position:absolute; left:0; top:0; width:100%; background:#fff; }
-    .rd-tl-item{ break-inside:avoid; }
+    .rd-row{ break-inside:avoid; }
+
+    /* force desktop sizing even when printing from a narrow phone screen — otherwise the
+       @media(max-width:600px) rules above would still apply during print/PDF, since that
+       query responds to the device's actual viewport, not the printed page size */
+    .rd-body-pad{ padding:18px 22px 16px !important; }
+    .rd-header{ gap:12px !important; padding-bottom:10px !important; margin-bottom:12px !important; }
+    .rd-brand-text{ font-size:10.5px !important; }
+    .rd-title{ font-size:18px !important; margin-top:5px !important; }
+    .rd-sub{ font-size:11.5px !important; }
+    .rd-kpis{ gap:7px !important; width:auto !important; }
+    .rd-kpi{ flex:none !important; padding:7px 13px !important; }
+    .rd-kpi .n{ font-size:17px !important; }
+    .rd-kpi .l{ font-size:8px !important; }
+
+    .rd-table{ min-width:0 !important; font-size:12px !important; }
+    .rd-table thead th{ font-size:10px !important; padding:8px 10px !important; }
+    .rd-row td{ padding:9px 10px !important; }
+    .rd-tl-time{ font-size:12px !important; padding:2px 8px !important; }
+    .rd-tl-company{ font-size:12.5px !important; margin-top:0 !important; }
+    .rd-tl-person{ font-size:11px !important; margin-top:3px !important; }
+    .rd-tags{ gap:4px !important; margin-top:0 !important; }
+    .rd-tag{ font-size:8px !important; padding:2.5px 7px !important; }
+    .rd-tl-note{ font-size:12px !important; line-height:1.6 !important; }
+
+    .rd-followup-bar{ padding:8px 12px !important; margin-top:10px !important; }
+    .rd-followup-label{ font-size:10.5px !important; }
+    .rd-fu-chip{ font-size:10px !important; padding:3px 9px !important; }
+    .rd-footer{ font-size:9px !important; flex-direction:row !important; gap:0 !important; }
   }
 
 
@@ -1614,6 +1674,24 @@
         <div class="field">
           <label>เวลาเข้าพบ</label>
           <input type="time" id="rfTime">
+          <div class="rf-time-slots" id="rfTimeSlots">
+            <button type="button" class="rf-time-chip" data-time="08:00">08:00</button>
+            <button type="button" class="rf-time-chip" data-time="08:30">08:30</button>
+            <button type="button" class="rf-time-chip" data-time="09:00">09:00</button>
+            <button type="button" class="rf-time-chip" data-time="09:30">09:30</button>
+            <button type="button" class="rf-time-chip" data-time="10:00">10:00</button>
+            <button type="button" class="rf-time-chip" data-time="10:30">10:30</button>
+            <button type="button" class="rf-time-chip" data-time="11:00">11:00</button>
+            <button type="button" class="rf-time-chip" data-time="11:30">11:30</button>
+            <button type="button" class="rf-time-chip" data-time="13:00">13:00</button>
+            <button type="button" class="rf-time-chip" data-time="13:30">13:30</button>
+            <button type="button" class="rf-time-chip" data-time="14:00">14:00</button>
+            <button type="button" class="rf-time-chip" data-time="14:30">14:30</button>
+            <button type="button" class="rf-time-chip" data-time="15:00">15:00</button>
+            <button type="button" class="rf-time-chip" data-time="15:30">15:30</button>
+            <button type="button" class="rf-time-chip" data-time="16:00">16:00</button>
+            <button type="button" class="rf-time-chip" data-time="16:30">16:30</button>
+          </div>
         </div>
         <div class="field">
           <label>ชื่อลูกค้า / ผู้ติดต่อ</label>
@@ -3822,6 +3900,20 @@ async function init(){
   const rfCompany = document.getElementById('rfCompany');
   const rfVisit = document.getElementById('rfVisit');
   const rfFeedback = document.getElementById('rfFeedback');
+
+  document.querySelectorAll('.rf-time-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      rfTime.value = chip.dataset.time;
+      rfTime.focus();
+    });
+  });
+  function refreshTimeSlotChips(){
+    const usedTimes = new Set(entriesForDate(currentReportDate).map(e=>e.time));
+    document.querySelectorAll('.rf-time-chip').forEach(chip=>{
+      chip.classList.toggle('rf-time-used', usedTimes.has(chip.dataset.time));
+    });
+  }
+  window.refreshTimeSlotChips = refreshTimeSlotChips;
   const rfSubmit = document.getElementById('rfSubmit');
 
   function nowHHMM(){
@@ -3911,6 +4003,7 @@ async function init(){
 
   function renderReportList(){
     renderDayDashboard();
+    if (typeof refreshTimeSlotChips === 'function') refreshTimeSlotChips();
     const entries = entriesForDate(currentReportDate);
     const reportListEl = document.getElementById('reportList');
     if (entries.length === 0){
@@ -3920,8 +4013,10 @@ async function init(){
     const entriesHtml = entries.map((e,i)=>{
       const isFocus = e.activities.includes('Focus');
       const visitTag = e.visit === false ? '' : '<span class="dr-tl-visit-tag">Visit</span>';
-      const tagsHtml = e.activities.filter(a=>a!=='Focus').map(a=>activityBadge(a)).join('');
-      const dotColor = isFocus ? '#C9A227' : (e.visit === false ? 'var(--muted)' : 'var(--gold)');
+      const realActivities = e.activities.filter(a=>a!=='Focus');
+      const tagsHtml = realActivities.map(a=>activityBadge(a)).join('');
+      const primaryActivity = realActivities[0];
+      const dotColor = e.visit === false ? 'var(--muted)' : (primaryActivity && ACTIVITY_META[primaryActivity] ? ACTIVITY_META[primaryActivity].color : 'var(--gold)');
       return `<div class="dr-tl-item">
         <div class="dr-tl-rail"><div class="dr-tl-dot" style="background:${dotColor};"></div></div>
         <div class="dr-tl-card${isFocus?' dr-tl-card-focus':''}" data-id="${e.id}">
@@ -4317,14 +4412,31 @@ async function init(){
 
   // shared timeline row builder — used identically by the live "กิจกรรมของวันนี้" list
   // and the compiled "สร้างรายงานทั้งวัน" report, so both look exactly the same
+  function buildTableRowHtml(e, i){
+    const isFocus = e.activities.includes('Focus');
+    const realActivities = e.activities.filter(a=>a!=='Focus');
+    const primaryActivity = realActivities[0];
+    const accentColor = primaryActivity && ACTIVITY_META[primaryActivity] ? ACTIVITY_META[primaryActivity].color : (e.visit === false ? '#94A3B8' : '#3B82F6');
+    const badgesHtml = (e.visit !== false ? '<span class="rd-tag rd-tag-visit">Visit</span>' : '') + realActivities.map(a=>reportActivityBadge(a)).join('');
+    return `<tr class="rd-row${i%2?' rd-row-alt':''}${isFocus?' rd-row-focus':''}" style="border-left-color:${accentColor};">
+      <td class="rd-td-time"><span class="rd-tl-time" style="background:${accentColor};">${e.time||'--:--'}</span></td>
+      <td class="rd-td-company">
+        <div class="rd-tl-company">${e.company||'—'}</div>
+        ${e.person ? `<div class="rd-tl-person">${e.person}</div>` : ''}
+      </td>
+      <td class="rd-td-detail">${e.feedback ? `<div class="rd-tl-note">${e.feedback}</div>` : '<span class="rd-tl-note-empty">—</span>'}</td>
+      <td class="rd-td-status">${badgesHtml ? `<div class="rd-tags rd-tags-td">${badgesHtml}</div>` : '—'}</td>
+    </tr>`;
+  }
+
   function buildTimelineItemHtml(e, i){
     const isFocus = e.activities.includes('Focus');
     const visitTag = e.visit === false ? '' : '<span class="rd-tag rd-tag-visit">Visit</span>';
     const realActivities = e.activities.filter(a=>a!=='Focus');
     const tagsHtml = realActivities.map(a=>reportActivityBadge(a)).join('');
     const primaryActivity = realActivities[0];
-    const accentColor = isFocus ? '#C9A227' : (primaryActivity && ACTIVITY_META[primaryActivity] ? ACTIVITY_META[primaryActivity].color : (e.visit === false ? '#94A3B8' : '#3B82F6'));
-    const dotColor = isFocus ? '#C9A227' : (e.visit === false ? '#94A3B8' : '#0B2A4A');
+    const accentColor = primaryActivity && ACTIVITY_META[primaryActivity] ? ACTIVITY_META[primaryActivity].color : (e.visit === false ? '#94A3B8' : '#3B82F6');
+    const dotColor = e.visit === false ? '#94A3B8' : accentColor;
     return `<div class="rd-tl-item">
       <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
       <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}${isFocus?' rd-tl-card-focus':''}" style="border-left-color:${accentColor};" data-id="${e.id||''}">
@@ -4440,7 +4552,7 @@ async function init(){
     const quoteRequests = list.filter(e=>e.activities.includes('ขอราคา')).length;
     const quotesSent = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
 
-    const itemsHtml = list.map((e,i)=> buildTimelineItemHtml(e, i)).join('');
+    const rowsHtml = list.map((e,i)=> buildTableRowHtml(e, i)).join('');
 
     return `
       <div class="rd-topbar"></div>
@@ -4461,7 +4573,16 @@ async function init(){
           <div class="rd-kpi"><div class="n">${quotesSent}</div><div class="l">ใบเสนอราคา</div></div>
         </div>
       </div>
-      ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
+      ${list.length ? `
+      <table class="rd-table">
+        <thead><tr>
+          <th class="rd-th-time">เวลา</th>
+          <th class="rd-th-company">บริษัท / ผู้ติดต่อ</th>
+          <th class="rd-th-detail">รายละเอียด</th>
+          <th class="rd-th-status">กิจกรรม</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
       <div class="rd-footer">
         <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
         <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
