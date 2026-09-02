@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>แผนปฏิบัติการเข้าพบลูกค้า จังหวัดระยอง</title>
+<title>Sales Planning</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -13,13 +13,14 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{
-    --ink:#0B1220; --panel:#111827; --panel2:#1F2937; --panel3:#151E2E; --line:#2A3441;
-    --gold:#C9A96E; --gold-lt:#F0E4C8; --gold-dim:rgba(201,169,110,0.15);
-    --text:#E5E7EB; --muted:#94A3B8;
+    --ink:#070B14; --panel:#0E1524; --panel2:#141F35; --panel3:#111A2B; --line:#22304A;
+    --gold:#3EC6FF; --gold-lt:#BEE9FF; --gold-dim:rgba(62,198,255,0.14);
+    --text:#E7ECF5; --muted:#8CA0BF;
     --green:#22C55E; --green-dim:rgba(34,197,94,0.15);
     --amber:#F59E0B; --amber-dim:rgba(245,158,11,0.15);
     --red:#EF4444; --red-dim:rgba(239,68,68,0.15);
     --gray:#6B7280;
+    --accent-cyan:#22D3EE; --accent-glow:rgba(62,198,255,0.35);
   }
   *{box-sizing:border-box;}
   body{ margin:0; font-family:'Sarabun',sans-serif; background:var(--ink); color:var(--text); }
@@ -254,6 +255,10 @@
   .visited-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:10px; }
   .targets-group{ margin-bottom:22px; }
   .targets-group:last-child{ margin-bottom:0; }
+  .targets-section-label{
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; margin-bottom:10px;
+    padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
   .targets-group-head{
     font-family:'Kanit',sans-serif; font-weight:700; font-size:13.5px; margin-bottom:10px;
     padding-bottom:8px; border-bottom:1px solid var(--line);
@@ -355,14 +360,40 @@
     box-shadow:0 24px 60px rgba(0,0,0,0.45); overflow:hidden;
   }
   .vc-modal-accent{ height:6px; background:var(--vc-modal-color, var(--gold)); }
+  .vc-modal-hero{
+    position:relative; padding:26px 50px 20px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--vc-modal-color, #C9A96E), color-mix(in srgb, var(--vc-modal-color, #C9A96E) 60%, #1a1a2e));
+    min-height:92px;
+  }
+  .vc-hero-content{ text-align:center; max-width:100%; }
+  .vc-hero-badge{ font-family:'Kanit',sans-serif; font-weight:700; font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.85); margin-bottom:4px; }
+  .vc-nav-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.22); border:none; color:#fff;
+    width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:background .15s ease; z-index:2;
+  }
+  .vc-nav-arrow:hover{ background:rgba(255,255,255,.38); }
+  .vc-nav-arrow:disabled{ opacity:.25; cursor:default; pointer-events:none; }
+  .vc-nav-arrow svg{ width:18px; height:18px; }
+  .vc-nav-prev{ left:12px; }
+  .vc-nav-next{ right:12px; }
+  .vc-strip{ display:flex; gap:6px; padding:10px 14px; overflow-x:auto; background:#F7F8FA; border-bottom:1px solid #EDEFF2; }
+  .vc-strip::-webkit-scrollbar{ height:4px; }
+  .vc-strip-item{
+    flex-shrink:0; padding:5px 11px; border-radius:20px; font-size:10.5px; font-family:'Kanit',sans-serif; font-weight:600;
+    background:#fff; border:1.5px solid #E5E7EB; color:#6B7280; cursor:pointer; white-space:nowrap; transition:all .15s ease;
+    max-width:120px; overflow:hidden; text-overflow:ellipsis;
+  }
+  .vc-strip-item:hover{ border-color:#C9C9C9; }
+  .vc-strip-item.vc-strip-active{ background:var(--vc-modal-color, var(--gold)); border-color:var(--vc-modal-color, var(--gold)); color:#fff; }
   .vc-modal-close{
     position:absolute; top:12px; right:14px; background:#F1F3F6; border:none; width:28px; height:28px; border-radius:50%;
     color:#4B5563; font-size:18px; line-height:1; cursor:pointer; z-index:2;
   }
   .vc-modal-close:hover{ background:#E5E7EB; color:#111827; }
-  .vc-modal-body{ padding:26px 24px 24px; }
-  .vc-modal-header{ font-family:'Kanit',sans-serif; font-weight:700; font-size:16px; color:#111827; padding-right:24px; line-height:1.4; }
-  .vc-modal-loc{ font-size:12px; color:#6B7280; margin-top:6px; margin-bottom:18px; }
+  .vc-modal-body{ padding:18px 24px 24px; }
+  .vc-modal-header{ font-family:'Kanit',sans-serif; font-weight:700; font-size:17px; color:#fff; line-height:1.35; text-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .vc-modal-loc{ font-size:11.5px; color:rgba(255,255,255,.85); margin-top:5px; }
   .vc-modal-body .field label{ font-size:11px; color:#6B7280; font-family:'Kanit',sans-serif; font-weight:600; }
   .vc-modal-body .vc-status-select{
     width:100%; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:7px; padding:8px 10px;
@@ -970,8 +1001,7 @@
   .dr-tl-dot{ position:relative; z-index:1; width:11px; height:11px; border-radius:50%; margin-top:13px; background:var(--gold); border:2px solid var(--ink); }
   .dr-tl-card{ flex:1; min-width:0; display:flex; gap:12px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
   .dr-tl-card-focus{
-    background:linear-gradient(155deg, rgba(201,162,39,.16), rgba(201,162,39,.05)); border:1.5px solid #C9A227;
-    box-shadow:0 4px 12px rgba(201,162,39,.28), inset 0 1px 0 rgba(255,255,255,.08);
+    box-shadow:0 4px 12px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.08);
   }
   .dr-tl-left{ flex:0 0 32%; max-width:32%; min-width:0; border-right:1px dashed var(--line); padding-right:12px; }
   .dr-tl-right{ flex:1; min-width:0; display:flex; align-items:flex-start; padding-top:1px; }
@@ -1042,7 +1072,8 @@
   .modal-head{ display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line); }
   .modal-head h3{ font-family:'Kanit',sans-serif; font-size:15px; color:#fff; margin:0; }
   .modal-close{ background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1; }
-  .modal-body{ padding:0; overflow-y:auto; background:#0D1420; }
+  .modal-body{ padding:0; overflow-y:auto; background:radial-gradient(ellipse at top, #1a2436, #0A0F18); }
+  .modal-body > #reportDoc{ margin:18px; box-shadow:0 12px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3); }
   .modal-foot{ padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px; }
 
   /* ---- printable executive report doc: white professional corporate style ---- */
@@ -1072,27 +1103,26 @@
   .rd-tl-item:last-child .rd-tl-rail::before{ display:none; }
   .rd-tl-dot{ position:relative; z-index:1; width:13px; height:13px; border-radius:50%; margin-top:12px; border:3px solid #fff; box-shadow:0 0 0 1.5px #E1E6ED, 0 1px 3px rgba(0,0,0,.15); }
   .rd-tl-card{
-    display:flex; flex:1; min-width:0; gap:14px; background:#FBFCFD; border:1px solid #EAEDF1; border-left:3px solid #3B82F6;
-    border-radius:10px; padding:12px 14px; margin-bottom:8px; box-shadow:0 1px 2px rgba(16,24,40,.04);
+    display:flex; flex:1; min-width:0; gap:14px; background:#FFFFFF; border:1px solid #E2E7EF; border-left:4px solid #3B82F6;
+    border-radius:10px; padding:13px 15px; margin-bottom:9px; box-shadow:0 2px 6px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
   }
-  .rd-tl-card-alt{ background:#fff; }
+  .rd-tl-card-alt{ background:#FCFDFE; }
   .rd-tl-card-focus{
-    background:linear-gradient(155deg, #FFFAEC, #FDF1CE); border-color:#E8C55A; border-left:3px solid #C9A227;
-    box-shadow:0 3px 8px rgba(201,162,39,.2), inset 0 1px 0 rgba(255,255,255,.6);
+    box-shadow:0 4px 14px rgba(16,24,40,.16), inset 0 1px 0 rgba(255,255,255,.6);
   }
   .rd-tl-left{ flex:0 0 32%; max-width:32%; min-width:0; border-right:1px solid #EEF1F4; padding-right:12px; }
   .rd-tl-right{ flex:1; min-width:0; display:flex; align-items:flex-start; padding-top:1px; }
   .rd-tl-head{ display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
-  .rd-tl-time{ display:inline-block; font-family:'Kanit',sans-serif; font-weight:800; font-size:12px; letter-spacing:.2px; color:#fff; background:#0B2A4A; padding:2px 8px; border-radius:5px; }
+  .rd-tl-time{ display:inline-block; font-family:'Kanit',sans-serif; font-weight:800; font-size:12px; letter-spacing:.3px; color:#fff; padding:3px 9px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.18); }
   .rd-tag-visit{ background:#E8F6EE; color:#1B7A4A; border:1px solid #B8E4C8; }
   .rd-tl-company{
-    font-family:'Kanit',sans-serif; font-weight:700; font-size:12.5px; color:#0B1220; margin-top:6px; line-height:1.32;
+    font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#0B1220; margin-top:7px; line-height:1.3; letter-spacing:-.1px;
     word-break:break-all; overflow-wrap:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-width:0; width:100%;
   }
-  .rd-tl-person{ font-size:11px; color:#64748B; margin-top:3px; font-weight:500; }
-  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
-  .rd-tag{ font-size:8px; font-family:'Kanit',sans-serif; font-weight:700; letter-spacing:.15px; padding:2.5px 7px; border-radius:20px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
-  .rd-tl-note{ font-size:12px; color:#3B4657; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .rd-tl-person{ font-size:11px; color:#64748B; margin-top:4px; font-weight:600; }
+  .rd-tags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:7px; }
+  .rd-tag{ font-size:8px; font-family:'Kanit',sans-serif; font-weight:700; letter-spacing:.2px; padding:3px 8px; border-radius:20px; display:inline-flex; align-items:center; gap:2px; white-space:nowrap; }
+  .rd-tl-note{ font-size:12px; color:#2A3444; line-height:1.65; white-space:pre-wrap; word-break:break-word; }
   .rd-tl-note-empty, .rd-note-none{ color:#B0B8C4; font-style:italic; }
   .rd-empty{ text-align:center; padding:30px 0; font-size:13px; color:#7C8798; }
 
@@ -1434,6 +1464,108 @@
   .estate-zones-caret.open{ transform:rotate(180deg); }
   .company-controls{margin-top:16px!important;padding:16px 18px!important;border:1px solid #30465b!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(17,31,46,.96),rgba(10,19,29,.96))!important;box-shadow:0 12px 28px rgba(0,0,0,.14)}.company-controls .search-box{min-width:300px}@media(max-width:760px){.company-controls{padding:12px!important}.company-controls .search-box{min-width:100%}}
   .company-directory{margin-top:14px;border:1px solid #30465b;border-radius:14px;background:rgba(10,19,29,.92);overflow:hidden}.company-directory-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;border-bottom:1px solid rgba(100,148,179,.25)}.company-directory-title{font-family:'Kanit',sans-serif;font-size:15px;color:#fff;font-weight:700}.company-directory-count{font-size:11px;color:var(--gold-lt);background:rgba(214,181,111,.11);border:1px solid rgba(214,181,111,.22);padding:3px 8px;border-radius:12px}.company-directory-list{max-height:410px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:#2d4354}.company-directory-item{display:block;padding:9px 12px;background:#101d2a;color:#e5f0f5;font-family:'Kanit',sans-serif;font-size:11.5px;line-height:1.35}.company-directory-item small{display:block;color:#87a1b2;font-family:'Sarabun',sans-serif;font-size:10px;margin-top:2px}.company-directory-empty{padding:28px;color:var(--muted);font-size:12px;text-align:center}.company-directory-list::-webkit-scrollbar{width:8px}.company-directory-list::-webkit-scrollbar-thumb{background:#3b566a;border-radius:8px}
+
+  /* ============================================================
+     DESIGN SYSTEM LAYER — Industrial Sales Automation reskin
+     Pure CSS override on top of existing classes/IDs.
+     No HTML structure, JS logic, or data bindings are touched.
+  ============================================================ */
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  body{ font-family:'Plus Jakarta Sans','Sarabun',sans-serif; }
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(62,198,255,.09), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(34,211,238,.06), transparent 55%),
+      var(--ink);
+    background-attachment:fixed;
+  }
+
+  /* subtle animated glow line under the top nav, evokes a "system online" feel */
+  .page > div:first-child{ position:relative; }
+  @keyframes ds-scan{ 0%{ background-position:-200% 0; } 100%{ background-position:200% 0; } }
+  .tabs, #tabsRow{ position:relative; }
+
+  /* Glassmorphism + soft glow + hover-lift on primary data cards */
+  .dash-card, .visited-card, .estate-zone, .dr-kpi-card, .pq-card, .rd-kpi,
+  .day-card, .modal-box, .vc-modal-box{
+    backdrop-filter:blur(14px) saturate(140%);
+    -webkit-backdrop-filter:blur(14px) saturate(140%);
+    transition:transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, border-color .22s ease;
+  }
+  .dash-card, .visited-card, .estate-zone, .dr-kpi-card, .pq-card, .day-card{
+    background:linear-gradient(155deg, rgba(255,255,255,.035), rgba(255,255,255,.01)), var(--panel2);
+    border:1px solid rgba(255,255,255,.07);
+    box-shadow:0 1px 2px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .dash-card:hover, .visited-card:hover, .estate-zone:hover, .dr-kpi-card:hover, .pq-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 28px rgba(0,0,0,.35), 0 0 0 1px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.06);
+    border-color:rgba(62,198,255,.4);
+  }
+
+  /* Header: Sales Operation Center feel */
+  .page-header, header, .app-header{ position:relative; }
+  #tabHome, .menu-btn, [id*="menu" i]{ transition:transform .18s ease, box-shadow .18s ease; }
+  #tabHome:hover{ transform:translateY(-1px); box-shadow:0 4px 14px var(--accent-glow); }
+
+  /* Sidebar-style emphasis on the existing tab navigation (kept as horizontal tabs
+     to avoid restructuring the DOM/JS bindings, but styled with the same premium
+     glass + glow language as a control-center sidebar would use) */
+  .tabs a, .tabs button, #tabsRow button, .subtab-row button{
+    position:relative; transition:color .18s ease, transform .15s ease;
+  }
+  .tabs a.active, .tabs button.active, .subtab-row button.active{
+    color:var(--gold) !important;
+  }
+  .tabs a.active::after, .tabs button.active::after, .subtab-row button.active::after{
+    content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+    background:linear-gradient(90deg, var(--gold), var(--accent-cyan));
+    box-shadow:0 0 10px var(--accent-glow);
+    border-radius:2px;
+  }
+
+  /* KPI numbers: bold/extra-bold per typography spec, with a soft glow accent */
+  .dash-card .dash-value, .dr-kpi-card .n, .rd-kpi .n, .kpi-row b{
+    font-weight:800; letter-spacing:-.02em;
+  }
+
+  /* Activity chips: lift + glow when active (data-structure untouched, purely visual) */
+  .chip{ transition:transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .16s ease, background .16s ease; }
+  .chip:has(input:checked){
+    transform:translateY(-2px);
+    box-shadow:0 6px 16px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.15);
+  }
+
+  /* Buttons: subtle glass + glow */
+  .btn-primary, .btn-report, .rf-time-chip{
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 8px 20px var(--accent-glow); }
+  .btn-report:hover{ transform:translateY(-1px); }
+
+  /* Timeline dots: soft glow so activity nodes read as "live system" nodes */
+  .dr-tl-dot, .rd-tl-dot{ box-shadow:0 0 0 3px rgba(62,198,255,.15), 0 1px 3px rgba(0,0,0,.3) !important; }
+
+  /* Table rows: subtle hover highlight for a control-panel feel */
+  table.company-table tbody tr{ transition:background .15s ease; }
+  table.company-table tbody tr:hover{ background:rgba(62,198,255,.05); }
+
+  /* Search / inputs: glass focus ring instead of flat border */
+  input[type="text"]:focus, input[type="date"]:focus, input[type="time"]:focus,
+  textarea:focus, select:focus{
+    outline:none; border-color:var(--gold) !important;
+    box-shadow:0 0 0 3px var(--accent-glow);
+  }
+
+  /* Respect reduced-motion: disable all the above transitions/animations */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important; scroll-behavior:auto !important;
+    }
+    .dash-card:hover, .visited-card:hover, .estate-zone:hover, .dr-kpi-card:hover,
+    .pq-card:hover, .chip:has(input:checked), .btn-primary:hover{ transform:none !important; }
+  }
 </style>
 </head>
 <body>
@@ -1617,10 +1749,21 @@
   <div class="vc-modal-overlay" id="vcModalOverlay">
     <div class="vc-modal-box" id="vcModalBox">
       <button class="vc-modal-close" id="vcModalClose" type="button">&times;</button>
-      <div class="vc-modal-accent" id="vcModalAccent"></div>
+      <div class="vc-modal-hero" id="vcModalHero">
+        <button class="vc-nav-arrow vc-nav-prev" id="vcModalPrev" type="button" title="บริษัทก่อนหน้า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="vc-hero-content">
+          <div class="vc-hero-badge" id="vcModalHeroBadge"></div>
+          <div class="vc-modal-header" id="vcModalHeader"></div>
+          <div class="vc-modal-loc" id="vcModalLoc"></div>
+        </div>
+        <button class="vc-nav-arrow vc-nav-next" id="vcModalNext" type="button" title="บริษัทถัดไป">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="vc-strip" id="vcModalStrip"></div>
       <div class="vc-modal-body">
-        <div class="vc-modal-header" id="vcModalHeader"></div>
-        <div class="vc-modal-loc" id="vcModalLoc"></div>
         <label class="vc-contacted-row">
           <input type="checkbox" id="vcModalContacted">
           <span>🔵 เข้าพบแล้ว</span>
@@ -2502,7 +2645,7 @@ function renderVisitedSection(){
       listEl.querySelectorAll('.estate-company-row').forEach(row=>{
         row.addEventListener('click', ()=>{
           const match = visited.find(v=>v.id===row.dataset.id);
-          if (match) openVcModal(match);
+          if (match){ window.vcNavList = items; openVcModal(match); }
         });
       });
     }
@@ -2542,8 +2685,8 @@ function renderTargetsPage(){
   const groups = [
     {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
     {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
-    {key:'customer', label:'Customer (ลูกค้าเก่า)', accent:'#34D399'},
-    {key:'new', label:'New customer (สำเร็จแล้ว)', accent:'#38BDF8'},
+    {key:'customer', label:'Customer (ลูกค้าเดิม)', accent:'#A78BFA'},
+    {key:'new', label:'New Customer (ลูกค้าใหม่ที่สำเร็จแล้ว)', accent:'#38BDF8'},
   ];
   const buckets = {interesting:[], followup:[], customer:[], new:[]};
   let total = 0;
@@ -2566,17 +2709,21 @@ function renderTargetsPage(){
     return;
   }
 
-  // top-level grid: one clickable box per group, in the same order as before
+  // top-level grid: two labeled sections, each with its own boxes
+  const actionGroups = groups.filter(g=> g.key==='interesting' || g.key==='followup');
+  const doneGroups = groups.filter(g=> g.key==='customer' || g.key==='new');
+  const renderGroupBoxes = (list)=> list.map(g=>{
+    const n = buckets[g.key].length;
+    return `<button class="estate-zone" data-group="${g.key}" style="border-color:${n?g.accent+'55':''};">
+      <div class="estate-zone-code" style="color:${n?g.accent:'#fff'};">${g.label}</div>
+      <small>${n} บริษัท</small>
+    </button>`;
+  }).join('');
   gridView.innerHTML = `
-    <div class="estate-zone-grid">
-      ${groups.map(g=>{
-        const n = buckets[g.key].length;
-        return `<button class="estate-zone" data-group="${g.key}" style="border-color:${n?g.accent+'55':''};">
-          <div class="estate-zone-code" style="color:${n?g.accent:'#fff'};">${g.label}</div>
-          <small>${n} บริษัท</small>
-        </button>`;
-      }).join('')}
-    </div>
+    <div class="targets-section-label">🎯 บริษัทเป้าหมายที่ต้องดำเนินการ</div>
+    <div class="estate-zone-grid">${renderGroupBoxes(actionGroups)}</div>
+    <div class="targets-section-label" style="margin-top:18px;">✅ ดำเนินการแล้ว</div>
+    <div class="estate-zone-grid">${renderGroupBoxes(doneGroups)}</div>
   `;
   gridView.querySelectorAll('.estate-zone').forEach(btn=>{
     btn.addEventListener('click', ()=> openTargetsGroupDetail(btn.dataset.group));
@@ -2612,7 +2759,7 @@ function renderTargetsPage(){
       cardsEl.querySelectorAll('.visited-card').forEach(card=>{
         const id = card.dataset.id;
         const match = items.find(v=>v.id===id);
-        card.querySelector('.vc-summary').addEventListener('click', ()=> openVcModal(match));
+        card.querySelector('.vc-summary').addEventListener('click', ()=>{ window.vcNavList = items; openVcModal(match); });
       });
     }
 
@@ -2657,6 +2804,39 @@ function openVcModal(v){
 
   header.textContent = v.info.name;
   loc.textContent = `ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}`;
+  const statusLabelMap = {customer:'Customer', new:'New Customer', interesting:'น่าสนใจ', followup:'รอติดตาม', notinteresting:'ไม่น่าสนใจ'};
+  document.getElementById('vcModalHeroBadge').textContent = statusLabelMap[v.fb.status] || 'ยังไม่ระบุสถานะ';
+
+  // prev/next navigation + thumbnail strip — only active when opened from a known list context
+  const navList = window.vcNavList;
+  const prevBtn = document.getElementById('vcModalPrev');
+  const nextBtn = document.getElementById('vcModalNext');
+  const strip = document.getElementById('vcModalStrip');
+  if (navList && navList.length > 1){
+    const idx = navList.findIndex(x=>x.id===v.id);
+    prevBtn.style.display = ''; nextBtn.style.display = '';
+    prevBtn.disabled = idx <= 0;
+    nextBtn.disabled = idx < 0 || idx >= navList.length-1;
+    const freshPrev = prevBtn.cloneNode(true); prevBtn.replaceWith(freshPrev);
+    const freshNext = nextBtn.cloneNode(true); nextBtn.replaceWith(freshNext);
+    if (idx > 0) freshPrev.addEventListener('click', ()=> openVcModal(navList[idx-1]));
+    if (idx >= 0 && idx < navList.length-1) freshNext.addEventListener('click', ()=> openVcModal(navList[idx+1]));
+
+    strip.style.display = '';
+    strip.innerHTML = navList.map(x=> `<div class="vc-strip-item${x.id===v.id?' vc-strip-active':''}" data-id="${x.id}">${x.info.name}</div>`).join('');
+    strip.querySelectorAll('.vc-strip-item').forEach(item=>{
+      item.addEventListener('click', ()=>{
+        const match = navList.find(x=>x.id===item.dataset.id);
+        if (match) openVcModal(match);
+      });
+    });
+    const activeItem = strip.querySelector('.vc-strip-active');
+    if (activeItem) activeItem.scrollIntoView({block:'nearest', inline:'center'});
+  } else {
+    prevBtn.style.display = 'none'; nextBtn.style.display = 'none';
+    strip.style.display = 'none'; strip.innerHTML = '';
+  }
+
   contactedCb.checked = !!v.fb.contacted;
   statusSel.innerHTML = STATUS_OPTIONS.map(o=>`<option value="${o.v}" ${o.v===v.fb.status?'selected':''}>${o.label}</option>`).join('');
   contactEl.value = v.fb.contactPerson || '';
@@ -4016,10 +4196,14 @@ async function init(){
       const realActivities = e.activities.filter(a=>a!=='Focus');
       const tagsHtml = realActivities.map(a=>activityBadge(a)).join('');
       const primaryActivity = realActivities[0];
-      const dotColor = e.visit === false ? 'var(--muted)' : (primaryActivity && ACTIVITY_META[primaryActivity] ? ACTIVITY_META[primaryActivity].color : 'var(--gold)');
+      const accentColor = primaryActivity && ACTIVITY_META[primaryActivity] ? ACTIVITY_META[primaryActivity].color : (e.visit === false ? '#94A3B8' : '#C9A227');
+      const dotColor = e.visit === false ? 'var(--muted)' : accentColor;
+      const focusStyle = isFocus
+        ? `style="background:linear-gradient(155deg, ${accentColor}26, ${accentColor}0D); border-color:${accentColor}80; box-shadow:0 4px 12px ${accentColor}40, inset 0 1px 0 rgba(255,255,255,.08);"`
+        : '';
       return `<div class="dr-tl-item">
         <div class="dr-tl-rail"><div class="dr-tl-dot" style="background:${dotColor};"></div></div>
-        <div class="dr-tl-card${isFocus?' dr-tl-card-focus':''}" data-id="${e.id}">
+        <div class="dr-tl-card${isFocus?' dr-tl-card-focus':''}" ${focusStyle} data-id="${e.id}">
           <div class="dr-tl-left">
             <div class="dr-tl-head"><span class="dr-tl-time">${e.time || '--:--'}</span>${visitTag}</div>
             <div class="dr-tl-company">${e.company || '—'}</div>
@@ -4437,9 +4621,12 @@ async function init(){
     const primaryActivity = realActivities[0];
     const accentColor = primaryActivity && ACTIVITY_META[primaryActivity] ? ACTIVITY_META[primaryActivity].color : (e.visit === false ? '#94A3B8' : '#3B82F6');
     const dotColor = e.visit === false ? '#94A3B8' : accentColor;
+    const focusStyle = isFocus
+      ? `border-left-color:${accentColor}; background:linear-gradient(155deg, ${accentColor}1F, ${accentColor}0A); border-color:${accentColor}66; box-shadow:0 3px 8px ${accentColor}33, inset 0 1px 0 rgba(255,255,255,.5);`
+      : `border-left-color:${accentColor};`;
     return `<div class="rd-tl-item">
       <div class="rd-tl-rail"><div class="rd-tl-dot" style="background:${dotColor};"></div></div>
-      <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}${isFocus?' rd-tl-card-focus':''}" style="border-left-color:${accentColor};" data-id="${e.id||''}">
+      <div class="rd-tl-card${i%2?' rd-tl-card-alt':''}" style="${focusStyle}" data-id="${e.id||''}">
         <div class="rd-tl-left">
           <div class="rd-tl-head"><span class="rd-tl-time" style="background:${accentColor};">${e.time || '--:--'}</span>${visitTag}</div>
           <div class="rd-tl-company">${e.company || '—'}</div>
@@ -4514,7 +4701,7 @@ async function init(){
       </div>
       ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">ไม่มีรายการรอราคา</div>'}
       <div class="rd-footer">
-        <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
+        <span>จัดทำโดยระบบ Sales Planning จังหวัดระยอง</span>
         <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
       </div>
       </div>
@@ -4552,7 +4739,7 @@ async function init(){
     const quoteRequests = list.filter(e=>e.activities.includes('ขอราคา')).length;
     const quotesSent = list.filter(e=>e.activities.includes('ใบเสนอราคา')).length;
 
-    const rowsHtml = list.map((e,i)=> buildTableRowHtml(e, i)).join('');
+    const itemsHtml = list.map((e,i)=> buildTimelineItemHtml(e, i)).join('');
 
     return `
       <div class="rd-topbar"></div>
@@ -4573,18 +4760,9 @@ async function init(){
           <div class="rd-kpi"><div class="n">${quotesSent}</div><div class="l">ใบเสนอราคา</div></div>
         </div>
       </div>
-      ${list.length ? `
-      <table class="rd-table">
-        <thead><tr>
-          <th class="rd-th-time">เวลา</th>
-          <th class="rd-th-company">บริษัท / ผู้ติดต่อ</th>
-          <th class="rd-th-detail">รายละเอียด</th>
-          <th class="rd-th-status">กิจกรรม</th>
-        </tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
+      ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">ไม่มีบันทึกในวันนี้</div>'}
       <div class="rd-footer">
-        <span>จัดทำโดยระบบแผนวิ่งลูกค้า จังหวัดระยอง</span>
+        <span>จัดทำโดยระบบ Sales Planning จังหวัดระยอง</span>
         <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
       </div>
       </div>
