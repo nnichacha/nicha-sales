@@ -1019,6 +1019,10 @@
   .dr-tl-card-focus{
     box-shadow:0 4px 12px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.08);
   }
+  .dr-tl-card-plan{ border-style:dashed; opacity:.88; background:rgba(255,255,255,.015); }
+  .dr-tl-dot-plan{ background:transparent !important; border:2px dashed var(--gold) !important; }
+  .dr-tl-plan-tag{ font-size:9px; font-family:'Kanit',sans-serif; font-weight:700; padding:2px 7px; border-radius:20px; background:var(--gold-dim); color:var(--gold-lt); border:1px solid var(--gold); }
+  .plan-fill-btn{ border-color:var(--gold) !important; color:var(--gold-lt) !important; }
   .dr-tl-left{ flex:0 0 32%; max-width:32%; min-width:0; border-right:1px dashed var(--line); padding-right:12px; }
   .dr-tl-right{ flex:1; min-width:0; display:flex; align-items:flex-start; padding-top:1px; }
   .dr-tl-head{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
@@ -1582,6 +1586,90 @@
     .dash-card:hover, .visited-card:hover, .estate-zone:hover, .dr-kpi-card:hover,
     .pq-card:hover, .chip:has(input:checked), .btn-primary:hover{ transform:none !important; }
   }
+
+  /* ---- Customer Appointment Plan calendar ---- */
+  .plan-shell{ max-width:1100px; margin:0 auto; }
+  .plan-header{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; margin-bottom:18px; }
+  .plan-eyebrow{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; }
+  .plan-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:22px; color:#fff; margin-top:4px; }
+  .plan-view-toggle{ display:flex; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:4px; }
+  .plan-view-btn{
+    background:transparent; border:none; color:var(--muted); padding:7px 14px; border-radius:7px; cursor:pointer;
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; transition:all .15s ease;
+  }
+  .plan-view-btn.active{ background:var(--gold); color:#04121C; }
+
+  .plan-nav-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; }
+  .plan-nav-btn{
+    background:var(--panel2); border:1px solid var(--line); color:var(--text); padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; transition:border-color .15s ease;
+  }
+  .plan-nav-btn:hover{ border-color:var(--gold); }
+  .plan-nav-label{ font-family:'Kanit',sans-serif; font-weight:700; font-size:16px; color:#fff; text-align:center; flex:1; }
+  .plan-back-btn{
+    background:transparent; border:1px solid var(--line); color:var(--muted); padding:7px 13px; border-radius:8px;
+    cursor:pointer; font-size:12px; margin-bottom:14px; font-family:'Kanit',sans-serif; font-weight:600;
+  }
+  .plan-back-btn:hover{ border-color:var(--gold); color:var(--gold-lt); }
+
+  .plan-month-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .plan-dow{ text-align:center; font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; color:var(--muted); padding:6px 0; }
+  .plan-day-cell{
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:8px 6px; min-height:64px;
+    cursor:pointer; transition:border-color .15s ease, transform .15s ease; display:flex; flex-direction:column; gap:4px;
+  }
+  .plan-day-cell:hover{ border-color:var(--gold); transform:translateY(-1px); }
+  .plan-day-cell.plan-day-empty{ opacity:.35; cursor:default; pointer-events:none; }
+  .plan-day-cell.plan-day-today{ border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
+  .plan-day-num{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#fff; }
+  .plan-day-count{ font-size:10px; color:var(--gold-lt); background:var(--gold-dim); border-radius:10px; padding:1px 7px; align-self:flex-start; }
+
+  .plan-week-grid{ display:flex; flex-direction:column; gap:8px; }
+  .plan-week-row{
+    display:flex; align-items:center; gap:12px; background:var(--panel2); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; cursor:pointer; transition:border-color .15s ease, transform .15s ease;
+  }
+  .plan-week-row:hover{ border-color:var(--gold); transform:translateX(2px); }
+  .plan-week-row.plan-day-today{ border-color:var(--gold); }
+  .plan-week-dow{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; color:var(--gold); width:38px; flex-shrink:0; }
+  .plan-week-date{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; width:52px; flex-shrink:0; }
+  .plan-week-summary{ flex:1; font-size:12px; color:var(--muted); }
+  .plan-week-count{ font-size:10.5px; color:var(--gold-lt); background:var(--gold-dim); border-radius:10px; padding:2px 9px; flex-shrink:0; }
+
+  .plan-day-list{ margin-top:16px; display:flex; flex-direction:column; gap:10px; }
+  .plan-entry{ background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--gold); border-radius:10px; padding:12px 14px; display:flex; gap:12px; align-items:flex-start; }
+  .plan-entry-time{ font-family:'Kanit',sans-serif; font-weight:800; font-size:13px; color:var(--gold); flex-shrink:0; min-width:48px; }
+  .plan-entry-main{ flex:1; min-width:0; }
+  .plan-entry-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13.5px; color:#fff; }
+  .plan-entry-person{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .plan-entry-note{ font-size:12px; color:var(--text); margin-top:6px; line-height:1.55; white-space:pre-wrap; }
+  .plan-entry-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .plan-empty{ text-align:center; padding:30px; color:var(--muted); font-size:13px; }
+
+  .plan-linked-section{
+    background:var(--gold-dim); border:1px solid var(--gold); border-radius:10px; padding:14px 16px; margin:0 0 16px;
+  }
+  .plan-linked-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:var(--gold-lt); }
+  .plan-linked-hint{ font-size:11px; color:var(--muted); margin-top:3px; margin-bottom:10px; }
+  .plan-linked-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px dashed rgba(255,255,255,.12); }
+  .plan-linked-row:first-of-type{ border-top:none; }
+  .plan-linked-time{ font-family:'Kanit',sans-serif; font-weight:700; font-size:12px; color:var(--gold); flex-shrink:0; min-width:44px; }
+  .plan-linked-main{ flex:1; min-width:0; }
+  .plan-linked-company{ font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; color:#fff; }
+  .plan-linked-person{ font-size:11px; color:var(--muted); margin-top:1px; }
+  .plan-linked-note{ font-size:11px; color:var(--text); margin-top:3px; }
+  .plan-use-btn{ flex-shrink:0; font-size:11px !important; padding:6px 12px !important; }
+
+  @media(max-width:700px){
+    .plan-month-grid{ gap:4px; }
+    .plan-day-cell{ min-height:48px; padding:5px 4px; }
+    .plan-day-num{ font-size:11px; }
+    .plan-day-count{ font-size:8.5px; padding:0 5px; }
+    .plan-dow{ font-size:9px; }
+    .plan-title{ font-size:18px; }
+    .plan-entry{ flex-direction:column; gap:6px; }
+    .plan-entry-actions{ align-self:flex-end; }
+  }
 </style>
 </head>
 <body>
@@ -1674,6 +1762,7 @@
 
   <div class="page-nav" id="pageBackNav" style="display:none;">
     <button class="page-back-btn" id="tabHome">☰ เมนู</button>
+    <button class="page-back-btn" id="tabPlanCalendar" style="margin-left:8px;">📅 แผนนัดลูกค้า</button>
   </div>
 
   <div id="page1" style="display:none;">
@@ -2024,6 +2113,82 @@
     <div class="pq-list" id="pqList"></div>
   </div>
 
+  <div id="page4" style="display:none;">
+    <div class="plan-shell">
+      <div class="plan-header">
+        <div>
+          <div class="plan-eyebrow">CUSTOMER APPOINTMENT PLAN</div>
+          <div class="plan-title">แผนนัดลูกค้า</div>
+        </div>
+        <div class="plan-view-toggle" id="planViewToggle">
+          <button class="plan-view-btn active" data-view="month">รายเดือน</button>
+          <button class="plan-view-btn" data-view="week">รายสัปดาห์</button>
+          <button class="plan-view-btn" data-view="day">รายวัน</button>
+        </div>
+      </div>
+
+      <!-- MONTH VIEW -->
+      <div id="planMonthView">
+        <div class="plan-nav-row">
+          <button class="plan-nav-btn" id="planMonthPrev">← เดือนก่อน</button>
+          <div class="plan-nav-label" id="planMonthLabel"></div>
+          <button class="plan-nav-btn" id="planMonthNext">เดือนถัดไป →</button>
+        </div>
+        <div class="plan-month-grid" id="planMonthGrid"></div>
+      </div>
+
+      <!-- WEEK VIEW -->
+      <div id="planWeekView" style="display:none;">
+        <button class="plan-back-btn" id="planWeekBack">← กลับไปปฏิทินเดือน</button>
+        <div class="plan-nav-row">
+          <button class="plan-nav-btn" id="planWeekPrev">← สัปดาห์ก่อน</button>
+          <div class="plan-nav-label" id="planWeekLabel"></div>
+          <button class="plan-nav-btn" id="planWeekNext">สัปดาห์ถัดไป →</button>
+        </div>
+        <div class="plan-week-grid" id="planWeekGrid"></div>
+      </div>
+
+      <!-- DAY VIEW -->
+      <div id="planDayView" style="display:none;">
+        <button class="plan-back-btn" id="planDayBack">← กลับไปสัปดาห์นี้</button>
+        <button class="plan-back-btn" id="planGoToDailyReport" style="border-color:var(--gold); color:var(--gold-lt);">📋 ไปที่ Daily Report วันนี้</button>
+        <div class="plan-nav-row">
+          <button class="plan-nav-btn" id="planDayPrev">← วันก่อน</button>
+          <div class="plan-nav-label" id="planDayLabel"></div>
+          <button class="plan-nav-btn" id="planDayNext">วันถัดไป →</button>
+        </div>
+
+        <div class="report-form-wrap">
+          <div class="report-form-title" id="planFormTitle">เพิ่มแผนนัดหมาย</div>
+          <div class="report-form-grid">
+            <div class="field">
+              <label>เวลานัด</label>
+              <input type="time" id="planTime">
+            </div>
+            <div class="field">
+              <label>ชื่อลูกค้า / ผู้ติดต่อ</label>
+              <input type="text" id="planPerson" placeholder="ชื่อ-นามสกุลผู้ติดต่อฝั่งลูกค้า">
+            </div>
+            <div class="field" style="grid-column:span 3;">
+              <label>ชื่อโรงงาน / บริษัทที่จะนัด</label>
+              <input type="text" id="planCompany" list="companyList" placeholder="พิมพ์หรือเลือกชื่อบริษัท">
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px;">
+            <label>รายละเอียดแผนนัด / จุดประสงค์</label>
+            <textarea id="planNote" placeholder="เช่น นัดเสนอราคา, ติดตามงาน, แนะนำสินค้าใหม่..."></textarea>
+          </div>
+          <div class="rf-actions">
+            <button class="btn-primary" id="planSubmit">บันทึกแผนนัด</button>
+            <button class="filter-select" id="planCancelEdit" style="cursor:pointer; display:none;">ยกเลิกการแก้ไข</button>
+          </div>
+        </div>
+
+        <div class="plan-day-list" id="planDayList"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="reportModal">
     <div class="modal-box">
       <div class="modal-head">
@@ -2147,6 +2312,12 @@ function attachRealtimeListeners(){
     pendingQuotesCache = Object.values(all);
     localStorage.setItem('pendingQuotes', JSON.stringify(pendingQuotesCache));
     if (document.getElementById('pqList')) renderPendingQuotes();
+  });
+  fbDb.ref('customerPlans').on('value', (snap)=>{
+    const all = snap.val() || {};
+    plansCache = Object.values(all);
+    localStorage.setItem('customerPlans', JSON.stringify(plansCache));
+    if (typeof window.refreshPlanView === 'function') window.refreshPlanView();
   });
   // feedback: patch matching rows live without full rebuild
   fbDb.ref('feedback').on('value', (snap)=>{
@@ -2285,6 +2456,33 @@ async function addReportEntry(entry){
   }
   if (entry.visit !== false && entry.company){
     await autoMarkContacted(entry.company);
+  }
+}
+
+// ---- Customer Appointment Plan: future-dated visit plans, separate from
+// completed Daily Report entries so planned vs actual never get mixed up ----
+let plansCache = null;
+function loadPlans(){
+  if (plansCache) return plansCache;
+  try{ plansCache = JSON.parse(localStorage.getItem('customerPlans') || '[]'); }
+  catch(e){ plansCache = []; }
+  return plansCache;
+}
+async function savePlanEntry(entry){
+  const existing = loadPlans();
+  const idx = existing.findIndex(p=>p.id===entry.id);
+  if (idx >= 0) existing[idx] = entry; else existing.push(entry);
+  plansCache = existing;
+  localStorage.setItem('customerPlans', JSON.stringify(plansCache));
+  if (syncConnected){
+    try{ await fbDb.ref('customerPlans/'+entry.id).set(entry); }catch(e){ console.error(e); }
+  }
+}
+async function removePlanEntry(id){
+  plansCache = loadPlans().filter(p=>p.id!==id);
+  localStorage.setItem('customerPlans', JSON.stringify(plansCache));
+  if (syncConnected){
+    try{ await fbDb.ref('customerPlans/'+id).remove(); }catch(e){ console.error(e); }
   }
 }
 
@@ -3997,17 +4195,21 @@ async function init(){
   const page1 = document.getElementById('page1');
   const page2 = document.getElementById('page2');
   const page3 = document.getElementById('page3');
+  const page4 = document.getElementById('page4');
   function showPage(which){
     pageBackNav.style.display = '';
     page1.style.display = which==='info' ? '' : 'none';
     page2.style.display = which==='report' ? '' : 'none';
     page3.style.display = which==='quotes' ? '' : 'none';
+    page4.style.display = which==='plan' ? '' : 'none';
     if (which==='info' && typeof window.resetEstateZoneView === 'function') window.resetEstateZoneView();
     if (which==='info' && typeof window.resetVisitedView === 'function') window.resetVisitedView();
     if (which==='info' && typeof window.resetTargetsView === 'function') window.resetTargetsView();
+    if (which==='plan' && typeof window.openPlanCalendar === 'function') window.openPlanCalendar();
     window.scrollTo({top:0, behavior:'instant'});
   }
   document.getElementById('tabHome').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+  document.getElementById('tabPlanCalendar').addEventListener('click', ()=> showPage('plan'));
 
   const addCompanyGlobalBtn = document.getElementById('addCompanyGlobalBtn');
   if (addCompanyGlobalBtn){
@@ -4047,7 +4249,7 @@ async function init(){
   (function initialPageFromUrl(){
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
-    const map = {info:'info', report:'report', quotes:'quotes'};
+    const map = {info:'info', report:'report', quotes:'quotes', plan:'plan'};
     showPage(map[tab] || 'info');
   })();
 
@@ -4195,16 +4397,50 @@ async function init(){
     document.getElementById('drActivityCount').textContent = `(${entries.length} รายการ)`;
   }
 
+  function buildPlanEntryHtml(p){
+    return `<div class="dr-tl-item">
+      <div class="dr-tl-rail"><div class="dr-tl-dot dr-tl-dot-plan"></div></div>
+      <div class="dr-tl-card dr-tl-card-plan" data-plan-id="${p.id}">
+        <div class="dr-tl-left">
+          <div class="dr-tl-head"><span class="dr-tl-time">${p.time || '--:--'}</span><span class="dr-tl-plan-tag">📅 แผนที่วางไว้</span></div>
+          <div class="dr-tl-company">${p.company || '—'}</div>
+          ${p.person ? `<div class="dr-tl-person">${p.person}</div>` : ''}
+        </div>
+        <div class="dr-tl-right">
+          ${p.note ? `<div class="dr-tl-note">${p.note}</div>` : '<div class="dr-tl-note dr-tl-note-empty">ยังไม่มีรายละเอียด</div>'}
+        </div>
+      </div>
+      <div class="dr-tl-actions" style="margin-left:26px;">
+        <button class="btn-report plan-fill-btn" data-id="${p.id}">เติมรายละเอียด</button>
+      </div>
+    </div>`;
+  }
+  function wirePlanFillButtons(){
+    document.querySelectorAll('.plan-fill-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const plan = (typeof loadPlans === 'function' ? loadPlans() : []).find(p=>p.id===btn.dataset.id);
+        if (!plan) return;
+        if (plan.time) rfTime.value = plan.time;
+        rfCompany.value = plan.company || '';
+        rfPerson.value = plan.person || '';
+        rfFeedback.value = plan.note || '';
+        rfCompany.dispatchEvent(new Event('input'));
+        document.querySelector('.report-form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    });
+  }
+
   function renderReportList(){
     renderDayDashboard();
     if (typeof refreshTimeSlotChips === 'function') refreshTimeSlotChips();
     const entries = entriesForDate(currentReportDate);
+    const plans = (typeof loadPlans === 'function' ? loadPlans() : []).filter(p=>p.date===currentReportDate);
     const reportListEl = document.getElementById('reportList');
-    if (entries.length === 0){
+    if (entries.length === 0 && plans.length === 0){
       reportListEl.innerHTML = `<div class="report-empty">ยังไม่มีบันทึกของวันที่เลือก</div>`;
       return;
     }
-    const entriesHtml = entries.map((e,i)=>{
+    const entryItems = entries.map((e,i)=>{
       const isFocus = e.activities.includes('Focus');
       const visitTag = e.visit === false ? '' : '<span class="dr-tl-visit-tag">Visit</span>';
       const realActivities = e.activities.filter(a=>a!=='Focus');
@@ -4215,7 +4451,7 @@ async function init(){
       const focusStyle = isFocus
         ? `style="background:linear-gradient(155deg, ${accentColor}26, ${accentColor}0D); border-color:${accentColor}80; box-shadow:0 4px 12px ${accentColor}40, inset 0 1px 0 rgba(255,255,255,.08);"`
         : '';
-      return `<div class="dr-tl-item">
+      const html = `<div class="dr-tl-item">
         <div class="dr-tl-rail"><div class="dr-tl-dot" style="background:${dotColor};"></div></div>
         <div class="dr-tl-card${isFocus?' dr-tl-card-focus':''}" ${focusStyle} data-id="${e.id}">
           <div class="dr-tl-left">
@@ -4233,11 +4469,17 @@ async function init(){
           <button class="re-delete" data-id="${e.id}">ลบ</button>
         </div>
       </div>`;
-    }).join('');
+      return {time: e.time || '', html};
+    });
+    const planItems = plans.map(p=> ({time: p.time || '', html: buildPlanEntryHtml(p)}));
+    const entriesHtml = entryItems.concat(planItems)
+      .sort((a,b)=> a.time.localeCompare(b.time))
+      .map(x=>x.html).join('');
     reportListEl.innerHTML = `<div class="report-date-group" data-date="${currentReportDate}">
       <div class="report-entries">${entriesHtml}</div>
       <div style="padding:4px 16px 12px;"><button class="btn-report btn-compile" data-date="${currentReportDate}">สร้างรายงานทั้งวัน</button></div>
     </div>`;
+    wirePlanFillButtons();
 
     reportListEl.querySelectorAll('.btn-compile').forEach(btn=>{
       btn.addEventListener('click', ()=> openDayReport(btn.dataset.date));
@@ -5198,6 +5440,211 @@ async function init(){
   });
 
   renderPendingQuotes();
+
+  // ================= Customer Appointment Plan (แผนนัดลูกค้า) =================
+  (function initPlanCalendar(){
+    const monthView = document.getElementById('planMonthView');
+    const weekView = document.getElementById('planWeekView');
+    const dayView = document.getElementById('planDayView');
+    if (!monthView) return;
+
+    const DOW = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+    let anchorDate = new Date(); // the date currently being viewed (drives month/week/day)
+    let currentView = 'month';
+    let planEditingId = null;
+
+    function ymd(d){ return formatDateLocal(d); }
+    function startOfWeek(d){ const x = new Date(d); x.setDate(x.getDate() - x.getDay()); return x; }
+    function plansOnDate(dateStr){ return loadPlans().filter(p=>p.date===dateStr).sort((a,b)=>(a.time||'').localeCompare(b.time||'')); }
+
+    function setView(view){
+      currentView = view;
+      monthView.style.display = view==='month' ? '' : 'none';
+      weekView.style.display = view==='week' ? '' : 'none';
+      dayView.style.display = view==='day' ? '' : 'none';
+      document.querySelectorAll('.plan-view-btn').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
+    }
+
+    function renderMonth(){
+      const y = anchorDate.getFullYear(), m = anchorDate.getMonth();
+      document.getElementById('planMonthLabel').textContent = anchorDate.toLocaleDateString('th-TH', {month:'long', year:'numeric'});
+      const first = new Date(y, m, 1);
+      const startPad = first.getDay();
+      const daysInMonth = new Date(y, m+1, 0).getDate();
+      const todayStr = todayISO();
+
+      let cells = DOW.map(d=>`<div class="plan-dow">${d}</div>`).join('');
+      for (let i=0; i<startPad; i++) cells += `<div class="plan-day-cell plan-day-empty"></div>`;
+      for (let d=1; d<=daysInMonth; d++){
+        const dateObj = new Date(y, m, d);
+        const dateStr = ymd(dateObj);
+        const count = plansOnDate(dateStr).length;
+        const isToday = dateStr === todayStr;
+        cells += `<div class="plan-day-cell${isToday?' plan-day-today':''}" data-date="${dateStr}">
+          <div class="plan-day-num">${d}</div>
+          ${count ? `<div class="plan-day-count">${count} นัด</div>` : ''}
+        </div>`;
+      }
+      document.getElementById('planMonthGrid').innerHTML = cells;
+      document.querySelectorAll('#planMonthGrid .plan-day-cell[data-date]').forEach(cell=>{
+        cell.addEventListener('click', ()=>{
+          anchorDate = new Date(cell.dataset.date+'T00:00:00');
+          setView('week');
+          renderWeek();
+        });
+      });
+    }
+
+    function renderWeek(){
+      const start = startOfWeek(anchorDate);
+      document.getElementById('planWeekLabel').textContent =
+        `สัปดาห์ ${start.toLocaleDateString('th-TH',{day:'numeric',month:'short'})} – ${(()=>{ const e=new Date(start); e.setDate(e.getDate()+6); return e.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}); })()}`;
+      const todayStr = todayISO();
+      let rows = '';
+      for (let i=0; i<7; i++){
+        const d = new Date(start); d.setDate(d.getDate()+i);
+        const dateStr = ymd(d);
+        const items = plansOnDate(dateStr);
+        const summary = items.length ? items.slice(0,2).map(p=>p.company||'—').join(', ') + (items.length>2 ? ` +${items.length-2}` : '') : 'ไม่มีแผนนัด';
+        rows += `<div class="plan-week-row${dateStr===todayStr?' plan-day-today':''}" data-date="${dateStr}">
+          <div class="plan-week-dow">${DOW[d.getDay()]}</div>
+          <div class="plan-week-date">${d.getDate()}/${d.getMonth()+1}</div>
+          <div class="plan-week-summary">${summary}</div>
+          ${items.length ? `<div class="plan-week-count">${items.length} นัด</div>` : ''}
+        </div>`;
+      }
+      document.getElementById('planWeekGrid').innerHTML = rows;
+      document.querySelectorAll('#planWeekGrid .plan-week-row').forEach(row=>{
+        row.addEventListener('click', ()=>{
+          anchorDate = new Date(row.dataset.date+'T00:00:00');
+          setView('day');
+          renderDay();
+        });
+      });
+    }
+
+    function exitPlanEditMode(){
+      planEditingId = null;
+      document.getElementById('planFormTitle').textContent = 'เพิ่มแผนนัดหมาย';
+      document.getElementById('planSubmit').textContent = 'บันทึกแผนนัด';
+      document.getElementById('planCancelEdit').style.display = 'none';
+      document.getElementById('planTime').value = '';
+      document.getElementById('planPerson').value = '';
+      document.getElementById('planCompany').value = '';
+      document.getElementById('planNote').value = '';
+    }
+
+    function renderDay(){
+      const dateStr = ymd(anchorDate);
+      document.getElementById('planDayLabel').textContent = anchorDate.toLocaleDateString('th-TH', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+      exitPlanEditMode();
+      const items = plansOnDate(dateStr);
+      const listEl = document.getElementById('planDayList');
+      if (!items.length){
+        listEl.innerHTML = `<div class="plan-empty">ยังไม่มีแผนนัดในวันนี้</div>`;
+      } else {
+        listEl.innerHTML = items.map(p=>`
+          <div class="plan-entry" data-id="${p.id}">
+            <div class="plan-entry-time">${p.time || '--:--'}</div>
+            <div class="plan-entry-main">
+              <div class="plan-entry-company">${p.company || '—'}</div>
+              ${p.person ? `<div class="plan-entry-person">${p.person}</div>` : ''}
+              ${p.note ? `<div class="plan-entry-note">${p.note}</div>` : ''}
+            </div>
+            <div class="plan-entry-actions">
+              <button class="btn-report plan-view-report-btn" data-id="${p.id}" style="border-color:var(--gold); color:var(--gold-lt);">📋 ดูใน Daily Report</button>
+              <button class="btn-report plan-edit-btn" data-id="${p.id}">แก้ไข</button>
+              <button class="re-delete plan-del-btn" data-id="${p.id}">ลบ</button>
+            </div>
+          </div>`).join('');
+        listEl.querySelectorAll('.plan-view-report-btn').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            showPage('report');
+            if (typeof goToDate === 'function') goToDate(dateStr);
+          });
+        });
+        listEl.querySelectorAll('.plan-edit-btn').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            const entry = loadPlans().find(p=>p.id===btn.dataset.id);
+            if (!entry) return;
+            planEditingId = entry.id;
+            document.getElementById('planFormTitle').textContent = 'แก้ไขแผนนัดหมาย';
+            document.getElementById('planSubmit').textContent = 'บันทึกการแก้ไข';
+            document.getElementById('planCancelEdit').style.display = '';
+            document.getElementById('planTime').value = entry.time || '';
+            document.getElementById('planPerson').value = entry.person || '';
+            document.getElementById('planCompany').value = entry.company || '';
+            document.getElementById('planNote').value = entry.note || '';
+            document.querySelector('.report-form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+          });
+        });
+        listEl.querySelectorAll('.plan-del-btn').forEach(btn=>{
+          btn.addEventListener('click', async ()=>{
+            if (!confirm('ต้องการลบแผนนัดนี้ใช่หรือไม่?')) return;
+            await removePlanEntry(btn.dataset.id);
+            if (planEditingId === btn.dataset.id) exitPlanEditMode();
+            renderDay();
+          });
+        });
+      }
+    }
+
+    document.getElementById('planSubmit').addEventListener('click', async ()=>{
+      const company = document.getElementById('planCompany').value.trim();
+      if (!company){ alert('กรุณาระบุชื่อบริษัท'); return; }
+      const entry = {
+        id: planEditingId || ('plan'+Date.now()+Math.floor(Math.random()*1000)),
+        date: ymd(anchorDate),
+        time: document.getElementById('planTime').value,
+        person: document.getElementById('planPerson').value.trim(),
+        company,
+        note: document.getElementById('planNote').value.trim(),
+      };
+      await savePlanEntry(entry);
+      flashSaved();
+      exitPlanEditMode();
+      renderDay();
+    });
+    document.getElementById('planCancelEdit').addEventListener('click', exitPlanEditMode);
+
+    document.getElementById('planMonthPrev').addEventListener('click', ()=>{ anchorDate.setMonth(anchorDate.getMonth()-1); renderMonth(); });
+    document.getElementById('planMonthNext').addEventListener('click', ()=>{ anchorDate.setMonth(anchorDate.getMonth()+1); renderMonth(); });
+    document.getElementById('planWeekPrev').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()-7); renderWeek(); });
+    document.getElementById('planWeekNext').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()+7); renderWeek(); });
+    document.getElementById('planDayPrev').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()-1); renderDay(); });
+    document.getElementById('planDayNext').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()+1); renderDay(); });
+
+    document.getElementById('planWeekBack').addEventListener('click', ()=>{ setView('month'); renderMonth(); });
+    document.getElementById('planDayBack').addEventListener('click', ()=>{ setView('week'); renderWeek(); });
+    document.getElementById('planGoToDailyReport').addEventListener('click', ()=>{
+      const dateStr = ymd(anchorDate);
+      showPage('report');
+      if (typeof goToDate === 'function') goToDate(dateStr);
+    });
+
+    document.querySelectorAll('.plan-view-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const view = btn.dataset.view;
+        setView(view);
+        if (view==='month') renderMonth();
+        else if (view==='week') renderWeek();
+        else renderDay();
+      });
+    });
+
+    window.refreshPlanView = function(){
+      if (currentView==='month') renderMonth();
+      else if (currentView==='week') renderWeek();
+      else if (currentView==='day') renderDay();
+    };
+    window.openPlanCalendar = function(){
+      anchorDate = new Date();
+      setView('month');
+      renderMonth();
+    };
+
+    renderMonth();
+  })();
 
   // ---- sync settings panel ----
   const syncPanel = document.getElementById('syncPanel');
