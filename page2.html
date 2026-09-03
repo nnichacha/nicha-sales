@@ -394,29 +394,37 @@
   .vc-modal-body{ padding:20px 22px 22px; }
   .vc-modal-header{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; line-height:1.3; text-shadow:0 1px 3px rgba(0,0,0,.2); }
   .vc-modal-loc{ font-size:10.5px; color:rgba(255,255,255,.85); margin-top:3px; }
-  .vc-modal-body .field{ margin-bottom:14px; }
+  .vc-quickbar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-bottom:14px; margin-bottom:14px; border-bottom:1px dashed #E5E7EB; }
+  .vc-contacted-chip{
+    display:flex; align-items:center; gap:5px; padding:6px 10px; background:#EFF6FF; border:1.5px solid #BFDBFE;
+    border-radius:20px; cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600; font-size:11px; color:#1E3A8A; flex-shrink:0;
+  }
+  .vc-contacted-chip input{ width:13px; height:13px; accent-color:#2563EB; cursor:pointer; }
+  .vc-status-chip{ flex:1 1 120px; min-width:110px; }
+  .vc-quick-input{ flex:1 1 110px; min-width:100px; }
+  .vc-note-label{ font-size:11px; color:#8B93A1; font-family:'Kanit',sans-serif; font-weight:700; letter-spacing:.3px; margin-bottom:7px; }
   .vc-modal-body .field label{ font-size:10.5px; color:#8B93A1; font-family:'Kanit',sans-serif; font-weight:700; letter-spacing:.3px; text-transform:uppercase; display:block; margin-bottom:6px; }
   .vc-modal-body .vc-status-select{
-    width:100%; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:9px; padding:9px 11px;
-    color:#111827; font-family:'Sarabun',sans-serif; font-size:13px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease;
+    background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:8px; padding:6px 9px;
+    color:#111827; font-family:'Sarabun',sans-serif; font-size:11.5px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease;
   }
-  .vc-modal-body .vc-contact-row{ display:flex; gap:8px; margin-top:14px; }
   .vc-modal-body .vc-input{
-    flex:1; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:9px; padding:9px 11px;
-    color:#111827; font-family:'Sarabun',sans-serif; font-size:13px; transition:border-color .15s ease, box-shadow .15s ease;
+    background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:8px; padding:6px 9px;
+    color:#111827; font-family:'Sarabun',sans-serif; font-size:11.5px; transition:border-color .15s ease, box-shadow .15s ease;
   }
   .vc-modal-body .vc-input:focus, .vc-modal-body .vc-status-select:focus{
     outline:none; border-color:var(--vc-modal-color, var(--gold));
     box-shadow:0 0 0 3px color-mix(in srgb, var(--vc-modal-color, var(--gold)) 18%, transparent);
   }
-  .vc-modal-body .vc-note{
-    width:100%; margin-top:14px; background:#F9FAFB; border:1.5px solid #E5E7EB; border-radius:9px; padding:11px 12px;
-    color:#111827; font-family:'Sarabun',sans-serif; font-size:13px; min-height:110px; resize:vertical; line-height:1.55;
+  .vc-modal-body .vc-note-main{
+    width:100%; background:linear-gradient(155deg, #FAFCFF, #F3F6FB); border:2px solid color-mix(in srgb, var(--vc-modal-color, var(--gold)) 35%, #E5E7EB);
+    border-radius:12px; padding:14px 15px; color:#111827; font-family:'Sarabun',sans-serif; font-size:13.5px;
+    min-height:160px; resize:vertical; line-height:1.65; box-shadow:inset 0 1px 3px rgba(0,0,0,.04);
     transition:border-color .15s ease, box-shadow .15s ease;
   }
-  .vc-modal-body .vc-note:focus{
+  .vc-modal-body .vc-note-main:focus{
     outline:none; border-color:var(--vc-modal-color, var(--gold));
-    box-shadow:0 0 0 3px color-mix(in srgb, var(--vc-modal-color, var(--gold)) 18%, transparent);
+    box-shadow:0 0 0 4px color-mix(in srgb, var(--vc-modal-color, var(--gold)) 16%, transparent), inset 0 1px 3px rgba(0,0,0,.04);
   }
   .vc-modal-save{
     width:100%; margin-top:14px; background:var(--vc-modal-color, #38BDF8); color:#0B1220; border:none;
@@ -1772,19 +1780,17 @@
       </div>
       <div class="vc-strip" id="vcModalStrip"></div>
       <div class="vc-modal-body">
-        <label class="vc-contacted-row">
-          <input type="checkbox" id="vcModalContacted">
-          <span>🔵 เข้าพบแล้ว</span>
-        </label>
-        <div class="field">
-          <label>ผลการเข้าพบ</label>
-          <select class="vc-status-select" id="vcModalStatus"></select>
+        <div class="vc-quickbar">
+          <label class="vc-contacted-chip">
+            <input type="checkbox" id="vcModalContacted">
+            <span>🔵 เข้าพบแล้ว</span>
+          </label>
+          <select class="vc-status-select vc-status-chip" id="vcModalStatus"></select>
+          <input type="text" class="vc-input vc-quick-input" id="vcModalContact" placeholder="ชื่อผู้ติดต่อ">
+          <input type="text" class="vc-input vc-quick-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
         </div>
-        <div class="vc-contact-row">
-          <input type="text" class="vc-input" id="vcModalContact" placeholder="ชื่อผู้ติดต่อ">
-          <input type="text" class="vc-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
-        </div>
-        <textarea class="vc-note" id="vcModalNote" placeholder="บันทึก Feedback / โน้ต..."></textarea>
+        <div class="vc-note-label">📝 รายละเอียด / Feedback</div>
+        <textarea class="vc-note vc-note-main" id="vcModalNote" placeholder="บันทึกรายละเอียดการเข้าพบ เช่น ความสนใจของลูกค้า งานที่พูดคุย ขั้นตอนถัดไป..."></textarea>
         <button class="vc-modal-save" id="vcModalSave" type="button">บันทึกการเปลี่ยนแปลง</button>
       </div>
     </div>
