@@ -1584,7 +1584,7 @@
       transition-duration:.001ms !important; scroll-behavior:auto !important;
     }
     .dash-card:hover, .visited-card:hover, .estate-zone:hover, .dr-kpi-card:hover,
-    .pq-card:hover, .chip:has(input:checked), .btn-primary:hover{ transform:none !important; }
+    .pq-card:hover, .chip:has(input:checked), .btn-primary:hover, .plan-day-cell:hover{ transform:none !important; }
   }
 
   /* ---- Customer Appointment Plan calendar ---- */
@@ -1612,17 +1612,34 @@
   }
   .plan-back-btn:hover{ border-color:var(--gold); color:var(--gold-lt); }
 
-  .plan-month-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .plan-month-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:7px; }
   .plan-dow{ text-align:center; font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; color:var(--muted); padding:6px 0; }
   .plan-day-cell{
-    background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:8px 6px; min-height:64px;
-    cursor:pointer; transition:border-color .15s ease, transform .15s ease; display:flex; flex-direction:column; gap:4px;
+    background:linear-gradient(155deg, rgba(255,255,255,.035), rgba(255,255,255,.008)), var(--panel2);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:9px 7px; min-height:66px;
+    cursor:pointer; transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease, border-color .22s ease, background .22s ease;
+    display:flex; flex-direction:column; gap:4px; position:relative; overflow:hidden;
   }
-  .plan-day-cell:hover{ border-color:var(--gold); transform:translateY(-1px); }
-  .plan-day-cell.plan-day-empty{ opacity:.35; cursor:default; pointer-events:none; }
-  .plan-day-cell.plan-day-today{ border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
+  .plan-day-cell:hover{
+    border-color:var(--accent-cyan, #22D3EE); transform:translateY(-4px) scale(1.04);
+    box-shadow:0 10px 24px rgba(34,211,238,.28), 0 0 0 1px rgba(34,211,238,.4), inset 0 1px 0 rgba(255,255,255,.15);
+  }
+  .plan-day-cell.plan-day-empty{ opacity:.3; cursor:default; pointer-events:none; }
+  .plan-day-cell.plan-day-today{ border-color:var(--gold); box-shadow:0 0 0 1.5px var(--gold), 0 0 14px rgba(62,198,255,.25); }
+  .plan-day-cell.plan-day-hasplan{
+    background:linear-gradient(155deg, rgba(62,198,255,.22), rgba(34,211,238,.06)), var(--panel2);
+    border-color:rgba(62,198,255,.55);
+    box-shadow:0 2px 10px rgba(62,198,255,.18), inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .plan-day-cell.plan-day-hasplan:hover{
+    box-shadow:0 12px 28px rgba(34,211,238,.4), 0 0 0 1.5px var(--accent-cyan, #22D3EE), inset 0 1px 0 rgba(255,255,255,.2);
+  }
   .plan-day-num{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#fff; }
-  .plan-day-count{ font-size:10px; color:var(--gold-lt); background:var(--gold-dim); border-radius:10px; padding:1px 7px; align-self:flex-start; }
+  .plan-day-count{
+    font-size:10px; font-weight:700; color:#04121C; background:linear-gradient(135deg, var(--accent-cyan,#22D3EE), var(--gold));
+    border-radius:10px; padding:1px 7px; align-self:flex-start; box-shadow:0 1px 4px rgba(34,211,238,.4);
+  }
 
   .plan-week-grid{ display:flex; flex-direction:column; gap:8px; }
   .plan-week-row{
@@ -5480,7 +5497,7 @@ async function init(){
         const dateStr = ymd(dateObj);
         const count = plansOnDate(dateStr).length;
         const isToday = dateStr === todayStr;
-        cells += `<div class="plan-day-cell${isToday?' plan-day-today':''}" data-date="${dateStr}">
+        cells += `<div class="plan-day-cell${isToday?' plan-day-today':''}${count?' plan-day-hasplan':''}" data-date="${dateStr}">
           <div class="plan-day-num">${d}</div>
           ${count ? `<div class="plan-day-count">${count} นัด</div>` : ''}
         </div>`;
@@ -5488,9 +5505,9 @@ async function init(){
       document.getElementById('planMonthGrid').innerHTML = cells;
       document.querySelectorAll('#planMonthGrid .plan-day-cell[data-date]').forEach(cell=>{
         cell.addEventListener('click', ()=>{
-          anchorDate = new Date(cell.dataset.date+'T00:00:00');
-          setView('week');
-          renderWeek();
+          const dateStr = cell.dataset.date;
+          showPage('report');
+          if (typeof goToDate === 'function') goToDate(dateStr);
         });
       });
     }
