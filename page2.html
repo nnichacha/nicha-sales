@@ -822,6 +822,7 @@
     font-weight:600; font-size:12.5px; padding:9px 16px; border-radius:8px; cursor:pointer; margin-top:20px;
   }
   .page-back-btn:hover{ color:var(--gold); border-color:var(--gold); }
+  #tabHome{ display:inline-flex; align-items:center; justify-content:center; padding:9px 12px; }
 
   .subtab-nav{ display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); }
   .subtab-btn{
@@ -1847,7 +1848,9 @@
 
 
   <div class="page-nav" id="pageBackNav" style="display:none;">
-    <button class="page-back-btn" id="tabHome" title="Back to Home">🏠</button>
+    <button class="page-back-btn" id="tabHome" title="Back to Home">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+    </button>
     <button class="page-back-btn" id="tabPlanCalendar" style="margin-left:8px;">📅 Calendar</button>
   </div>
 
