@@ -1641,19 +1641,11 @@
   }
   .plan-day-cell.plan-day-empty{ opacity:.3; cursor:default; pointer-events:none; }
   .plan-day-cell.plan-day-today{
-    position:relative; border:1.5px solid transparent; background-clip:padding-box, border-box;
-    background-image:
-      linear-gradient(155deg, rgba(168,85,247,.16), rgba(236,72,153,.05)), var(--panel2),
-      linear-gradient(135deg, #A855F7, #EC4899, #F59E0B);
-    background-origin:border-box; background-repeat:no-repeat;
+    background:#F59E0B; border-color:#F59E0B;
     transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(168,85,247,.3), 0 0 16px rgba(236,72,153,.25);
-    animation:plan-today-pulse 3s ease-in-out infinite;
+    box-shadow:0 6px 14px rgba(245,158,11,.35);
   }
-  @keyframes plan-today-pulse{
-    0%, 100%{ box-shadow:0 8px 20px rgba(168,85,247,.3), 0 0 16px rgba(236,72,153,.25); }
-    50%{ box-shadow:0 8px 24px rgba(168,85,247,.45), 0 0 22px rgba(236,72,153,.4); }
-  }
+  .plan-day-cell.plan-day-today .plan-day-num{ color:#04121C; }
   .plan-day-cell.plan-day-today:hover{ transform:translateY(-6px) scale(1.04); }
   .plan-day-cell.plan-day-hasplan{
     background:linear-gradient(155deg, rgba(62,198,255,.12), rgba(34,211,238,.03)), var(--panel2);
@@ -1663,9 +1655,10 @@
     box-shadow:0 12px 28px rgba(34,211,238,.4), 0 0 0 1.5px var(--accent-cyan, #22D3EE), inset 0 1px 0 rgba(255,255,255,.2);
   }
   .plan-day-cell.plan-day-selected{
-    border-color:var(--accent-cyan, #22D3EE) !important; background:linear-gradient(155deg, rgba(34,211,238,.18), rgba(34,211,238,.04)), var(--panel2) !important;
-    box-shadow:0 0 0 2.5px var(--accent-cyan, #22D3EE), 0 6px 18px rgba(34,211,238,.4) !important;
+    background:#EC4899 !important; border-color:#EC4899 !important;
+    box-shadow:0 6px 14px rgba(236,72,153,.35) !important;
   }
+  .plan-day-cell.plan-day-selected .plan-day-num{ color:#fff; }
   .plan-day-num{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#fff; }
   .plan-day-dot{
     width:6px; height:6px; border-radius:50%; align-self:flex-start;
