@@ -1589,22 +1589,23 @@
 
   /* ---- Customer Appointment Plan calendar ---- */
   .plan-shell{ max-width:1100px; margin:0 auto; }
-  .plan-header{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; margin-bottom:18px; }
+  .plan-header{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px; margin-bottom:18px; }
+  .plan-header-spacer{ display:block; }
   .plan-eyebrow{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; }
   .plan-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:22px; color:#fff; margin-top:4px; }
-  .plan-view-toggle{ display:flex; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:4px; }
+  .plan-view-toggle{ display:flex; gap:3px; background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:999px; padding:3px; justify-self:center; }
   .plan-view-btn{
-    background:transparent; border:none; color:var(--muted); padding:7px 14px; border-radius:7px; cursor:pointer;
-    font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; transition:all .15s ease;
+    background:transparent; border:none; color:var(--muted); padding:5px 11px; border-radius:999px; cursor:pointer;
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:10.5px; transition:all .18s ease; white-space:nowrap;
   }
-  .plan-view-btn.active{ background:var(--gold); color:#04121C; }
+  .plan-view-btn.active{ background:var(--gold); color:#04121C; box-shadow:0 2px 8px rgba(62,198,255,.35); }
 
   .plan-nav-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; }
   .plan-nav-btn{
-    background:var(--panel2); border:1px solid var(--line); color:var(--text); padding:8px 14px; border-radius:8px;
-    cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; transition:border-color .15s ease;
+    background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--text); padding:8px 16px; border-radius:999px;
+    cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; transition:border-color .15s ease, background .15s ease;
   }
-  .plan-nav-btn:hover{ border-color:var(--gold); }
+  .plan-nav-btn:hover{ border-color:var(--accent-cyan, #22D3EE); background:rgba(34,211,238,.08); }
   .plan-nav-label{ font-family:'Kanit',sans-serif; font-weight:700; font-size:16px; color:#fff; text-align:center; flex:1; }
   .plan-back-btn{
     background:transparent; border:1px solid var(--line); color:var(--muted); padding:7px 13px; border-radius:8px;
@@ -1612,8 +1613,20 @@
   }
   .plan-back-btn:hover{ border-color:var(--gold); color:var(--gold-lt); }
 
-  .plan-month-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:7px; }
+  .plan-calendar-card{
+    background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.01)), var(--panel);
+    border:1px solid rgba(255,255,255,.09); border-radius:16px; padding:18px;
+    box-shadow:0 20px 45px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
+    position:relative; overflow:hidden;
+  }
+  .plan-calendar-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, #0B2A4A, #3B82F6, var(--accent-cyan,#22D3EE));
+  }
+  .plan-month-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:7px; animation:plan-grid-fade .3s ease; }
+  @keyframes plan-grid-fade{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:translateY(0); } }
   .plan-dow{ text-align:center; font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; color:var(--muted); padding:6px 0; }
+  .plan-dow.plan-dow-weekend{ color:var(--accent-cyan,#22D3EE); }
   .plan-day-cell{
     background:linear-gradient(155deg, rgba(255,255,255,.035), rgba(255,255,255,.008)), var(--panel2);
     backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
@@ -1621,24 +1634,73 @@
     cursor:pointer; transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s ease, border-color .22s ease, background .22s ease;
     display:flex; flex-direction:column; gap:4px; position:relative; overflow:hidden;
   }
+  .plan-day-cell.plan-day-weekend{ background:linear-gradient(155deg, rgba(59,130,246,.05), rgba(255,255,255,.005)), var(--panel2); }
   .plan-day-cell:hover{
     border-color:var(--accent-cyan, #22D3EE); transform:translateY(-4px) scale(1.04);
     box-shadow:0 10px 24px rgba(34,211,238,.28), 0 0 0 1px rgba(34,211,238,.4), inset 0 1px 0 rgba(255,255,255,.15);
   }
   .plan-day-cell.plan-day-empty{ opacity:.3; cursor:default; pointer-events:none; }
-  .plan-day-cell.plan-day-today{ border-color:var(--gold); box-shadow:0 0 0 1.5px var(--gold), 0 0 14px rgba(62,198,255,.25); }
+  .plan-day-cell.plan-day-today{
+    position:relative; border:1.5px solid transparent; background-clip:padding-box, border-box;
+    background-image:
+      linear-gradient(155deg, rgba(168,85,247,.16), rgba(236,72,153,.05)), var(--panel2),
+      linear-gradient(135deg, #A855F7, #EC4899, #F59E0B);
+    background-origin:border-box; background-repeat:no-repeat;
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(168,85,247,.3), 0 0 16px rgba(236,72,153,.25);
+    animation:plan-today-pulse 3s ease-in-out infinite;
+  }
+  @keyframes plan-today-pulse{
+    0%, 100%{ box-shadow:0 8px 20px rgba(168,85,247,.3), 0 0 16px rgba(236,72,153,.25); }
+    50%{ box-shadow:0 8px 24px rgba(168,85,247,.45), 0 0 22px rgba(236,72,153,.4); }
+  }
+  .plan-day-cell.plan-day-today:hover{ transform:translateY(-6px) scale(1.04); }
   .plan-day-cell.plan-day-hasplan{
-    background:linear-gradient(155deg, rgba(62,198,255,.22), rgba(34,211,238,.06)), var(--panel2);
-    border-color:rgba(62,198,255,.55);
-    box-shadow:0 2px 10px rgba(62,198,255,.18), inset 0 1px 0 rgba(255,255,255,.1);
+    background:linear-gradient(155deg, rgba(62,198,255,.12), rgba(34,211,238,.03)), var(--panel2);
+    border-color:rgba(62,198,255,.35);
   }
   .plan-day-cell.plan-day-hasplan:hover{
     box-shadow:0 12px 28px rgba(34,211,238,.4), 0 0 0 1.5px var(--accent-cyan, #22D3EE), inset 0 1px 0 rgba(255,255,255,.2);
   }
+  .plan-day-cell.plan-day-selected{
+    border-color:var(--accent-cyan, #22D3EE) !important; background:linear-gradient(155deg, rgba(34,211,238,.18), rgba(34,211,238,.04)), var(--panel2) !important;
+    box-shadow:0 0 0 2.5px var(--accent-cyan, #22D3EE), 0 6px 18px rgba(34,211,238,.4) !important;
+  }
   .plan-day-num{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#fff; }
-  .plan-day-count{
-    font-size:10px; font-weight:700; color:#04121C; background:linear-gradient(135deg, var(--accent-cyan,#22D3EE), var(--gold));
-    border-radius:10px; padding:1px 7px; align-self:flex-start; box-shadow:0 1px 4px rgba(34,211,238,.4);
+  .plan-day-dot{
+    width:6px; height:6px; border-radius:50%; align-self:flex-start;
+    background:linear-gradient(135deg, var(--accent-cyan,#22D3EE), var(--gold)); box-shadow:0 0 6px rgba(34,211,238,.7);
+  }
+
+  .plan-detail-panel{
+    margin-top:16px; background:linear-gradient(155deg, rgba(255,255,255,.035), rgba(255,255,255,.008)), var(--panel2);
+    border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:16px;
+  }
+  .plan-detail-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .plan-detail-date{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; }
+  .plan-detail-add-btn{
+    width:32px; height:32px; border-radius:50%; border:none; background:linear-gradient(135deg, var(--accent-cyan,#22D3EE), var(--gold));
+    color:#04121C; font-size:18px; font-weight:800; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .plan-detail-add-btn:hover{ transform:scale(1.1); box-shadow:0 4px 14px rgba(34,211,238,.5); }
+  .plan-detail-empty{ text-align:center; padding:20px 0; color:var(--muted); font-size:13px; }
+  .plan-detail-empty-add{
+    display:block; margin:12px auto 0; background:transparent; border:none; color:var(--gold-lt); font-family:'Kanit',sans-serif;
+    font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .plan-detail-row{ display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-top:1px dashed rgba(255,255,255,.1); }
+  .plan-detail-row:first-child{ border-top:none; }
+  .plan-detail-time{ font-family:'Kanit',sans-serif; font-weight:800; font-size:12px; color:var(--gold); min-width:44px; flex-shrink:0; }
+  .plan-detail-main{ flex:1; min-width:0; }
+  .plan-detail-company{ font-family:'Kanit',sans-serif; font-weight:700; font-size:13px; color:#fff; }
+  .plan-detail-sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .plan-detail-note{ font-size:11.5px; color:var(--text); margin-top:5px; line-height:1.55; }
+  .plan-detail-badge-real{ font-size:8.5px; font-weight:700; padding:2px 6px; border-radius:10px; background:var(--green-dim); color:#6EE7B7; margin-left:4px; }
+  .plan-detail-badge-plan{ font-size:8.5px; font-weight:700; padding:2px 6px; border-radius:10px; background:var(--gold-dim); color:var(--gold-lt); margin-left:4px; }
+  .plan-detail-fill-btn{
+    flex-shrink:0; background:transparent; border:1px solid var(--gold); color:var(--gold-lt); border-radius:7px;
+    padding:5px 10px; font-size:10.5px; cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600;
   }
 
   .plan-week-grid{ display:flex; flex-direction:column; gap:8px; }
@@ -1677,15 +1739,29 @@
   .plan-linked-note{ font-size:11px; color:var(--text); margin-top:3px; }
   .plan-use-btn{ flex-shrink:0; font-size:11px !important; padding:6px 12px !important; }
 
+  .mobile-bottom-nav{ display:none; }
   @media(max-width:700px){
+    .plan-header{ grid-template-columns:1fr; justify-items:center; text-align:center; }
+    .plan-header-spacer{ display:none; }
     .plan-month-grid{ gap:4px; }
     .plan-day-cell{ min-height:48px; padding:5px 4px; }
     .plan-day-num{ font-size:11px; }
-    .plan-day-count{ font-size:8.5px; padding:0 5px; }
     .plan-dow{ font-size:9px; }
     .plan-title{ font-size:18px; }
-    .plan-entry{ flex-direction:column; gap:6px; }
-    .plan-entry-actions{ align-self:flex-end; }
+
+    .mobile-bottom-nav{
+      display:flex; position:fixed; left:0; right:0; bottom:0; z-index:200;
+      background:rgba(14,21,36,.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border-top:1px solid rgba(255,255,255,.08); padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+      box-shadow:0 -4px 20px rgba(0,0,0,.35);
+    }
+    .mbn-btn{
+      flex:1; background:none; border:none; color:var(--muted); display:flex; flex-direction:column; align-items:center;
+      gap:2px; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:4px 2px; cursor:pointer; transition:color .15s ease;
+    }
+    .mbn-btn:active{ color:var(--gold); }
+    .mbn-icon{ font-size:19px; }
+    body{ padding-bottom:64px; }
   }
 </style>
 </head>
@@ -1778,16 +1854,16 @@
 
 
   <div class="page-nav" id="pageBackNav" style="display:none;">
-    <button class="page-back-btn" id="tabHome">☰ เมนู</button>
-    <button class="page-back-btn" id="tabPlanCalendar" style="margin-left:8px;">📅 แผนนัดลูกค้า</button>
+    <button class="page-back-btn" id="tabHome">☰ Menu</button>
+    <button class="page-back-btn" id="tabPlanCalendar" style="margin-left:8px;">📅 Calendar</button>
   </div>
 
   <div id="page1" style="display:none;">
     <div class="subtab-nav">
-      <button class="subtab-btn active" id="subtabHomeBtn">หน้าแรก</button>
-      <button class="subtab-btn" id="subtabVisitedBtn">บริษัทที่ไปพบแล้ว</button>
-      <button class="subtab-btn" id="subtabTargetsBtn">เป้าหมาย</button>
-      <button class="subtab-btn" id="subtabEstateBtn">โซนอุตสาหกรรม</button>
+      <button class="subtab-btn active" id="subtabHomeBtn">Directory</button>
+      <button class="subtab-btn" id="subtabVisitedBtn">Visited</button>
+      <button class="subtab-btn" id="subtabTargetsBtn">Targets</button>
+      <button class="subtab-btn" id="subtabEstateBtn">Estate Zones</button>
     </div>
 
     <div id="subtabHome">
@@ -1809,7 +1885,7 @@
               <svg viewBox="0 0 24 24" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             </div>
             <div>
-              <div class="visited-title">บริษัทที่ไปพบแล้ว</div>
+              <div class="visited-title">Visited Companies</div>
               <div class="visited-meta" id="visitedMeta">0 แห่ง</div>
             </div>
           </div>
@@ -1834,7 +1910,7 @@
           <div class="visited-head-left">
             <div class="visited-icon"><span style="font-size:16px;">🎯</span></div>
             <div>
-              <div class="visited-title">บริษัทเป้าหมายที่ต้องดำเนินการ</div>
+              <div class="visited-title">Target Companies</div>
               <div class="visited-meta" id="targetsMeta">0 แห่ง</div>
             </div>
           </div>
@@ -1911,7 +1987,7 @@
           <div class="dr-dash-eyebrow">DAILY REPORT</div>
           <div class="dr-dash-title" id="drDateTitle">—</div>
         </div>
-        <div class="dr-dash-badge" id="drDateBadge">วันนี้</div>
+        <div class="dr-dash-badge" id="drDateBadge">Today</div>
       </div>
       <div class="dr-date-nav">
         <button class="dr-nav-btn" id="drPrevDay" title="วันก่อนหน้า">
@@ -1921,7 +1997,7 @@
         <button class="dr-nav-btn" id="drNextDay" title="วันถัดไป">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
-        <button class="dr-today-btn" id="drTodayBtn">วันนี้</button>
+        <button class="dr-today-btn" id="drTodayBtn">Today</button>
       </div>
     </div>
 
@@ -1962,7 +2038,7 @@
         </div>
         <div class="field" style="grid-column:span 3;">
           <label>ชื่อโรงงาน / บริษัทที่เข้าพบ</label>
-          <input type="text" id="rfCompany" list="companyList" placeholder="พิมพ์หรือเลือกชื่อบริษัท">
+          <input type="text" id="rfCompany" list="companyList" placeholder="Type or select company name">
           <datalist id="companyList"></datalist>
         </div>
       </div>
@@ -2040,10 +2116,10 @@
       <div class="dr-dash-titlebar">
         <div>
           <div class="dr-dash-eyebrow">PENDING QUOTE</div>
-          <div class="dr-dash-title">รายการรอราคา</div>
+          <div class="dr-dash-title">Pending Quote</div>
         </div>
       </div>
-      <button class="dr-today-btn" id="pqCompileBtn">สร้างรายงานสรุป</button>
+      <button class="dr-today-btn" id="pqCompileBtn">Create Summary Report</button>
     </div>
 
     <div class="dr-kpi-grid" id="pqKpiGrid"></div>
@@ -2061,7 +2137,7 @@
         </div>
         <div class="field" style="grid-column:span 3;">
           <label>ชื่อโรงงาน / บริษัท</label>
-          <input type="text" id="pqCompany" list="companyList" placeholder="พิมพ์หรือเลือกชื่อบริษัท">
+          <input type="text" id="pqCompany" list="companyList" placeholder="Type or select company name">
         </div>
       </div>
       <div class="field" style="margin-top:10px;">
@@ -2094,7 +2170,7 @@
     </div>
 
     <div class="report-form-wrap" id="pqBulkImportPanel" style="display:none; margin-top:14px;">
-      <div class="report-form-title">นำเข้าหลายรายการรอราคาพร้อมกัน</div>
+      <div class="report-form-title">Bulk Import Pending Quotes</div>
       <div class="bulk-import-hint">
         <b>พิมพ์แบบระบุหัวข้อได้เลย</b> แต่ละรายการขึ้นต้นด้วย "บริษัท:" เสมอ ไม่ต้องเว้นบรรทัดคั่นก็ได้ ระบบจะรู้เองว่าเจอ "บริษัท:" ใหม่ = ขึ้นรายการใหม่<br>
         หัวข้อที่รู้จัก: <b>บริษัท / ลูกค้า / เบอร์ / รายละเอียด / วันที่ขอราคา / วันที่ต้องส่ง / วันที่ส่งราคา / หมายเหตุ</b> — หัวข้อไหนไม่ใส่ก็ได้ (วันที่ขอราคา=วันนี้ถ้าไม่ระบุ ส่วนวันที่ต้องส่ง/วันที่ส่งราคาปล่อยว่างได้ถ้ายังไม่รู้)<br>
@@ -2120,10 +2196,10 @@
 
     <div class="archive-bar" style="justify-content:flex-end;">
       <select class="filter-select" id="pqFilterStatus">
-        <option value="">ทุกสถานะ</option>
-        <option value="pending">รอราคา</option>
-        <option value="overdue">เลยกำหนด</option>
-        <option value="sent">ส่งราคาแล้ว</option>
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="overdue">Overdue</option>
+        <option value="sent">Sent</option>
       </select>
     </div>
 
@@ -2135,75 +2211,86 @@
       <div class="plan-header">
         <div>
           <div class="plan-eyebrow">CUSTOMER APPOINTMENT PLAN</div>
-          <div class="plan-title">แผนนัดลูกค้า</div>
+          <div class="plan-title">Customer Plan</div>
         </div>
         <div class="plan-view-toggle" id="planViewToggle">
-          <button class="plan-view-btn active" data-view="month">รายเดือน</button>
-          <button class="plan-view-btn" data-view="week">รายสัปดาห์</button>
-          <button class="plan-view-btn" data-view="day">รายวัน</button>
+          <button class="plan-view-btn active" data-view="month">🗓️ Month</button>
+          <button class="plan-view-btn" data-view="week">📋 List</button>
+          <button class="plan-view-btn" data-view="quickadd">➕ Add Plan</button>
         </div>
+        <div class="plan-header-spacer"></div>
       </div>
 
-      <!-- MONTH VIEW -->
+      <!-- MONTH VIEW: dot-indicator grid + inline detail panel below (no page navigation) -->
       <div id="planMonthView">
-        <div class="plan-nav-row">
-          <button class="plan-nav-btn" id="planMonthPrev">← เดือนก่อน</button>
-          <div class="plan-nav-label" id="planMonthLabel"></div>
-          <button class="plan-nav-btn" id="planMonthNext">เดือนถัดไป →</button>
+        <div class="plan-calendar-card">
+          <div class="plan-nav-row">
+            <button class="plan-nav-btn" id="planMonthPrev">← Prev Month</button>
+            <div class="plan-nav-label" id="planMonthLabel"></div>
+            <button class="plan-nav-btn" id="planMonthNext">Next Month →</button>
+          </div>
+          <div class="plan-month-grid" id="planMonthGrid"></div>
         </div>
-        <div class="plan-month-grid" id="planMonthGrid"></div>
+
+        <div class="plan-detail-panel">
+          <div class="plan-detail-header">
+            <div class="plan-detail-date" id="planDetailDate"></div>
+            <button class="plan-detail-add-btn" id="planDetailAddBtn">+</button>
+          </div>
+          <div id="planDetailBody"></div>
+        </div>
       </div>
 
-      <!-- WEEK VIEW -->
+      <!-- LIST VIEW: weekly agenda, browse-only -->
       <div id="planWeekView" style="display:none;">
-        <button class="plan-back-btn" id="planWeekBack">← กลับไปปฏิทินเดือน</button>
         <div class="plan-nav-row">
-          <button class="plan-nav-btn" id="planWeekPrev">← สัปดาห์ก่อน</button>
+          <button class="plan-nav-btn" id="planWeekPrev">← Prev Week</button>
           <div class="plan-nav-label" id="planWeekLabel"></div>
-          <button class="plan-nav-btn" id="planWeekNext">สัปดาห์ถัดไป →</button>
+          <button class="plan-nav-btn" id="planWeekNext">Next Week →</button>
         </div>
         <div class="plan-week-grid" id="planWeekGrid"></div>
       </div>
 
-      <!-- DAY VIEW -->
-      <div id="planDayView" style="display:none;">
-        <button class="plan-back-btn" id="planDayBack">← กลับไปสัปดาห์นี้</button>
-        <button class="plan-back-btn" id="planGoToDailyReport" style="border-color:var(--gold); color:var(--gold-lt);">📋 ไปที่ Daily Report วันนี้</button>
-        <div class="plan-nav-row">
-          <button class="plan-nav-btn" id="planDayPrev">← วันก่อน</button>
-          <div class="plan-nav-label" id="planDayLabel"></div>
-          <button class="plan-nav-btn" id="planDayNext">วันถัดไป →</button>
-        </div>
-
+      <!-- QUICK ADD: same form fields, used both from here and from the month detail panel -->
+      <div id="planQuickAddView" style="display:none;">
         <div class="report-form-wrap">
-          <div class="report-form-title" id="planFormTitle">เพิ่มแผนนัดหมาย</div>
+          <div class="report-form-title" id="planFormTitle">Add Appointment</div>
           <div class="report-form-grid">
             <div class="field">
-              <label>เวลานัด</label>
+              <label>Date</label>
+              <input type="date" id="planDateInput">
+            </div>
+            <div class="field">
+              <label>Time</label>
               <input type="time" id="planTime">
             </div>
             <div class="field">
-              <label>ชื่อลูกค้า / ผู้ติดต่อ</label>
-              <input type="text" id="planPerson" placeholder="ชื่อ-นามสกุลผู้ติดต่อฝั่งลูกค้า">
+              <label>Customer / Contact Name</label>
+              <input type="text" id="planPerson" placeholder="Contact person name">
             </div>
             <div class="field" style="grid-column:span 3;">
-              <label>ชื่อโรงงาน / บริษัทที่จะนัด</label>
-              <input type="text" id="planCompany" list="companyList" placeholder="พิมพ์หรือเลือกชื่อบริษัท">
+              <label>Company Name</label>
+              <input type="text" id="planCompany" list="companyList" placeholder="Type or select company name">
             </div>
           </div>
           <div class="field" style="margin-top:10px;">
-            <label>รายละเอียดแผนนัด / จุดประสงค์</label>
-            <textarea id="planNote" placeholder="เช่น นัดเสนอราคา, ติดตามงาน, แนะนำสินค้าใหม่..."></textarea>
+            <label>Details / Purpose</label>
+            <textarea id="planNote" placeholder="e.g. Quote presentation, follow-up, new product intro..."></textarea>
           </div>
           <div class="rf-actions">
-            <button class="btn-primary" id="planSubmit">บันทึกแผนนัด</button>
+            <button class="btn-primary" id="planSubmit">Save Plan</button>
             <button class="filter-select" id="planCancelEdit" style="cursor:pointer; display:none;">ยกเลิกการแก้ไข</button>
           </div>
         </div>
-
-        <div class="plan-day-list" id="planDayList"></div>
       </div>
     </div>
+  </div>
+
+  <div class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mbn-btn" id="mbnHome"><span class="mbn-icon">🏠</span><span>Home</span></button>
+    <button class="mbn-btn" id="mbnReport"><span class="mbn-icon">📝</span><span>Daily Report</span></button>
+    <button class="mbn-btn" id="mbnCalendar"><span class="mbn-icon">🗓️</span><span>Calendar</span></button>
+    <button class="mbn-btn" id="mbnQuotes"><span class="mbn-icon">💬</span><span>Quotes</span></button>
   </div>
 
   <div class="modal-overlay" id="reportModal">
@@ -2429,12 +2516,12 @@ const ESTATE_OPTIONS = [
 window.ESTATE_OPTIONS = ESTATE_OPTIONS; // shared across script blocks — this one lives inside an IIFE
 
 const STATUS_OPTIONS = [
-  {v:'', label:'— ยังไม่ระบุผลการเข้าพบ —', cls:''},
+  {v:'', label:'— No outcome yet —', cls:''},
   {v:'customer', label:'Customer', cls:'st-customer'},
   {v:'new', label:'New customer', cls:'st-new'},
-  {v:'interesting', label:'น่าสนใจ', cls:'st-interesting'},
-  {v:'followup', label:'รอติดตาม', cls:'st-followup'},
-  {v:'notinteresting', label:'ไม่น่าสนใจ', cls:'st-notinteresting'},
+  {v:'interesting', label:'Interesting', cls:'st-interesting'},
+  {v:'followup', label:'Follow-up', cls:'st-followup'},
+  {v:'notinteresting', label:'Not Interesting', cls:'st-notinteresting'},
 ];
 // migrates values saved under older taxonomies to the current one — "notrelevant" (ไม่เกี่ยวข้อง)
 // meant the same thing as "notinteresting" (ไม่น่าสนใจ) so it's folded into that single option
@@ -2448,9 +2535,9 @@ function normalizeVisitOutcome(v){
 // Deliberately uses different words than STATUS_OPTIONS (สถานะติดตาม, the visit outcome) so
 // the two concepts never look like the same status showing twice.
 const DIW_OPTIONS = [
-  {v:'target', label:'เกี่ยวข้อง', color:'var(--green)'},
-  {v:'nontarget', label:'ไม่เกี่ยวข้อง', color:'var(--red)'},
-  {v:'unknown', label:'ยังไม่ทราบข้อมูล', color:'var(--amber)'},
+  {v:'target', label:'Relevant', color:'var(--green)'},
+  {v:'nontarget', label:'Not Relevant', color:'var(--red)'},
+  {v:'unknown', label:'Unknown', color:'var(--amber)'},
 ];
 
 let feedbackCache = {};
@@ -2710,7 +2797,7 @@ function refreshContactSummaryFromCache(){
   kpiEl.innerHTML = `
     <div class="dash-grid">
       <div class="dash-card dash-clickable" data-key="all" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-icon">📊</div><div class="dash-label">บริษัททั้งหมด</div></div>
+        <div class="dash-card-top"><div class="dash-icon">📊</div><div class="dash-label">Total Companies</div></div>
         <div class="dash-value">${total}</div>
         <div class="dash-detail">
           <div class="dash-detail-text">รวมทุกอำเภอ ทุกสถานะ ทั้งที่ยังไม่เข้าพบและเข้าพบแล้ว</div>
@@ -2718,7 +2805,7 @@ function refreshContactSummaryFromCache(){
         </div>
       </div>
       <div class="dash-card dash-green dash-clickable" data-key="target" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">เกี่ยวข้อง</div></div>
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">Relevant</div></div>
         <div class="dash-value">${green}</div>
         <div class="dash-detail">
           <div class="dash-detail-text">คิดเป็น ${pct(green)}% ของบริษัททั้งหมด — บริษัทที่ตรวจสอบแล้วว่าเกี่ยวข้อง</div>
@@ -2726,7 +2813,7 @@ function refreshContactSummaryFromCache(){
         </div>
       </div>
       <div class="dash-card dash-red dash-clickable" data-key="nontarget" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">ไม่เกี่ยวข้อง</div></div>
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">Not Relevant</div></div>
         <div class="dash-value">${red}</div>
         <div class="dash-detail">
           <div class="dash-detail-text">คิดเป็น ${pct(red)}% ของบริษัททั้งหมด — ตรวจสอบแล้วว่าไม่ใช่กลุ่มเป้าหมาย</div>
@@ -2734,7 +2821,7 @@ function refreshContactSummaryFromCache(){
         </div>
       </div>
       <div class="dash-card dash-yellow dash-clickable" data-key="unknown" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">รอตรวจสอบ</div></div>
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">Pending Review</div></div>
         <div class="dash-value">${yellow}</div>
         <div class="dash-detail">
           <div class="dash-detail-text">คิดเป็น ${pct(yellow)}% ของบริษัททั้งหมด — ยังไม่ได้ระบุว่าน่าสนใจหรือไม่</div>
@@ -2742,7 +2829,7 @@ function refreshContactSummaryFromCache(){
         </div>
       </div>
       <div class="dash-card dash-blue dash-clickable" data-key="contacted" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">เข้าพบแล้ว</div></div>
+        <div class="dash-card-top"><div class="dash-dot"></div><div class="dash-label">Visited</div></div>
         <div class="dash-value">${contacted}</div>
         <div class="dash-detail">
           <div class="dash-detail-text">คิดเป็น ${pct(contacted)}% ของบริษัททั้งหมด — บันทึกว่าเข้าพบเรียบร้อยแล้ว</div>
@@ -2791,10 +2878,10 @@ function renderVisitedSection(){
   const trackingGroups = [
     {key:'customer', label:'Customer', accent:'#34D399'},
     {key:'new', label:'New customer', accent:'#38BDF8'},
-    {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
-    {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
-    {key:'notinteresting', label:'ไม่น่าสนใจ', accent:'#9CA3AF'},
-    {key:'', label:'ยังไม่ทราบข้อมูล', accent:'#9CA3AF'},
+    {key:'interesting', label:'Interesting', accent:'#34D399'},
+    {key:'followup', label:'Follow-up', accent:'#F59E0B'},
+    {key:'notinteresting', label:'Not Interesting', accent:'#9CA3AF'},
+    {key:'', label:'Unknown', accent:'#9CA3AF'},
   ];
   const groupMeta = {};
   trackingGroups.forEach(g=> groupMeta[g.key] = g);
@@ -2912,8 +2999,8 @@ function renderTargetsPage(){
   // interesting or not relevant, and never anything with no outcome set yet
   // (order kept exactly as before: น่าสนใจ, รอติดตาม, Customer, New customer)
   const groups = [
-    {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
-    {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
+    {key:'interesting', label:'Interesting', accent:'#34D399'},
+    {key:'followup', label:'Follow-up', accent:'#F59E0B'},
     {key:'customer', label:'Customer (ลูกค้าเดิม)', accent:'#A78BFA'},
     {key:'new', label:'New Customer (ลูกค้าใหม่ที่สำเร็จแล้ว)', accent:'#38BDF8'},
   ];
@@ -4359,7 +4446,7 @@ async function init(){
 
     document.getElementById('drDateTitle').textContent = `Daily Report — ${dLabel}`;
     const badge = document.getElementById('drDateBadge');
-    badge.textContent = isToday ? 'วันนี้' : 'ย้อนหลัง';
+    badge.textContent = isToday ? 'Today' : 'Past';
     badge.className = isToday ? 'dr-dash-badge dr-badge-today' : 'dr-dash-badge dr-badge-past';
     document.getElementById('drDatePicker').value = date;
 
@@ -4419,7 +4506,7 @@ async function init(){
       <div class="dr-tl-rail"><div class="dr-tl-dot dr-tl-dot-plan"></div></div>
       <div class="dr-tl-card dr-tl-card-plan" data-plan-id="${p.id}">
         <div class="dr-tl-left">
-          <div class="dr-tl-head"><span class="dr-tl-time">${p.time || '--:--'}</span><span class="dr-tl-plan-tag">📅 แผนที่วางไว้</span></div>
+          <div class="dr-tl-head"><span class="dr-tl-time">${p.time || '--:--'}</span><span class="dr-tl-plan-tag">📅 Planned</span></div>
           <div class="dr-tl-company">${p.company || '—'}</div>
           ${p.person ? `<div class="dr-tl-person">${p.person}</div>` : ''}
         </div>
@@ -4428,7 +4515,7 @@ async function init(){
         </div>
       </div>
       <div class="dr-tl-actions" style="margin-left:26px;">
-        <button class="btn-report plan-fill-btn" data-id="${p.id}">เติมรายละเอียด</button>
+        <button class="btn-report plan-fill-btn" data-id="${p.id}">Fill Details</button>
       </div>
     </div>`;
   }
@@ -4494,7 +4581,7 @@ async function init(){
       .map(x=>x.html).join('');
     reportListEl.innerHTML = `<div class="report-date-group" data-date="${currentReportDate}">
       <div class="report-entries">${entriesHtml}</div>
-      <div style="padding:4px 16px 12px;"><button class="btn-report btn-compile" data-date="${currentReportDate}">สร้างรายงานทั้งวัน</button></div>
+      <div style="padding:4px 16px 12px;"><button class="btn-report btn-compile" data-date="${currentReportDate}">Create Daily Report</button></div>
     </div>`;
     wirePlanFillButtons();
 
@@ -4916,9 +5003,9 @@ async function init(){
 
   function pqStatusMeta(st){
     return {
-      pending: {label:'รอราคา', color:'#B45309'},
-      overdue: {label:'เลยกำหนด', color:'#DC2626'},
-      sent: {label:'ส่งราคาแล้ว', color:'#1B7A4A'},
+      pending: {label:'Pending', color:'#B45309'},
+      overdue: {label:'Overdue', color:'#DC2626'},
+      sent: {label:'Sent', color:'#1B7A4A'},
     }[st];
   }
 
@@ -4962,17 +5049,17 @@ async function init(){
             <svg viewBox="0 0 24 24" stroke-width="2"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
             <span class="rd-brand-text">Rayong Sales Territory · Pending Quote</span>
           </div>
-          <div class="rd-title">รายงานสรุปรายการรอราคา</div>
+          <div class="rd-title">Pending Quote Summary</div>
           <div class="rd-sub">ณ วันที่ ${dLabel}</div>
         </div>
         <div class="rd-kpis">
           <div class="rd-kpi"><div class="n">${all.length}</div><div class="l">ทั้งหมด</div></div>
-          <div class="rd-kpi"><div class="n">${pending}</div><div class="l">รอราคา</div></div>
-          <div class="rd-kpi"><div class="n">${overdue}</div><div class="l">เลยกำหนด</div></div>
+          <div class="rd-kpi"><div class="n">${pending}</div><div class="l">Pending</div></div>
+          <div class="rd-kpi"><div class="n">${overdue}</div><div class="l">Overdue</div></div>
           <div class="rd-kpi"><div class="n">${sent}</div><div class="l">ส่งแล้ว</div></div>
         </div>
       </div>
-      ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">ไม่มีรายการรอราคา</div>'}
+      ${list.length ? `<div class="rd-timeline">${itemsHtml}</div>` : '<div class="rd-empty">No pending quotes</div>'}
       <div class="rd-footer">
         <span>จัดทำโดยระบบ Sales Planning จังหวัดระยอง</span>
         <span>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</span>
@@ -4989,8 +5076,8 @@ async function init(){
     const sent = all.filter(q=>quoteStatus(q)==='sent').length;
     const dLabel = new Date().toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
-    let txt = `รายงานสรุปรายการรอราคา — ณ วันที่ ${dLabel}\n`;
-    txt += `ทั้งหมด: ${all.length} รายการ   |   รอราคา: ${pending}   |   เลยกำหนด: ${overdue}   |   ส่งแล้ว: ${sent}\n`;
+    let txt = `Pending Quote Summary — as of ${dLabel}\n`;
+    txt += `Total: ${all.length}   |   Pending: ${pending}   |   Overdue: ${overdue}   |   Sent: ${sent}\n`;
     txt += `${'='.repeat(48)}\n\n`;
     list.forEach(q=>{
       const meta = pqStatusMeta(quoteStatus(q));
@@ -5065,7 +5152,7 @@ async function init(){
   function openPqReport(){
     modalReportMode = 'pq';
     modalReportDate = todayISO();
-    modalTitle.textContent = 'รายงานสรุปรายการรอราคา';
+    modalTitle.textContent = 'Pending Quote Summary';
     reportDoc.innerHTML = buildPqReportHtml();
     reportModal.classList.add('open');
   }
@@ -5208,17 +5295,17 @@ async function init(){
       <div class="dr-kpi-card dr-kpi-blue">
         <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
         <div class="dr-kpi-value">${pending}</div>
-        <div class="dr-kpi-label">รอราคา</div>
+        <div class="dr-kpi-label">Pending</div>
       </div>
       <div class="dr-kpi-card dr-kpi-red">
         <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7.5" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.9" fill="currentColor"/></svg></div>
         <div class="dr-kpi-value">${overdue}</div>
-        <div class="dr-kpi-label">เลยกำหนด</div>
+        <div class="dr-kpi-label">Overdue</div>
       </div>
       <div class="dr-kpi-card dr-kpi-green">
         <div class="dr-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12.5 9.5 18 20 5"/></svg></div>
         <div class="dr-kpi-value">${sent}</div>
-        <div class="dr-kpi-label">ส่งราคาแล้ว</div>
+        <div class="dr-kpi-label">Sent</div>
       </div>
     `;
 
@@ -5228,11 +5315,11 @@ async function init(){
     shown = shown.slice().sort((a,b)=> (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
 
     if (shown.length === 0){
-      list.innerHTML = `<div class="report-empty">ไม่มีรายการรอราคา${pqStatusFilter?'ในตัวกรองนี้':''}</div>`;
+      list.innerHTML = `<div class="report-empty">No pending quotes${pqStatusFilter?' in this filter':''}</div>`;
       return;
     }
 
-    const statusLabel = {pending:'รอราคา', overdue:'เลยกำหนด', sent:'ส่งราคาแล้ว'};
+    const statusLabel = {pending:'Pending', overdue:'Overdue', sent:'Sent'};
     list.innerHTML = shown.map(q=>{
       const st = quoteStatus(q);
       return `<div class="pq-card pq-${st}">
@@ -5281,7 +5368,7 @@ async function init(){
     pqDueDate.value = q.dueDate || '';
     pqSentDate.value = q.sentDate || '';
     pqNote.value = q.note || '';
-    document.querySelector('#page3 .report-form-title').textContent = 'แก้ไขรายการรอราคา';
+    document.querySelector('#page3 .report-form-title').textContent = 'Edit Pending Quote';
     pqSubmit.textContent = 'บันทึกการแก้ไข';
     pqCancelEdit.style.display = '';
     document.querySelector('#page3 .report-form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
@@ -5462,52 +5549,117 @@ async function init(){
   (function initPlanCalendar(){
     const monthView = document.getElementById('planMonthView');
     const weekView = document.getElementById('planWeekView');
-    const dayView = document.getElementById('planDayView');
+    const quickAddView = document.getElementById('planQuickAddView');
     if (!monthView) return;
 
-    const DOW = ['อา','จ','อ','พ','พฤ','ศ','ส'];
-    let anchorDate = new Date(); // the date currently being viewed (drives month/week/day)
+    const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let anchorDate = new Date(); // drives which month/week is shown
+    let selectedDate = new Date(); // the day highlighted + shown in the detail panel
     let currentView = 'month';
     let planEditingId = null;
 
     function ymd(d){ return formatDateLocal(d); }
     function startOfWeek(d){ const x = new Date(d); x.setDate(x.getDate() - x.getDay()); return x; }
     function plansOnDate(dateStr){ return loadPlans().filter(p=>p.date===dateStr).sort((a,b)=>(a.time||'').localeCompare(b.time||'')); }
+    function reportsOnDate(dateStr){ return loadReports().filter(e=>e.date===dateStr).sort((a,b)=>(a.time||'').localeCompare(b.time||'')); }
 
     function setView(view){
       currentView = view;
       monthView.style.display = view==='month' ? '' : 'none';
       weekView.style.display = view==='week' ? '' : 'none';
-      dayView.style.display = view==='day' ? '' : 'none';
+      quickAddView.style.display = view==='quickadd' ? '' : 'none';
       document.querySelectorAll('.plan-view-btn').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
     }
 
     function renderMonth(){
       const y = anchorDate.getFullYear(), m = anchorDate.getMonth();
-      document.getElementById('planMonthLabel').textContent = anchorDate.toLocaleDateString('th-TH', {month:'long', year:'numeric'});
+      document.getElementById('planMonthLabel').textContent = anchorDate.toLocaleDateString('en-GB', {month:'long', year:'numeric'});
       const first = new Date(y, m, 1);
       const startPad = first.getDay();
       const daysInMonth = new Date(y, m+1, 0).getDate();
       const todayStr = todayISO();
+      const selectedStr = selectedDate ? ymd(selectedDate) : null;
 
-      let cells = DOW.map(d=>`<div class="plan-dow">${d}</div>`).join('');
+      let cells = DOW.map((d,i)=>`<div class="plan-dow${(i===0||i===6)?' plan-dow-weekend':''}">${d}</div>`).join('');
       for (let i=0; i<startPad; i++) cells += `<div class="plan-day-cell plan-day-empty"></div>`;
       for (let d=1; d<=daysInMonth; d++){
         const dateObj = new Date(y, m, d);
         const dateStr = ymd(dateObj);
-        const count = plansOnDate(dateStr).length;
+        const planCount = plansOnDate(dateStr).length;
+        const reportCount = reportsOnDate(dateStr).length;
+        const hasAny = planCount + reportCount > 0;
         const isToday = dateStr === todayStr;
-        cells += `<div class="plan-day-cell${isToday?' plan-day-today':''}${count?' plan-day-hasplan':''}" data-date="${dateStr}">
+        const isSelected = dateStr === selectedStr;
+        const dow = dateObj.getDay();
+        const isWeekend = dow === 0 || dow === 6;
+        cells += `<div class="plan-day-cell${isToday?' plan-day-today':''}${isSelected?' plan-day-selected':''}${hasAny?' plan-day-hasplan':''}${isWeekend?' plan-day-weekend':''}" data-date="${dateStr}">
           <div class="plan-day-num">${d}</div>
-          ${count ? `<div class="plan-day-count">${count} นัด</div>` : ''}
+          ${hasAny ? `<div class="plan-day-dot"></div>` : ''}
         </div>`;
       }
       document.getElementById('planMonthGrid').innerHTML = cells;
       document.querySelectorAll('#planMonthGrid .plan-day-cell[data-date]').forEach(cell=>{
         cell.addEventListener('click', ()=>{
-          const dateStr = cell.dataset.date;
+          const clickedStr = cell.dataset.date;
+          const currentlySelectedStr = selectedDate ? ymd(selectedDate) : null;
+          selectedDate = (currentlySelectedStr === clickedStr) ? null : new Date(clickedStr+'T00:00:00');
+          renderMonth();
+          renderDetailPanel();
+        });
+      });
+      renderDetailPanel();
+    }
+
+    function renderDetailPanel(){
+      const bodyEl = document.getElementById('planDetailBody');
+      if (!selectedDate){
+        document.getElementById('planDetailDate').textContent = 'No day selected';
+        document.getElementById('planDetailAddBtn').style.display = 'none';
+        bodyEl.innerHTML = `<div class="plan-detail-empty">Tap a day on the calendar to view its details</div>`;
+        return;
+      }
+      document.getElementById('planDetailAddBtn').style.display = '';
+      const dateStr = ymd(selectedDate);
+      document.getElementById('planDetailDate').textContent = selectedDate.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+      const plans = plansOnDate(dateStr);
+      const reports = reportsOnDate(dateStr);
+
+      if (!plans.length && !reports.length){
+        bodyEl.innerHTML = `<div class="plan-detail-empty">No appointments or activity today<br><button class="plan-detail-empty-add" id="planDetailEmptyAdd">+ Add Plan</button></div>`;
+        document.getElementById('planDetailEmptyAdd').addEventListener('click', openQuickAddFor);
+        return;
+      }
+
+      const reportRows = reports.map(e=>{
+        const tagsHtml = e.activities.filter(a=>a!=='Focus').map(a=>activityBadge(a)).join('');
+        return `<div class="plan-detail-row plan-detail-row-real">
+          <div class="plan-detail-time">${e.time || '--:--'}</div>
+          <div class="plan-detail-main">
+            <div class="plan-detail-company">${e.company || '—'} <span class="plan-detail-badge-real">Logged</span></div>
+            ${e.person ? `<div class="plan-detail-sub">${e.person}</div>` : ''}
+            ${tagsHtml ? `<div class="dr-tags" style="margin-top:5px;">${tagsHtml}</div>` : ''}
+            ${e.feedback ? `<div class="plan-detail-note">${e.feedback}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+      const planRows = plans.map(p=>`
+        <div class="plan-detail-row plan-detail-row-plan">
+          <div class="plan-detail-time">${p.time || '--:--'}</div>
+          <div class="plan-detail-main">
+            <div class="plan-detail-company">${p.company || '—'} <span class="plan-detail-badge-plan">📅 Planned</span></div>
+            ${p.person ? `<div class="plan-detail-sub">${p.person}</div>` : ''}
+            ${p.note ? `<div class="plan-detail-note">${p.note}</div>` : ''}
+          </div>
+          <button class="plan-detail-fill-btn" data-id="${p.id}">Fill Details</button>
+        </div>`).join('');
+
+      bodyEl.innerHTML = reportRows + planRows;
+      bodyEl.querySelectorAll('.plan-detail-fill-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const plan = loadPlans().find(p=>p.id===btn.dataset.id);
+          if (!plan) return;
           showPage('report');
-          if (typeof goToDate === 'function') goToDate(dateStr);
+          if (typeof goToDate === 'function') goToDate(plan.date);
         });
       });
     }
@@ -5515,35 +5667,39 @@ async function init(){
     function renderWeek(){
       const start = startOfWeek(anchorDate);
       document.getElementById('planWeekLabel').textContent =
-        `สัปดาห์ ${start.toLocaleDateString('th-TH',{day:'numeric',month:'short'})} – ${(()=>{ const e=new Date(start); e.setDate(e.getDate()+6); return e.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}); })()}`;
+        `Week of ${start.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${(()=>{ const e=new Date(start); e.setDate(e.getDate()+6); return e.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); })()}`;
       const todayStr = todayISO();
       let rows = '';
       for (let i=0; i<7; i++){
         const d = new Date(start); d.setDate(d.getDate()+i);
         const dateStr = ymd(d);
-        const items = plansOnDate(dateStr);
-        const summary = items.length ? items.slice(0,2).map(p=>p.company||'—').join(', ') + (items.length>2 ? ` +${items.length-2}` : '') : 'ไม่มีแผนนัด';
+        const plans = plansOnDate(dateStr);
+        const reports = reportsOnDate(dateStr);
+        const total = plans.length + reports.length;
+        const names = plans.map(p=>p.company).concat(reports.map(e=>e.company)).filter(Boolean);
+        const summary = names.length ? names.slice(0,2).join(', ') + (names.length>2 ? ` +${names.length-2}` : '') : 'No appointments';
         rows += `<div class="plan-week-row${dateStr===todayStr?' plan-day-today':''}" data-date="${dateStr}">
           <div class="plan-week-dow">${DOW[d.getDay()]}</div>
           <div class="plan-week-date">${d.getDate()}/${d.getMonth()+1}</div>
           <div class="plan-week-summary">${summary}</div>
-          ${items.length ? `<div class="plan-week-count">${items.length} นัด</div>` : ''}
+          ${total ? `<div class="plan-week-count">${total} รายการ</div>` : ''}
         </div>`;
       }
       document.getElementById('planWeekGrid').innerHTML = rows;
       document.querySelectorAll('#planWeekGrid .plan-week-row').forEach(row=>{
         row.addEventListener('click', ()=>{
-          anchorDate = new Date(row.dataset.date+'T00:00:00');
-          setView('day');
-          renderDay();
+          selectedDate = new Date(row.dataset.date+'T00:00:00');
+          anchorDate = new Date(selectedDate);
+          setView('month');
+          renderMonth();
         });
       });
     }
 
     function exitPlanEditMode(){
       planEditingId = null;
-      document.getElementById('planFormTitle').textContent = 'เพิ่มแผนนัดหมาย';
-      document.getElementById('planSubmit').textContent = 'บันทึกแผนนัด';
+      document.getElementById('planFormTitle').textContent = 'Add Appointment';
+      document.getElementById('planSubmit').textContent = 'Save Plan';
       document.getElementById('planCancelEdit').style.display = 'none';
       document.getElementById('planTime').value = '';
       document.getElementById('planPerson').value = '';
@@ -5551,67 +5707,21 @@ async function init(){
       document.getElementById('planNote').value = '';
     }
 
-    function renderDay(){
-      const dateStr = ymd(anchorDate);
-      document.getElementById('planDayLabel').textContent = anchorDate.toLocaleDateString('th-TH', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    function openQuickAddFor(){
       exitPlanEditMode();
-      const items = plansOnDate(dateStr);
-      const listEl = document.getElementById('planDayList');
-      if (!items.length){
-        listEl.innerHTML = `<div class="plan-empty">ยังไม่มีแผนนัดในวันนี้</div>`;
-      } else {
-        listEl.innerHTML = items.map(p=>`
-          <div class="plan-entry" data-id="${p.id}">
-            <div class="plan-entry-time">${p.time || '--:--'}</div>
-            <div class="plan-entry-main">
-              <div class="plan-entry-company">${p.company || '—'}</div>
-              ${p.person ? `<div class="plan-entry-person">${p.person}</div>` : ''}
-              ${p.note ? `<div class="plan-entry-note">${p.note}</div>` : ''}
-            </div>
-            <div class="plan-entry-actions">
-              <button class="btn-report plan-view-report-btn" data-id="${p.id}" style="border-color:var(--gold); color:var(--gold-lt);">📋 ดูใน Daily Report</button>
-              <button class="btn-report plan-edit-btn" data-id="${p.id}">แก้ไข</button>
-              <button class="re-delete plan-del-btn" data-id="${p.id}">ลบ</button>
-            </div>
-          </div>`).join('');
-        listEl.querySelectorAll('.plan-view-report-btn').forEach(btn=>{
-          btn.addEventListener('click', ()=>{
-            showPage('report');
-            if (typeof goToDate === 'function') goToDate(dateStr);
-          });
-        });
-        listEl.querySelectorAll('.plan-edit-btn').forEach(btn=>{
-          btn.addEventListener('click', ()=>{
-            const entry = loadPlans().find(p=>p.id===btn.dataset.id);
-            if (!entry) return;
-            planEditingId = entry.id;
-            document.getElementById('planFormTitle').textContent = 'แก้ไขแผนนัดหมาย';
-            document.getElementById('planSubmit').textContent = 'บันทึกการแก้ไข';
-            document.getElementById('planCancelEdit').style.display = '';
-            document.getElementById('planTime').value = entry.time || '';
-            document.getElementById('planPerson').value = entry.person || '';
-            document.getElementById('planCompany').value = entry.company || '';
-            document.getElementById('planNote').value = entry.note || '';
-            document.querySelector('.report-form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
-          });
-        });
-        listEl.querySelectorAll('.plan-del-btn').forEach(btn=>{
-          btn.addEventListener('click', async ()=>{
-            if (!confirm('ต้องการลบแผนนัดนี้ใช่หรือไม่?')) return;
-            await removePlanEntry(btn.dataset.id);
-            if (planEditingId === btn.dataset.id) exitPlanEditMode();
-            renderDay();
-          });
-        });
-      }
+      document.getElementById('planDateInput').value = selectedDate ? ymd(selectedDate) : todayISO();
+      setView('quickadd');
     }
+
+    document.getElementById('planDetailAddBtn').addEventListener('click', openQuickAddFor);
 
     document.getElementById('planSubmit').addEventListener('click', async ()=>{
       const company = document.getElementById('planCompany').value.trim();
-      if (!company){ alert('กรุณาระบุชื่อบริษัท'); return; }
+      if (!company){ alert('Please enter a company name'); return; }
+      const dateVal = document.getElementById('planDateInput').value || (selectedDate ? ymd(selectedDate) : todayISO());
       const entry = {
         id: planEditingId || ('plan'+Date.now()+Math.floor(Math.random()*1000)),
-        date: ymd(anchorDate),
+        date: dateVal,
         time: document.getElementById('planTime').value,
         person: document.getElementById('planPerson').value.trim(),
         company,
@@ -5620,47 +5730,50 @@ async function init(){
       await savePlanEntry(entry);
       flashSaved();
       exitPlanEditMode();
-      renderDay();
+      selectedDate = new Date(dateVal+'T00:00:00');
+      anchorDate = new Date(selectedDate);
+      setView('month');
+      renderMonth();
     });
-    document.getElementById('planCancelEdit').addEventListener('click', exitPlanEditMode);
+    document.getElementById('planCancelEdit').addEventListener('click', ()=>{ exitPlanEditMode(); setView('month'); renderMonth(); });
 
     document.getElementById('planMonthPrev').addEventListener('click', ()=>{ anchorDate.setMonth(anchorDate.getMonth()-1); renderMonth(); });
     document.getElementById('planMonthNext').addEventListener('click', ()=>{ anchorDate.setMonth(anchorDate.getMonth()+1); renderMonth(); });
     document.getElementById('planWeekPrev').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()-7); renderWeek(); });
     document.getElementById('planWeekNext').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()+7); renderWeek(); });
-    document.getElementById('planDayPrev').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()-1); renderDay(); });
-    document.getElementById('planDayNext').addEventListener('click', ()=>{ anchorDate.setDate(anchorDate.getDate()+1); renderDay(); });
-
-    document.getElementById('planWeekBack').addEventListener('click', ()=>{ setView('month'); renderMonth(); });
-    document.getElementById('planDayBack').addEventListener('click', ()=>{ setView('week'); renderWeek(); });
-    document.getElementById('planGoToDailyReport').addEventListener('click', ()=>{
-      const dateStr = ymd(anchorDate);
-      showPage('report');
-      if (typeof goToDate === 'function') goToDate(dateStr);
-    });
 
     document.querySelectorAll('.plan-view-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const view = btn.dataset.view;
+        if (view === 'quickadd'){ openQuickAddFor(); return; }
         setView(view);
         if (view==='month') renderMonth();
         else if (view==='week') renderWeek();
-        else renderDay();
       });
     });
 
     window.refreshPlanView = function(){
       if (currentView==='month') renderMonth();
       else if (currentView==='week') renderWeek();
-      else if (currentView==='day') renderDay();
     };
     window.openPlanCalendar = function(){
+      selectedDate = new Date();
       anchorDate = new Date();
       setView('month');
       renderMonth();
     };
 
     renderMonth();
+  })();
+
+  // ---- mobile bottom navigation shortcuts ----
+  (function initMobileBottomNav(){
+    const bar = document.getElementById('mobileBottomNav');
+    if (!bar) return;
+    document.getElementById('mbnHome').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+    document.getElementById('mbnReport').addEventListener('click', ()=> showPage('report'));
+    document.getElementById('mbnCalendar').addEventListener('click', ()=> showPage('plan'));
+    document.getElementById('mbnQuotes').addEventListener('click', ()=> showPage('quotes'));
   })();
 
   // ---- sync settings panel ----
@@ -5912,7 +6025,7 @@ init();
 
     panel.innerHTML=`
       <div class="estate-zone-gridview" id="estateGridView">
-        <div class="estate-zones-head"><div><div class="estate-zones-title">โซนนิคมอุตสาหกรรม</div><div class="estate-zones-desc">แตะนิคมที่ต้องการเพื่อดูรายชื่อบริษัททั้งหมดในนิคมนั้น</div></div><button class="estate-add-btn" id="estateAddBtn">+ เพิ่มนิคมใหม่</button></div>
+        <div class="estate-zones-head"><div><div class="estate-zones-title">Industrial Estate Zones</div><div class="estate-zones-desc">Tap an estate to view all companies in that zone</div></div><button class="estate-add-btn" id="estateAddBtn">+ เพิ่มนิคมใหม่</button></div>
         <div class="estate-zone-grid" id="estateZoneGridInner">${sortedCatalogue.map(code=>{
           const locations=collectLocations(code);
           const total=locations.reduce((n,x)=>n+x.count,0);
@@ -5943,10 +6056,10 @@ init();
     const trackingGroups = [
       {key:'customer', label:'Customer', accent:'#34D399'},
       {key:'new', label:'New customer', accent:'#38BDF8'},
-      {key:'interesting', label:'น่าสนใจ', accent:'#34D399'},
-      {key:'followup', label:'รอติดตาม', accent:'#F59E0B'},
-      {key:'notinteresting', label:'ไม่น่าสนใจ', accent:'#9CA3AF'},
-      {key:'', label:'ยังไม่ทราบข้อมูล', accent:'#9CA3AF'},
+      {key:'interesting', label:'Interesting', accent:'#34D399'},
+      {key:'followup', label:'Follow-up', accent:'#F59E0B'},
+      {key:'notinteresting', label:'Not Interesting', accent:'#9CA3AF'},
+      {key:'', label:'Unknown', accent:'#9CA3AF'},
     ];
     window.currentOpenEstateCode = null;
 
