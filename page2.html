@@ -1072,6 +1072,12 @@
     background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--amber); border-radius:10px;
     padding:16px 20px; display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap;
   }
+  .pq-select-box{ display:flex; align-items:center; padding-top:2px; cursor:pointer; }
+  .pq-select-box input{ width:16px; height:16px; cursor:pointer; accent-color:var(--gold); }
+  .pq-select-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap; }
+  .pq-selectall{ display:flex; align-items:center; gap:6px; font-family:'Kanit',sans-serif; font-weight:600; font-size:12px; color:var(--muted); cursor:pointer; }
+  .pq-selectall input{ width:15px; height:15px; cursor:pointer; accent-color:var(--gold); }
+  .pq-select-count{ font-size:11.5px; color:var(--muted); }
   .pq-card.pq-sent{ border-left-color:var(--green); }
   .pq-card.pq-overdue{ border-left-color:var(--red); }
   .pq-card .pq-main{ flex:1; min-width:240px; }
@@ -1607,16 +1613,15 @@
 
   /* ---- Customer Appointment Plan calendar ---- */
   .plan-shell{ max-width:1100px; margin:0 auto; }
-  .plan-header{ display:flex; flex-direction:column; gap:12px; margin-bottom:18px; }
-  .plan-title-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
-  .plan-corner-link{
-    background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--muted); padding:7px 14px;
-    border-radius:999px; cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600; font-size:11.5px;
-    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  .plan-header{ display:flex; flex-direction:column; gap:14px; margin-bottom:18px; align-items:center; }
+  .plan-title-row{ display:flex; justify-content:center; }
+  .plan-header-top{ display:flex; justify-content:flex-end; }
+  .plan-daily-report-link{
+    background:none; border:none; border-bottom:1px solid var(--line); color:var(--muted); padding:2px 2px 4px;
+    cursor:pointer; font-family:'Kanit',sans-serif; font-weight:500; font-size:12px; letter-spacing:.3px;
+    transition:color .15s ease, border-color .15s ease;
   }
-  .plan-corner-link:hover{ border-color:var(--gold); color:var(--gold-lt); background:rgba(62,198,255,.08); }
-  .plan-eyebrow{ font-family:'Kanit',sans-serif; font-weight:700; font-size:11px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; }
-  .plan-title{ font-family:'Kanit',sans-serif; font-weight:700; font-size:22px; color:#fff; margin-top:4px; }
+  .plan-daily-report-link:hover{ color:var(--gold-lt); border-color:var(--gold); }
   .plan-view-toggle{ display:flex; gap:3px; background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:999px; padding:3px; align-self:center; }
   .plan-view-btn{
     background:transparent; border:none; color:var(--muted); padding:5px 11px; border-radius:999px; cursor:pointer;
@@ -1660,17 +1665,23 @@
   }
   .plan-day-cell.plan-day-weekend{ background:linear-gradient(155deg, rgba(59,130,246,.05), rgba(255,255,255,.005)), var(--panel2); }
   .plan-day-cell:hover{
-    border-color:var(--accent-cyan, #22D3EE); transform:translateY(-4px) scale(1.04);
-    box-shadow:0 10px 24px rgba(34,211,238,.28), 0 0 0 1px rgba(34,211,238,.4), inset 0 1px 0 rgba(255,255,255,.15);
+    border-color:rgba(255,255,255,.22); transform:translateY(-3px);
+    box-shadow:0 6px 14px rgba(0,0,0,.3);
   }
   .plan-day-cell.plan-day-empty{ opacity:.3; cursor:default; pointer-events:none; }
   .plan-day-cell.plan-day-today{
-    background:#F59E0B; border-color:#F59E0B;
-    transform:translateY(-2px);
-    box-shadow:0 6px 14px rgba(245,158,11,.35);
+    border-color:var(--accent-cyan, #22D3EE); border-width:1px;
+    box-shadow:0 0 8px rgba(34,211,238,.55), 0 0 2px rgba(34,211,238,.8);
+    animation:plan-today-glow 2.4s ease-in-out infinite;
   }
-  .plan-day-cell.plan-day-today .plan-day-num{ color:#04121C; }
-  .plan-day-cell.plan-day-today:hover{ transform:translateY(-6px) scale(1.04); }
+  @keyframes plan-today-glow{
+    0%, 100%{ box-shadow:0 0 8px rgba(34,211,238,.5), 0 0 2px rgba(34,211,238,.75); }
+    50%{ box-shadow:0 0 14px rgba(34,211,238,.75), 0 0 3px rgba(34,211,238,1); }
+  }
+  .plan-day-cell.plan-day-today:hover{ transform:translateY(-5px) scale(1.03); }
+  @media(prefers-reduced-motion: reduce){
+    .plan-day-cell.plan-day-today{ animation:none; }
+  }
   .plan-day-cell.plan-day-hasplan{
     background:linear-gradient(155deg, rgba(62,198,255,.12), rgba(34,211,238,.03)), var(--panel2);
     border-color:rgba(62,198,255,.35);
@@ -1758,12 +1769,10 @@
 
   .mobile-bottom-nav{ display:none; }
   @media(max-width:700px){
-    .plan-title-row{ justify-content:center; text-align:center; flex-direction:column; align-items:center; }
     .plan-month-grid{ gap:4px; }
     .plan-day-cell{ min-height:48px; padding:5px 4px; }
     .plan-day-num{ font-size:11px; }
     .plan-dow{ font-size:9px; }
-    .plan-title{ font-size:18px; }
 
     .mobile-bottom-nav{
       display:flex; position:fixed; left:0; right:0; bottom:0; z-index:200;
@@ -1926,7 +1935,7 @@
       <div class="visited-section">
         <div class="visited-head" style="cursor:default;">
           <div class="visited-head-left">
-            <div class="visited-icon"><span style="font-size:16px;">🎯</span></div>
+            <div class="visited-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></div>
             <div>
               <div class="visited-title">Target Companies</div>
               <div class="visited-meta" id="targetsMeta">0 แห่ง</div>
@@ -1983,13 +1992,13 @@
         <div class="vc-quickbar">
           <label class="vc-contacted-chip">
             <input type="checkbox" id="vcModalContacted">
-            <span>🔵 เข้าพบแล้ว</span>
+            <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></svg> เข้าพบแล้ว</span>
           </label>
           <select class="vc-status-select vc-status-chip" id="vcModalStatus"></select>
           <input type="text" class="vc-input vc-quick-input" id="vcModalContact" placeholder="ชื่อผู้ติดต่อ">
           <input type="text" class="vc-input vc-quick-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
         </div>
-        <div class="vc-note-label">📝 รายละเอียด / Feedback</div>
+        <div class="vc-note-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>รายละเอียด / Feedback</div>
         <textarea class="vc-note vc-note-main" id="vcModalNote" placeholder="บันทึกรายละเอียดการเข้าพบ เช่น ความสนใจของลูกค้า งานที่พูดคุย ขั้นตอนถัดไป..."></textarea>
         <button class="vc-modal-save" id="vcModalSave" type="button">บันทึกการเปลี่ยนแปลง</button>
       </div>
@@ -2076,7 +2085,7 @@
           <label class="chip"><input type="checkbox" value="Confirm">Confirm</label>
           <label class="chip"><input type="checkbox" value="ปฏิเสธงาน">ปฏิเสธงาน</label>
           <label class="chip"><input type="checkbox" value="ติดตามงาน">ติดตามงาน</label>
-          <label class="chip chip-focus"><input type="checkbox" value="Focus">⭐ Focus</label>
+          <label class="chip chip-focus"><input type="checkbox" value="Focus"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Focus</label>
           <label class="chip"><input type="checkbox" value="อื่นๆ">อื่นๆ</label>
         </div>
       </div>
@@ -2221,23 +2230,20 @@
       </select>
     </div>
 
+    <div class="pq-select-bar" id="pqSelectBar"></div>
     <div class="pq-list" id="pqList"></div>
   </div>
 
   <div id="page4" style="display:none;">
     <div class="plan-shell">
       <div class="plan-header">
-        <div class="plan-title-row">
-          <div>
-            <div class="plan-eyebrow">CUSTOMER APPOINTMENT PLAN</div>
-            <div class="plan-title">Customer Plan</div>
-          </div>
-          <button class="plan-corner-link" id="planGoToDailyReportCorner">📋 Daily Report</button>
+        <div class="plan-header-top">
+          <button class="plan-daily-report-link" id="planGoToDailyReportCorner"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px;"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11l2 2 4-4"/></svg>Daily Report</button>
         </div>
         <div class="plan-view-toggle" id="planViewToggle">
-          <button class="plan-view-btn active" data-view="month">🗓️ Month</button>
-          <button class="plan-view-btn" data-view="week">📋 List</button>
-          <button class="plan-view-btn" data-view="quickadd">➕ Add Plan</button>
+          <button class="plan-view-btn active" data-view="month"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 9h18"/></svg>Month</button>
+          <button class="plan-view-btn" data-view="week"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11l2 2 4-4"/></svg>List</button>
+          <button class="plan-view-btn" data-view="quickadd"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M12 5v14M5 12h14"/></svg>Add Plan</button>
         </div>
       </div>
 
@@ -2829,7 +2835,7 @@ function refreshContactSummaryFromCache(){
   kpiEl.innerHTML = `
     <div class="dash-grid">
       <div class="dash-card dash-clickable" data-key="all" onclick="toggleDashCard(this)" role="button" tabindex="0">
-        <div class="dash-card-top"><div class="dash-icon">📊</div><div class="dash-label">Total Companies</div></div>
+        <div class="dash-card-top"><div class="dash-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-4"/></svg></div><div class="dash-label">Total Companies</div></div>
         <div class="dash-value">${total}</div>
         <div class="dash-detail">
           <div class="dash-detail-text">รวมทุกอำเภอ ทุกสถานะ ทั้งที่ยังไม่เข้าพบและเข้าพบแล้ว</div>
@@ -3068,9 +3074,9 @@ function renderTargetsPage(){
     </button>`;
   }).join('');
   gridView.innerHTML = `
-    <div class="targets-section-label">🎯 บริษัทเป้าหมายที่ต้องดำเนินการ</div>
+    <div class="targets-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>บริษัทเป้าหมายที่ต้องดำเนินการ</div>
     <div class="estate-zone-grid">${renderGroupBoxes(actionGroups)}</div>
-    <div class="targets-section-label" style="margin-top:18px;">✅ ดำเนินการแล้ว</div>
+    <div class="targets-section-label" style="margin-top:18px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>ดำเนินการแล้ว</div>
     <div class="estate-zone-grid">${renderGroupBoxes(doneGroups)}</div>
   `;
   gridView.querySelectorAll('.estate-zone').forEach(btn=>{
@@ -3089,7 +3095,7 @@ function renderTargetsPage(){
     } else {
       cardsEl.innerHTML = items.map(v=>{
         const estateFull = v.info.estate ? fullNameOfEstate(v.info.estate) : '';
-        const estateBadge = v.info.estate ? `<div class="vc-estate-badge" title="นิคม: ${estateFull}">🏭 ${v.info.estate}</div>` : '';
+        const estateBadge = v.info.estate ? `<div class="vc-estate-badge" title="นิคม: ${estateFull}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M2 21V10l6 4v-4l6 4V7l6 4v10H2z"/><path d="M6 21v-4M12 21v-4M18 21v-4"/></svg>${v.info.estate}</div>` : '';
         return `
         <div class="visited-card" data-id="${v.id}" style="--vc-accent:${g.accent};">
           <div class="vc-summary">
@@ -3227,7 +3233,7 @@ function openVcModal(v){
     clearTimeout(vcNoteTimer);
     freshSave.textContent = 'กำลังบันทึก...';
     await persistVcModal(true);
-    freshSave.textContent = 'บันทึกแล้ว ✓';
+    freshSave.textContent = 'บันทึกแล้ว';
     freshSave.classList.add('saved');
     setTimeout(()=>{ freshSave.textContent = 'บันทึกการเปลี่ยนแปลง'; freshSave.classList.remove('saved'); }, 1500);
   });
@@ -3734,7 +3740,7 @@ async function buildTambonSection(dist, section, distId, tIndex, labelPrefix){
   const table = document.createElement('table');
   table.className = 'company-table';
   table.innerHTML = `<thead><tr>
-      <th style="width:34px">✓</th><th>ชื่อสถานประกอบการ</th><th style="width:90px">ตำบล</th>
+      <th style="width:34px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></th><th>ชื่อสถานประกอบการ</th><th style="width:90px">ตำบล</th>
       <th style="width:130px">ประเภทกิจการ</th><th style="width:130px">นิคมอุตสาหกรรม</th><th style="width:90px">กลุ่มเป้าหมาย</th>
       <th style="width:120px">สถานะติดตาม</th><th style="width:160px">Feedback</th><th style="width:80px">แผนที่</th><th style="width:50px"></th>
     </tr></thead><tbody></tbody>`;
@@ -3928,7 +3934,7 @@ function flashSaveError(){
   const txt = document.getElementById('saveText');
   if (!dot) return;
   dot.style.background = 'var(--red)';
-  txt.textContent = '⚠ ซิงค์กับทีมไม่สำเร็จ (บันทึกไว้ในเครื่องนี้แล้ว แต่ยังไม่ขึ้นเซิร์ฟเวอร์ — ตรวจสอบอินเทอร์เน็ต)';
+  txt.textContent = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M12 2 1 21h22L12 2z"/><path d="M12 9v5M12 17h.01"/></svg>ซิงค์กับทีมไม่สำเร็จ (บันทึกไว้ในเครื่องนี้แล้ว แต่ยังไม่ขึ้นเซิร์ฟเวอร์ — ตรวจสอบอินเทอร์เน็ต)';
 }
 window.flashSaveError = flashSaveError; // shared across script blocks
 
@@ -4542,7 +4548,7 @@ async function init(){
       <div class="dr-tl-rail"><div class="dr-tl-dot dr-tl-dot-plan"></div></div>
       <div class="dr-tl-card dr-tl-card-plan" data-plan-id="${p.id}">
         <div class="dr-tl-left">
-          <div class="dr-tl-head"><span class="dr-tl-time">${p.time || '--:--'}</span><span class="dr-tl-plan-tag">📅 Planned</span></div>
+          <div class="dr-tl-head"><span class="dr-tl-time">${p.time || '--:--'}</span><span class="dr-tl-plan-tag"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 9h18"/></svg>Planned</span></div>
           <div class="dr-tl-company">${p.company || '—'}</div>
           ${p.person ? `<div class="dr-tl-person">${p.person}</div>` : ''}
         </div>
@@ -4932,11 +4938,11 @@ async function init(){
     }
 
     if (imported > 0){
-      bulkImportResult.textContent = `✓ นำเข้าสำเร็จ ${imported} รายการ${skipped?` — ข้าม ${skipped} รายการที่หาชื่อบริษัทไม่เจอ`:''}`;
+      bulkImportResult.textContent = `นำเข้าสำเร็จ ${imported} รายการ${skipped?` — ข้าม ${skipped} รายการที่หาชื่อบริษัทไม่เจอ`:''}`;
       bulkImportResult.className = 'bulk-import-result show ok';
       bulkImportInput.value = '';
     } else {
-      bulkImportResult.textContent = `✗ ไม่พบชื่อบริษัทในข้อมูลที่วางเลย (ข้ามทั้งหมด ${skipped} รายการ) — ตรวจรูปแบบอีกครั้ง`;
+      bulkImportResult.textContent = `ไม่พบชื่อบริษัทในข้อมูลที่วางเลย (ข้ามทั้งหมด ${skipped} รายการ) — ตรวจรูปแบบอีกครั้ง`;
       bulkImportResult.className = 'bulk-import-result show warn';
     }
     renderReportList();
@@ -5047,7 +5053,9 @@ async function init(){
 
   function buildPqReportHtml(){
     const allData = loadPendingQuotes();
-    const all = pqStatusFilter ? allData.filter(q=>quoteStatus(q)===pqStatusFilter) : allData;
+    let all;
+    if (selectedQuoteIds.size > 0) all = allData.filter(q=>selectedQuoteIds.has(q.id));
+    else all = pqStatusFilter ? allData.filter(q=>quoteStatus(q)===pqStatusFilter) : allData;
     const list = all.slice().sort((a,b)=> (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
     const pending = all.filter(q=>quoteStatus(q)==='pending').length;
     const overdue = all.filter(q=>quoteStatus(q)==='overdue').length;
@@ -5086,7 +5094,7 @@ async function init(){
             <svg viewBox="0 0 24 24" stroke-width="2"><path d="M2 12l1.5-4.5A2 2 0 0 1 5.4 6h11.2a2 2 0 0 1 1.9 1.5L20 12M2 12v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-5M2 12h18"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg>
             <span class="rd-brand-text">Rayong Sales Territory · Pending Quote</span>
           </div>
-          <div class="rd-title">Pending Quote Summary${pqStatusFilter ? ' — ' + (pqStatusMeta(pqStatusFilter)?.label || pqStatusFilter) : ''}</div>
+          <div class="rd-title">Pending Quote Summary${selectedQuoteIds.size > 0 ? ' — Selected Items' : (pqStatusFilter ? ' — ' + (pqStatusMeta(pqStatusFilter)?.label || pqStatusFilter) : '')}</div>
           <div class="rd-sub">ณ วันที่ ${dLabel}</div>
         </div>
         <div class="rd-kpis">
@@ -5107,7 +5115,9 @@ async function init(){
 
   function buildPqReportText(){
     const allData = loadPendingQuotes();
-    const all = pqStatusFilter ? allData.filter(q=>quoteStatus(q)===pqStatusFilter) : allData;
+    let all;
+    if (selectedQuoteIds.size > 0) all = allData.filter(q=>selectedQuoteIds.has(q.id));
+    else all = pqStatusFilter ? allData.filter(q=>quoteStatus(q)===pqStatusFilter) : allData;
     const list = all.slice().sort((a,b)=> (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
     const pending = all.filter(q=>quoteStatus(q)==='pending').length;
     const overdue = all.filter(q=>quoteStatus(q)==='overdue').length;
@@ -5200,7 +5210,7 @@ async function init(){
   modalCopy.addEventListener('click', ()=>{
     const txt = modalReportMode === 'pq' ? buildPqReportText() : buildDayReportText(modalReportDate);
     navigator.clipboard.writeText(txt).then(()=>{
-      modalCopy.textContent = 'คัดลอกแล้ว ✓';
+      modalCopy.textContent = 'คัดลอกแล้ว';
       setTimeout(()=>{ modalCopy.textContent = 'คัดลอกรายงาน (ข้อความ)'; }, 1500);
     }).catch(()=>{
       const ta = document.createElement('textarea');
@@ -5232,7 +5242,7 @@ async function init(){
       link.download = `${filenameBase}-${modalReportDate}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      modalImage.textContent = 'บันทึกแล้ว ✓';
+      modalImage.textContent = 'บันทึกแล้ว';
       setTimeout(()=>{ modalImage.textContent = 'บันทึกเป็นรูปภาพ (PNG)'; }, 1500);
     }catch(e){
       console.error(e);
@@ -5247,13 +5257,13 @@ async function init(){
       ? location.origin + location.pathname + '?report=pq'
       : location.origin + location.pathname + '?report=' + modalReportDate;
     navigator.clipboard.writeText(url).then(()=>{
-      modalShareLink.textContent = 'คัดลอกลิงก์แล้ว ✓';
+      modalShareLink.textContent = 'คัดลอกลิงก์แล้ว';
       setTimeout(()=>{ modalShareLink.textContent = 'คัดลอกลิงก์แชร์'; }, 1500);
     }).catch(()=>{
       const ta = document.createElement('textarea');
       ta.value = url; document.body.appendChild(ta); ta.select();
       document.execCommand('copy'); document.body.removeChild(ta);
-      modalShareLink.textContent = 'คัดลอกลิงก์แล้ว ✓';
+      modalShareLink.textContent = 'คัดลอกลิงก์แล้ว';
       setTimeout(()=>{ modalShareLink.textContent = 'คัดลอกลิงก์แชร์'; }, 1500);
     });
   });
@@ -5312,6 +5322,7 @@ async function init(){
   const pqFilterStatus = document.getElementById('pqFilterStatus');
   let editingQuoteId = null;
   let pqStatusFilter = '';
+  let selectedQuoteIds = new Set();
 
   function quoteStatus(q){
     if (q.sentDate) return 'sent';
@@ -5352,6 +5363,25 @@ async function init(){
     if (pqStatusFilter) shown = shown.filter(q=>quoteStatus(q)===pqStatusFilter);
     shown = shown.slice().sort((a,b)=> (a.dueDate||'9999').localeCompare(b.dueDate||'9999'));
 
+    // prune selections for items no longer shown/existing
+    const shownIds = new Set(shown.map(q=>q.id));
+    for (const id of Array.from(selectedQuoteIds)) if (!shownIds.has(id)) selectedQuoteIds.delete(id);
+
+    const selectBar = document.getElementById('pqSelectBar');
+    if (selectBar){
+      const n = selectedQuoteIds.size;
+      selectBar.innerHTML = shown.length ? `
+        <label class="pq-selectall"><input type="checkbox" id="pqSelectAllBox"${n>0 && n===shown.length?' checked':''}> Select all</label>
+        <span class="pq-select-count">${n>0 ? n+' selected' : 'None selected — saving will include '+(pqStatusFilter?'the filtered items':'all items')}</span>
+      ` : '';
+      const allBox = document.getElementById('pqSelectAllBox');
+      if (allBox) allBox.addEventListener('change', ()=>{
+        if (allBox.checked) shown.forEach(q=>selectedQuoteIds.add(q.id));
+        else shown.forEach(q=>selectedQuoteIds.delete(q.id));
+        renderPendingQuotes();
+      });
+    }
+
     if (shown.length === 0){
       list.innerHTML = `<div class="report-empty">No pending quotes${pqStatusFilter?' in this filter':''}</div>`;
       return;
@@ -5360,7 +5390,9 @@ async function init(){
     const statusLabel = {pending:'Pending', overdue:'Overdue', sent:'Sent'};
     list.innerHTML = shown.map(q=>{
       const st = quoteStatus(q);
+      const checked = selectedQuoteIds.has(q.id) ? ' checked' : '';
       return `<div class="pq-card pq-${st}">
+        <label class="pq-select-box"><input type="checkbox" class="pq-select-cb" data-id="${q.id}"${checked}></label>
         <div class="pq-main">
           <div class="pq-company">${q.company||'—'}</div>
           <div class="pq-customer">ลูกค้า: ${q.customer||'—'} ${q.phone?('· โทร '+q.phone):''}</div>
@@ -5380,10 +5412,18 @@ async function init(){
       </div>`;
     }).join('');
 
+    list.querySelectorAll('.pq-select-cb').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        if (cb.checked) selectedQuoteIds.add(cb.dataset.id);
+        else selectedQuoteIds.delete(cb.dataset.id);
+        renderPendingQuotes();
+      });
+    });
     list.querySelectorAll('.pq-delete').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         if(!confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return;
         if (editingQuoteId === btn.dataset.id) exitQuoteEditMode();
+        selectedQuoteIds.delete(btn.dataset.id);
         await removePendingQuote(btn.dataset.id);
         renderPendingQuotes();
       });
@@ -5684,7 +5724,7 @@ async function init(){
         <div class="plan-detail-row plan-detail-row-plan">
           <div class="plan-detail-time">${p.time || '--:--'}</div>
           <div class="plan-detail-main">
-            <div class="plan-detail-company">${p.company || '—'} <span class="plan-detail-badge-plan">📅 Planned</span></div>
+            <div class="plan-detail-company">${p.company || '—'} <span class="plan-detail-badge-plan"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 9h18"/></svg>Planned</span></div>
             ${p.person ? `<div class="plan-detail-sub">${p.person}</div>` : ''}
             ${p.note ? `<div class="plan-detail-note">${p.note}</div>` : ''}
           </div>
@@ -6012,10 +6052,10 @@ init();
         });
         realMapBoundaryLayer = L.geoJSON(geo2, {style:{color:'#F59E0B', weight:4, fillOpacity:0.15, fillColor:'#F59E0B'}}).addTo(realMapInstance);
         try{ realMapInstance.fitBounds(realMapBoundaryLayer.getBounds(), {padding:[30,30]}); }catch(e){}
-        statusEl.textContent = '✓ พบขอบเขตจริงจาก OpenStreetMap (landuse=industrial)';
+        statusEl.textContent = 'พบขอบเขตจริงจาก OpenStreetMap (landuse=industrial)';
         statusEl.className = 'real-map-status ok';
       } else {
-        statusEl.textContent = '✗ ยังไม่พบข้อมูลขอบเขตของนิคมนี้ใน OpenStreetMap — แสดงเฉพาะจุดพิกัดศูนย์กลาง (ไม่วาดกรอบเดา)';
+        statusEl.textContent = 'ยังไม่พบข้อมูลขอบเขตของนิคมนี้ใน OpenStreetMap — แสดงเฉพาะจุดพิกัดศูนย์กลาง (ไม่วาดกรอบเดา)';
         statusEl.className = 'real-map-status warn';
       }
     }, 50);
@@ -6080,7 +6120,7 @@ init();
         <button class="estate-back-btn" id="estateBackBtn">← กลับไปเลือกนิคม</button>
         <div class="estate-detail-header">
           <div class="estate-detail-full" id="estateDetailFull"></div>
-          <button class="estate-rename-btn" id="estateRenameBtn" title="แก้ไขรหัสย่อ/ชื่อนิคม">✎ แก้ไขรหัส/ชื่อ</button>
+          <button class="estate-rename-btn" id="estateRenameBtn" title="แก้ไขรหัสย่อ/ชื่อนิคม"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>แก้ไขรหัส/ชื่อ</button>
           <div class="estate-detail-code" id="estateDetailCode"></div>
         </div>
         <div class="estate-detail-stats" id="estateDetailStats"></div>
@@ -6132,7 +6172,7 @@ init();
 
       const geo = IEAT_ESTATE_GEO[code];
       const mapBtnWrap = panel.querySelector('#estateDetailMapBtnWrap');
-      const mapBtnHtml = geo ? `<button class="estate-map-btn" id="estateMapBtn">🗺️ ดูแผนที่จริง (พิกัดจริง + ขอบเขตจาก OpenStreetMap)</button>` : '';
+      const mapBtnHtml = geo ? `<button class="estate-map-btn" id="estateMapBtn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/></svg>ดูแผนที่จริง (พิกัดจริง + ขอบเขตจาก OpenStreetMap)</button>` : '';
       const addZoneBtnHtml = code === 'นอกนิคม' ? `<button class="estate-map-btn" id="estateAddZoneBtn" style="margin-left:8px;">+ เพิ่มโซนย่อยในนอกนิคม</button>` : '';
       mapBtnWrap.innerHTML = mapBtnHtml + addZoneBtnHtml;
       if (geo){
