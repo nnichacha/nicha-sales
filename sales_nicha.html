@@ -219,6 +219,25 @@
     #main-content { padding-left: 10px !important; padding-right: 10px !important; }
     .card { padding: 14px !important; }
   }
+  /* ---- mobile bottom nav (exact from page2.html) ---- */
+  :root { --muted: #8CA0BF; --gold: #C9A227; } /* page2.html's CSS references these; defining them here so the exact styles below render with the app's real colors */
+  .mobile-bottom-nav{ display:none; }
+  @media(max-width:700px){
+    .mobile-bottom-nav{
+      display:flex; position:fixed; left:0; right:0; bottom:0; z-index:200;
+      background:rgba(14,21,36,.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border-top:1px solid rgba(255,255,255,.08); padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+      box-shadow:0 -4px 20px rgba(0,0,0,.35);
+    }
+    .mbn-btn{
+      flex:1; background:none; border:none; color:var(--muted); display:flex; flex-direction:column; align-items:center;
+      gap:2px; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:4px 2px; cursor:pointer; transition:color .15s ease;
+    }
+    .mbn-btn:active{ color:var(--gold); }
+    .mbn-icon{ display:flex; align-items:center; justify-content:center; }
+    .mbn-icon svg{ width:20px; height:20px; }
+    body{ padding-bottom:64px; }
+  }
 </style>
 </head>
 <body>
@@ -786,7 +805,7 @@ function parseBulkText(text) {
     return {
       note: get(0),
       status: get(1),
-      requestedDate: parseThaiDateSlash(get(2)),
+      sendQu: parseThaiDateSlash(get(2)),
       customer: get(3),
       description: get(4),
       sale: parseSaleNumber(get(5)),
@@ -808,14 +827,14 @@ function refreshBulkPreview() {
       '<td class="td-cell" style="font-size:11px">' + (ok ? icon("check", 12, COLORS.green) : icon("alert", 12, COLORS.red)) + '</td>' +
       '<td class="td-cell mono" style="font-size:11px">' + esc(r.note) + '</td>' +
       '<td class="td-cell" style="font-size:11px">' + (r.status ? statusChipHtml(r.status, (STATE.statuses.find(function (s) { return s.name === r.status; }) || {}).color) : "-") + '</td>' +
-      '<td class="td-cell" style="font-size:11px">' + esc(r.requestedDate ? fmtDate(r.requestedDate) : "(ไม่ระบุ)") + '</td>' +
+      '<td class="td-cell" style="font-size:11px">' + esc(r.sendQu ? fmtDate(r.sendQu) : "(ไม่ระบุ)") + '</td>' +
       '<td class="td-cell" style="font-size:11px;font-weight:600">' + esc(r.customer || "(ว่าง!)") + '</td>' +
       '<td class="td-cell" style="font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(r.description || "(ว่าง!)") + '</td>' +
       '<td class="td-cell num-td" style="font-size:11px">' + fmtTHB(r.sale) + '</td></tr>';
   }).join("");
   wrap.innerHTML = '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-bottom:6px">พบ ' + rows.length + ' แถว — พร้อมเพิ่ม ' + validCount + ' แถว (แถวที่ขาดลูกค้า/รายละเอียดจะถูกข้าม)</div>' +
     '<div style="max-height:220px;overflow:auto;border:1px solid ' + COLORS.line + ';border-radius:8px"><table><thead><tr>' +
-    '<th class="th-cell"></th><th class="th-cell">Job No.</th><th class="th-cell">Status</th><th class="th-cell">Requested</th><th class="th-cell">ลูกค้า</th><th class="th-cell">รายละเอียด</th><th class="th-cell" style="text-align:right">มูลค่า</th>' +
+    '<th class="th-cell"></th><th class="th-cell">Job No.</th><th class="th-cell">Status</th><th class="th-cell">ส่งใบเสนอราคา</th><th class="th-cell">ลูกค้า</th><th class="th-cell">รายละเอียด</th><th class="th-cell" style="text-align:right">มูลค่า</th>' +
     '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
 }
 
@@ -838,7 +857,7 @@ function submitBulkAdd() {
     return {
       id: nextId + i,
       customer: r.customer, segment: defaults.segment, type: defaults.type, name: "", phone: "",
-      description: r.description, workType: defaults.workType, requestedDate: r.requestedDate, deadline: "", sendQu: "",
+      description: r.description, workType: defaults.workType, requestedDate: "", deadline: "", sendQu: r.sendQu,
       note: r.note, invoice: "",
       status: knownStatusNames.indexOf(r.status) !== -1 ? r.status : (r.status || (STATE.statuses[0] || {}).name || ""),
       sale: r.sale, month: ""
@@ -1727,6 +1746,41 @@ var NAV_ITEMS = [
   { key: "top10", label: "Top 10", icon: "trophy" }
 ];
 
+function buildMobileBottomNav() {
+  // exact HTML from page2.html
+  return '<div class="mobile-bottom-nav" id="mobileBottomNav">' +
+    '<button class="mbn-btn" id="mbnHome">' +
+    '<span class="mbn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-4"/></svg></span>' +
+    '<span>Sales Overview</span>' +
+    '</button>' +
+    '<button class="mbn-btn" id="mbnReport">' +
+    '<span class="mbn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>' +
+    '<span>Daily Report</span>' +
+    '</button>' +
+    '<button class="mbn-btn" id="mbnCalendar">' +
+    '<span class="mbn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>' +
+    '<span>Calendar</span>' +
+    '</button>' +
+    '<button class="mbn-btn" id="mbnQuotes">' +
+    '<span class="mbn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></span>' +
+    '<span>Quotes</span>' +
+    '</button>' +
+    '</div>';
+}
+
+// exact JS from page2.html — re-run after every render, because unlike page2.html this app rebuilds
+// its whole DOM via innerHTML on every tab change, so listeners attached only once would go stale.
+function wireMobileBottomNav() {
+  var elHome = document.getElementById("mbnHome");
+  var elReport = document.getElementById("mbnReport");
+  var elCalendar = document.getElementById("mbnCalendar");
+  var elQuotes = document.getElementById("mbnQuotes");
+  if (elHome) elHome.addEventListener("click", function () { window.location.href = "https://nnichacha.github.io/nicha-sales/sales_nicha.html"; });
+  if (elReport) elReport.addEventListener("click", function () { window.location.href = "page2.html?tab=report"; });
+  if (elCalendar) elCalendar.addEventListener("click", function () { window.location.href = "page2.html?tab=plan"; });
+  if (elQuotes) elQuotes.addEventListener("click", function () { window.location.href = "page2.html?tab=quotes"; });
+}
+
 function renderApp() {
   var app = document.getElementById("app");
   if (!STATE.projects || !STATE.statuses) {
@@ -1760,6 +1814,7 @@ function renderApp() {
     '</aside>' +
     '<main id="main-content" style="flex:1;padding:26px 34px 60px;min-width:0"></main>' +
     '</div>' +
+    buildMobileBottomNav() +
     '<input type="file" id="import-file-input" accept="application/json,.json" style="display:none" onchange="handleImportFile(this)"/>' +
     '<div id="modal-root"></div>' +
     '<div id="toast-root"></div>';
@@ -1768,6 +1823,7 @@ function renderApp() {
   renderMain(derived);
   renderModals();
   renderToast();
+  wireMobileBottomNav();
 }
 
 function renderSidebarFooter() {
@@ -3484,7 +3540,7 @@ function renderBulkAddModal() {
   return '<div class="modal-overlay" onmousedown="if(event.target===this) closeBulkAddModal()">' +
     '<div class="modal-panel" style="width:700px">' +
     '<div class="modal-header"><div><div class="disp" style="font-size:17px">เพิ่มงานหลายรายการ (วางจาก Excel)</div>' +
-    '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:2px">คัดลอกแถวจาก Excel มาวางได้เลย เรียงคอลัมน์: Job No. → Status → วันที่ (dd/mm/yy) → ลูกค้า → รายละเอียดงาน → มูลค่า</div></div>' +
+    '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:2px">คัดลอกแถวจาก Excel มาวางได้เลย เรียงคอลัมน์: Job No. → Status → วันที่ส่งใบเสนอราคา (dd/mm/yy) → ลูกค้า → รายละเอียดงาน → มูลค่า</div></div>' +
     '<button type="button" class="icon-btn" onclick="closeBulkAddModal()">' + icon("x", 17) + '</button></div>' +
     '<div style="padding:18px 22px;overflow-y:auto;flex:1">' +
     '<textarea id="bulk-add-textarea" class="field-input" style="min-height:130px;font-family:Consolas,monospace;font-size:12px;resize:vertical" placeholder="J1774&#9;On process&#9;31/07/26&#9;SNU&#9;Ball valve 6&quot; 600# welding&#9;15,000.00" oninput="refreshBulkPreview()"></textarea>' +
