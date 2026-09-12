@@ -391,6 +391,7 @@ var STATE = {
   editUnlocked: false,
   quarterPaid: {},
   commissionDeselected: {}, // job ids explicitly excluded from export — everything else counts as selected by default
+  commissionFilterQExcluded: {}, commissionFilterWTExcluded: {}, commissionFilterTypeExcluded: {}, // filter checkboxes (Quarter / WorkType / Type) — unchecking one excludes it, default all included
   q3dSelected: null,
   q3dCompanyExpanded: null,
   projectsUI: { q: "", status: "", workType: "", sortKey: "sendQu", sortDir: "desc", page: 1 },
@@ -441,6 +442,39 @@ function toggleCommissionSelectAll() {
     if (allSelected) STATE.commissionDeselected[p.id] = true;
     else delete STATE.commissionDeselected[p.id];
   });
+  renderMain();
+}
+function applyCommissionFilters() {
+  var c = computeDerived().commission;
+  c.rows.forEach(function (p) {
+    var wtKey = p.workType === "M" ? "M" : p.workType === "F" ? "F" : "-";
+    var typeKey = p.type || "ไม่ระบุ";
+    var qOk = !STATE.commissionFilterQExcluded[p.status];
+    var wtOk = !STATE.commissionFilterWTExcluded[wtKey];
+    var typeOk = !STATE.commissionFilterTypeExcluded[typeKey];
+    if (qOk && wtOk && typeOk) delete STATE.commissionDeselected[p.id];
+    else STATE.commissionDeselected[p.id] = true;
+  });
+  renderMain();
+}
+function toggleCommissionFilterQ(name) {
+  if (STATE.commissionFilterQExcluded[name]) delete STATE.commissionFilterQExcluded[name];
+  else STATE.commissionFilterQExcluded[name] = true;
+  applyCommissionFilters();
+}
+function toggleCommissionFilterWT(key) {
+  if (STATE.commissionFilterWTExcluded[key]) delete STATE.commissionFilterWTExcluded[key];
+  else STATE.commissionFilterWTExcluded[key] = true;
+  applyCommissionFilters();
+}
+function toggleCommissionFilterType(key) {
+  if (STATE.commissionFilterTypeExcluded[key]) delete STATE.commissionFilterTypeExcluded[key];
+  else STATE.commissionFilterTypeExcluded[key] = true;
+  applyCommissionFilters();
+}
+function resetCommissionFilters() {
+  STATE.commissionFilterQExcluded = {}; STATE.commissionFilterWTExcluded = {}; STATE.commissionFilterTypeExcluded = {};
+  STATE.commissionDeselected = {};
   renderMain();
 }
 function getCommissionSelectedRows() {
@@ -3186,6 +3220,33 @@ function renderCommission(d) {
       '<td class="td-cell num-td" style="font-weight:600">' + fmtTHB(p.sale) + '</td></tr>';
   }).join("") || '<tr><td class="td-cell" colspan="9" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ยังไม่มีงานที่ปิดแล้ว</td></tr>';
 
+  // --- filter panel: multi-select Quarter / WorkType / Type, drives which rows are selected for export ---
+  var qFilterChips = c.quarterStatuses.map(function (cq) {
+    var checked = !STATE.commissionFilterQExcluded[cq.name];
+    return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;color:' + COLORS.ink + ';cursor:pointer;padding:4px 8px;border-radius:6px;background:' + (checked ? COLORS.blue + "14" : "transparent") + '">' +
+      '<input type="checkbox" ' + (checked ? "checked" : "") + ' onchange="toggleCommissionFilterQ(\'' + cq.name + '\')" style="width:14px;height:14px;cursor:pointer"/>' + esc(cq.name.replace("Done ", "")) + '</label>';
+  }).join("");
+  var wtFilterDefs = [{ key: "M", label: "Machine" }, { key: "F", label: "Fabrication" }].concat(c.byWorkType["-"].count > 0 ? [{ key: "-", label: "ไม่ระบุ" }] : []);
+  var wtFilterChips = wtFilterDefs.map(function (t) {
+    var checked = !STATE.commissionFilterWTExcluded[t.key];
+    return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;color:' + COLORS.ink + ';cursor:pointer;padding:4px 8px;border-radius:6px;background:' + (checked ? COLORS.coral + "14" : "transparent") + '">' +
+      '<input type="checkbox" ' + (checked ? "checked" : "") + ' onchange="toggleCommissionFilterWT(\'' + t.key + '\')" style="width:14px;height:14px;cursor:pointer"/>' + t.label + '</label>';
+  }).join("");
+  var typeFilterChips = c.byType.map(function (t) {
+    var checked = !STATE.commissionFilterTypeExcluded[t.label];
+    return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;color:' + COLORS.ink + ';cursor:pointer;padding:4px 8px;border-radius:6px;background:' + (checked ? COLORS.emerald + "14" : "transparent") + '">' +
+      '<input type="checkbox" ' + (checked ? "checked" : "") + ' onchange="toggleCommissionFilterType(\'' + esc(t.label).replace(/'/g, "\\'") + '\')" style="width:14px;height:14px;cursor:pointer"/>' + esc(t.label) + '</label>';
+  }).join("");
+  var filterPanel = '<div class="card" style="margin-bottom:18px">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+    '<span class="disp" style="font-size:13.5px">กรองรายการที่จะเลือก</span>' +
+    '<button class="btn-secondary" style="font-size:11px;padding:5px 9px" onclick="resetCommissionFilters()">' + icon("reset", 12) + ' ล้างตัวกรอง</button></div>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">' +
+    '<div><div style="font-size:10.5px;color:' + COLORS.muted + ';text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;font-weight:700">ไตรมาส</div><div style="display:flex;flex-wrap:wrap;gap:4px">' + qFilterChips + '</div></div>' +
+    '<div><div style="font-size:10.5px;color:' + COLORS.muted + ';text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;font-weight:700">ประเภทงาน</div><div style="display:flex;flex-wrap:wrap;gap:4px">' + wtFilterChips + '</div></div>' +
+    '<div><div style="font-size:10.5px;color:' + COLORS.muted + ';text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;font-weight:700">Type</div><div style="display:flex;flex-wrap:wrap;gap:4px">' + typeFilterChips + '</div></div>' +
+    '</div></div>';
+
   var selectedCount = c.rows.filter(function (p) { return !STATE.commissionDeselected[p.id]; }).length;
   var allSelected = selectedCount === c.rows.length && c.rows.length > 0;
 
@@ -3211,7 +3272,7 @@ function renderCommission(d) {
   return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
     sectionHeaderHtml("Commission", "งานที่จบและได้คอมมิชชั่นแล้ว", c.sub) +
     '<button class="btn-secondary" style="flex-shrink:0;display:flex;align-items:center;gap:6px" onclick="lockCommission()">' + icon("x", 14) + ' ล็อกหน้านี้</button>' +
-    '</div>' + quarterCards + summaryStrip + ctxBox + breakdownRow + custQTable + table;
+    '</div>' + quarterCards + summaryStrip + ctxBox + breakdownRow + custQTable + filterPanel + table;
 }
 
 /* ============================== DAILY REPORT VIEW ============================== */
