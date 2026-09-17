@@ -229,7 +229,7 @@
     .mobile-bottom-nav{
       display:flex; position:fixed; left:0; right:0; bottom:0; z-index:200;
       background:rgba(14,21,36,.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-      border-top:1px solid rgba(255,255,255,.08); padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+      border-top:1px solid rgba(255,255,255,.08); padding:8px 4px calc(8px + min(env(safe-area-inset-bottom), 10px));
       box-shadow:0 -4px 20px rgba(0,0,0,.35);
     }
     .mbn-btn{
