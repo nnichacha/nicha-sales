@@ -689,7 +689,7 @@ function applyRemoteData(data) {
   LocalStore.set(QUARTER_PAID_KEY, JSON.stringify(STATE.quarterPaid));
   var busy = STATE.formOpen || STATE.statusManagerOpen || STATE.confirmDeleteId !== null || STATE.importPending;
   var typing = document.activeElement && ["INPUT", "SELECT", "TEXTAREA"].indexOf(document.activeElement.tagName) !== -1;
-  if (!busy && !typing) { renderApp(); showToast("อัปเดตข้อมูลแบบเรียลไทม์จากอุปกรณ์อื่น"); }
+  if (!busy && !typing) { renderApp(); }
 }
 
 function firebaseReadOnce(showToastOnDone) {
