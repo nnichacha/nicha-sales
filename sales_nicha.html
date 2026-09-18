@@ -228,7 +228,7 @@
   @media(max-width:700px){
     .mobile-bottom-nav{
       display:flex; position:fixed; left:0; right:0; bottom:0; z-index:200;
-      background:rgba(14,21,36,.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      background:rgb(14,21,36);
       border-top:1px solid rgba(255,255,255,.08); padding:8px 4px calc(8px + min(env(safe-area-inset-bottom), 10px));
       box-shadow:0 -4px 20px rgba(0,0,0,.35);
     }
@@ -3640,8 +3640,6 @@ function submitProjectForm(ev) {
     phone: f.phone.value,
     description: f.description.value.trim(),
     workType: f.workType.value,
-    requestedDate: f.requestedDate.value,
-    deadline: f.deadline.value,
     sendQu: f.sendQu.value,
     note: f.note.value,
     invoice: f.invoice.value,
@@ -3696,8 +3694,6 @@ function renderProjectFormModal() {
     field("รายละเอียดงาน *", '<textarea name="description" class="field-input" style="min-height:56px;resize:vertical">' + esc(f.description) + '</textarea>', 2) +
     field("ประเภทงาน", '<select name="workType" id="project-form-worktype" class="field-input"><option value="M"' + (f.workType === "M" ? " selected" : "") + '>Machine (M)</option><option value="F"' + (f.workType === "F" ? " selected" : "") + '>Fabrication (F)</option></select>') +
     field("Status", '<select name="status" class="field-input">' + statusOpts + '</select>') +
-    field("Requested Date", '<input type="date" name="requestedDate" class="field-input" value="' + attr(f.requestedDate) + '"/>') +
-    field("Deadline", '<input type="date" name="deadline" class="field-input" value="' + attr(f.deadline) + '"/>') +
     field("Send Qu to Customer", '<input type="date" name="sendQu" class="field-input" value="' + attr(f.sendQu) + '"/>') +
     field("Sale (THB)", '<input type="number" name="sale" min="0" step="1" class="field-input" value="' + attr(f.sale) + '"/>') +
     field("Job No. (Note)", '<input name="note" class="field-input" value="' + attr(f.note) + '" placeholder="J0000"/>') +
