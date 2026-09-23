@@ -365,8 +365,8 @@
     align-items:center; justify-content:center; padding:28px;
   }
   .vc-modal-overlay.open{ display:flex; }
-  .vc-modal-frame{ position:relative; width:100%; max-width:760px; }
-  .vc-modal-frame.vc-expanded{ max-width:1040px; }
+  .vc-modal-frame{ position:relative; width:100%; max-width:1480px; }
+  .vc-modal-frame.vc-expanded{ max-width:1680px; }
   .vc-modal-box{
     background:linear-gradient(175deg, #FFFDF7, #FCFAF2); border-radius:6px 16px 16px 6px; width:100%; position:relative;
     box-shadow:
@@ -374,8 +374,7 @@
       6px 0 0 -2px #F3EEE0, 8px 2px 0 -2px #E8E1D0, 10px 4px 6px -2px rgba(0,0,0,.18);
     overflow:hidden;
     max-height:calc(100vh - 56px); display:flex; flex-direction:column;
-    transform-origin:var(--vc-origin-x, 50%) var(--vc-origin-y, 50%);
-    animation:vc-modal-grow .32s cubic-bezier(.22,.9,.3,1);
+    animation:vc-modal-fade-in .2s ease;
   }
   .vc-modal-box::before{
     content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
@@ -383,13 +382,22 @@
     z-index:3; pointer-events:none;
   }
   .vc-modal-frame.vc-expanded .vc-modal-box{ max-height:calc(100vh - 56px); transition:max-width .3s cubic-bezier(.34,1.2,.4,1); }
-  @keyframes vc-modal-grow{
-    0%{ opacity:0; transform:scale(.22); }
-    60%{ opacity:1; }
-    100%{ opacity:1; transform:scale(1); }
+  @keyframes vc-modal-fade-in{
+    0%{ opacity:0; } 100%{ opacity:1; }
+  }
+  .vc-page-left.vc-book-open{ animation:vc-book-open-left .55s cubic-bezier(.3,.9,.3,1); }
+  .vc-page-right.vc-book-open{ animation:vc-book-open-right .55s cubic-bezier(.3,.9,.3,1); }
+  @keyframes vc-book-open-left{
+    0%{ transform:perspective(1400px) rotateY(-92deg); opacity:.2; }
+    100%{ transform:perspective(1400px) rotateY(0deg); opacity:1; }
+  }
+  @keyframes vc-book-open-right{
+    0%{ transform:perspective(1400px) rotateY(92deg); opacity:.2; }
+    100%{ transform:perspective(1400px) rotateY(0deg); opacity:1; }
   }
   @media(prefers-reduced-motion: reduce){
     .vc-modal-box{ animation:none; }
+    .vc-page-left.vc-book-open, .vc-page-right.vc-book-open{ animation:none; }
   }
   .vc-modal-toolbar{
     display:flex; align-items:center; gap:4px; padding:7px 8px; background:#EFEAD9;
@@ -476,10 +484,10 @@
     outline:none; border-color:var(--vc-modal-color, var(--gold));
     box-shadow:0 0 0 3px color-mix(in srgb, var(--vc-modal-color, var(--gold)) 18%, transparent);
   }
-  .vc-page{ flex:1 1 50%; min-width:0; padding:20px 22px; display:flex; flex-direction:column; min-height:440px; }
-  .vc-page-left{ padding-top:0; }
+  .vc-page{ flex:1 1 50%; min-width:0; padding:20px 22px; display:flex; flex-direction:column; min-height:880px; }
+  .vc-page-left{ padding-top:0; transform-origin:right center; }
   .vc-page-left .vc-modal-hero{ margin:0 -22px 16px; }
-  .vc-page-right{ padding-top:24px; }
+  .vc-page-right{ padding-top:24px; transform-origin:left center; }
   .vc-spine{
     width:14px; flex-shrink:0; background:linear-gradient(90deg, rgba(0,0,0,.10), rgba(0,0,0,.02) 30%, rgba(0,0,0,.02) 70%, rgba(0,0,0,.10));
     position:relative;
@@ -3406,32 +3414,21 @@ function openVcModal(v, direction){
       bodyEl.classList.add(direction === 'prev' ? 'vc-page-turn-prev' : 'vc-page-turn-next');
     }
   } else {
-    if (window.vcLastClickX != null){
-      // estimate the box's centered position to convert the click point into a transform-origin percentage
-      const estW = Math.min(620, window.innerWidth - 56);
-      const estH = Math.min(window.innerHeight - 56, 640);
-      const boxLeft = (window.innerWidth - estW) / 2;
-      const boxTop = (window.innerHeight - estH) / 2;
-      const originX = ((window.vcLastClickX - boxLeft) / estW) * 100;
-      const originY = ((window.vcLastClickY - boxTop) / estH) * 100;
-      box.style.setProperty('--vc-origin-x', Math.max(0, Math.min(100, originX)) + '%');
-      box.style.setProperty('--vc-origin-y', Math.max(0, Math.min(100, originY)) + '%');
-    } else {
-      box.style.setProperty('--vc-origin-x', '50%');
-      box.style.setProperty('--vc-origin-y', '50%');
-    }
-    // restart the CSS animation so it plays fresh with the new origin each time
     box.style.animation = 'none';
     void box.offsetWidth;
     box.style.animation = '';
+    const pageLeftEl = document.querySelector('.vc-page-left');
+    const pageRightEl = document.querySelector('.vc-page-right');
+    [pageLeftEl, pageRightEl].forEach(el=>{
+      if (!el) return;
+      el.classList.remove('vc-book-open');
+      void el.offsetWidth;
+      el.classList.add('vc-book-open');
+    });
   }
   overlay.classList.add('open');
 }
 window.openVcModal = openVcModal; // shared across script blocks
-document.addEventListener('click', function(e){
-  window.vcLastClickX = e.clientX;
-  window.vcLastClickY = e.clientY;
-}, true);
 
 function closeVcModal(){
   const overlay = document.getElementById('vcModalOverlay');
