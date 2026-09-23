@@ -385,15 +385,15 @@
   @keyframes vc-modal-fade-in{
     0%{ opacity:0; } 100%{ opacity:1; }
   }
-  .vc-page-left.vc-book-open{ animation:vc-book-open-left .55s cubic-bezier(.3,.9,.3,1); }
-  .vc-page-right.vc-book-open{ animation:vc-book-open-right .55s cubic-bezier(.3,.9,.3,1); }
+  .vc-page-left.vc-book-open{ animation:vc-book-open-left .6s cubic-bezier(.3,.9,.3,1); }
+  .vc-page-right.vc-book-open{ animation:vc-book-open-right .6s cubic-bezier(.3,.9,.3,1); }
   @keyframes vc-book-open-left{
-    0%{ transform:perspective(1400px) rotateY(-92deg); opacity:.2; }
-    100%{ transform:perspective(1400px) rotateY(0deg); opacity:1; }
+    0%{ transform:rotateY(-100deg); opacity:0; }
+    100%{ transform:rotateY(0deg); opacity:1; }
   }
   @keyframes vc-book-open-right{
-    0%{ transform:perspective(1400px) rotateY(92deg); opacity:.2; }
-    100%{ transform:perspective(1400px) rotateY(0deg); opacity:1; }
+    0%{ transform:rotateY(100deg); opacity:0; }
+    100%{ transform:rotateY(0deg); opacity:1; }
   }
   @media(prefers-reduced-motion: reduce){
     .vc-modal-box{ animation:none; }
@@ -432,6 +432,7 @@
   .vc-book-spread{
     display:flex; flex:1; min-height:0; overflow-y:auto; transform-origin:left center;
     background:linear-gradient(90deg, #FFFDF7 0%, #FBF7EC 49%, #F4EEDF 50%, #FBF7EC 51%, #FFFDF7 100%);
+    perspective:1800px;
   }
   .vc-book-spread.vc-page-turn-next{ animation:vc-page-turn-next .4s cubic-bezier(.4,0,.2,1); }
   .vc-book-spread.vc-page-turn-prev{ animation:vc-page-turn-prev .4s cubic-bezier(.4,0,.2,1); }
