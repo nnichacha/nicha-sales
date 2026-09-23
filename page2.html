@@ -284,6 +284,7 @@
   .vc-estate-badge{ display:inline-block; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:2px 8px; border-radius:8px; background:rgba(56,189,248,.14); color:#38BDF8; }
   .vc-badge-row{ display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
   .vc-diw-badge{ display:inline-block; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:2px 8px; border-radius:8px; border:1px solid; background:transparent; }
+  .vc-status-tag{ display:inline-block; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:2px 8px; border-radius:8px; border:1px solid; background:transparent; }
   .visited-card .vc-status.vc-status-none{ background:rgba(255,255,255,0.06); color:var(--muted); }
   .vc-expand-hint{
     display:flex; align-items:center; gap:4px; margin-top:9px; font-size:10px; color:var(--muted);
@@ -3061,13 +3062,13 @@ function renderTargetsPage(){
   // pipeline groups: companies actively being worked (interesting/follow-up) plus
   // the ones already won (Customer / New customer) — never anything marked not
   // interesting or not relevant, and never anything with no outcome set yet
-  // (order kept exactly as before: น่าสนใจ, รอติดตาม, Customer, New customer)
   const groups = [
     {key:'interesting', label:'Interesting', accent:'#34D399'},
     {key:'followup', label:'Follow-up', accent:'#F59E0B'},
     {key:'customer', label:'Customer (ลูกค้าเดิม)', accent:'#A78BFA'},
     {key:'new', label:'New Customer (ลูกค้าใหม่ที่สำเร็จแล้ว)', accent:'#38BDF8'},
   ];
+  const accentByKey = {interesting:'#34D399', followup:'#F59E0B', customer:'#A78BFA', new:'#38BDF8'};
   const buckets = {interesting:[], followup:[], customer:[], new:[]};
   let total = 0;
 
@@ -3076,7 +3077,7 @@ function renderTargetsPage(){
       const fb = feedbackCache[c.id];
       const status = fb && fb.status;
       if (!status || !buckets[status]) return; // excludes blank, notinteresting, notrelevant
-      buckets[status].push({id:c.id, fb, info:{name:c.name, tambon:c.tambon, amphoe:dist, diwStatus:c.diwStatus, estate:c.estate||''}});
+      buckets[status].push({id:c.id, fb, info:{name:c.name, tambon:c.tambon, amphoe:dist, diwStatus:c.diwStatus, estate:c.estate||''}, statusKey:status});
       total++;
     }));
   });
@@ -3089,8 +3090,30 @@ function renderTargetsPage(){
     return;
   }
 
-  // top-level grid: two labeled sections, each with its own boxes
-  const actionGroups = groups.filter(g=> g.key==='interesting' || g.key==='followup');
+  // action items (Interesting + Follow-up) show directly as cards — no group tile to click through
+  const actionItems = buckets.interesting.concat(buckets.followup).sort((a,b)=> a.info.name.localeCompare(b.info.name,'th'));
+  window.vcNavListTargetsAction = actionItems;
+
+  const renderCompanyCard = (v)=>{
+    const g = groups.find(x=>x.key===v.statusKey);
+    const estateFull = v.info.estate ? fullNameOfEstate(v.info.estate) : '';
+    const estateBadge = v.info.estate ? `<div class="vc-estate-badge" title="นิคม: ${estateFull}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M2 21V10l6 4v-4l6 4V7l6 4v10H2z"/><path d="M6 21v-4M12 21v-4M18 21v-4"/></svg>${v.info.estate}</div>` : '';
+    return `
+    <div class="visited-card" data-id="${v.id}" style="--vc-accent:${g.accent};">
+      <div class="vc-summary">
+        <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+        <div class="vc-name">${v.info.name}</div>
+        <div class="vc-loc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}
+        </div>
+        <div class="vc-badge-row"><span class="vc-status-tag" style="color:${g.accent};border-color:${g.accent}55;">${g.label}</span>${estateBadge}</div>
+        <div class="vc-expand-hint"><span>คลิกเพื่อดู/แก้ไขข้อมูล</span></div>
+      </div>
+    </div>`;
+  };
+
+  // top-level grid: action items shown directly as cards; done section stays as clickable group tiles
   const doneGroups = groups.filter(g=> g.key==='customer' || g.key==='new');
   const renderGroupBoxes = (list)=> list.map(g=>{
     const n = buckets[g.key].length;
@@ -3101,12 +3124,17 @@ function renderTargetsPage(){
   }).join('');
   gridView.innerHTML = `
     <div class="targets-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>บริษัทเป้าหมายที่ต้องดำเนินการ</div>
-    <div class="estate-zone-grid">${renderGroupBoxes(actionGroups)}</div>
+    ${actionItems.length ? `<div class="visited-grid">${actionItems.map(renderCompanyCard).join('')}</div>` : `<div class="visited-empty">ยังไม่มีบริษัทในกลุ่มนี้ตอนนี้</div>`}
     <div class="targets-section-label" style="margin-top:18px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>ดำเนินการแล้ว</div>
     <div class="estate-zone-grid">${renderGroupBoxes(doneGroups)}</div>
   `;
   gridView.querySelectorAll('.estate-zone').forEach(btn=>{
     btn.addEventListener('click', ()=> openTargetsGroupDetail(btn.dataset.group));
+  });
+  gridView.querySelectorAll('#targetsGridView .visited-card').forEach(card=>{
+    const id = card.dataset.id;
+    const match = actionItems.find(v=>v.id===id);
+    card.querySelector('.vc-summary').addEventListener('click', ()=>{ window.vcNavList = actionItems; openVcModal(match); });
   });
 
   function openTargetsGroupDetail(key){
@@ -3147,8 +3175,10 @@ function renderTargetsPage(){
     detailView.style.display = '';
   }
   window.refreshOpenTargetsDetail = function(){
-    if (window.currentOpenTargetsGroup !== null && window.currentOpenTargetsGroup !== undefined){
+    if (window.currentOpenTargetsGroup !== null && window.currentOpenTargetsGroup !== undefined && detailView.style.display !== 'none'){
       openTargetsGroupDetail(window.currentOpenTargetsGroup);
+    } else {
+      renderTargetsPage();
     }
   };
   window.resetTargetsView = function(){
