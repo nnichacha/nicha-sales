@@ -278,6 +278,13 @@
   .visited-card .vc-summary{ padding:12px 14px; position:relative; cursor:pointer; }
   .visited-card .vc-name{ font-family:'Kanit',sans-serif; font-weight:600; font-size:12.5px; color:#fff; line-height:1.4; padding-right:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .visited-card .vc-check{ position:absolute; top:12px; right:12px; width:16px; height:16px; color:var(--green); }
+  .vc-card-priority-dot{
+    position:absolute; top:8px; left:8px; width:10px; height:10px; border-radius:50%; z-index:2;
+    box-shadow:0 0 0 2px var(--panel2);
+  }
+  .vc-card-priority-dot.vc-priority-green{ background:#22C55E; }
+  .vc-card-priority-dot.vc-priority-orange{ background:#F59E0B; }
+  .vc-card-priority-dot.vc-priority-red{ background:#EF4444; }
   .visited-card .vc-loc{ display:flex; align-items:center; gap:5px; margin-top:8px; font-size:10.5px; color:var(--muted); }
   .visited-card .vc-loc svg{ width:11px; height:11px; stroke:var(--muted); flex-shrink:0; }
   .visited-card .vc-status{ display:inline-block; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:2px 8px; border-radius:8px; }
@@ -406,7 +413,15 @@
   }
   .vc-strip-item:hover{ border-color:#C9C9C9; }
   .vc-strip-item.vc-strip-active{ background:var(--vc-modal-color, var(--gold)); border-color:var(--vc-modal-color, var(--gold)); color:#fff; }
-  .vc-modal-body{ padding:20px 22px 22px; overflow-y:auto; flex:1; min-height:0; }
+  .vc-modal-body{ padding:20px 22px 22px; overflow-y:auto; flex:1; min-height:0; transform-origin:left center; }
+  .vc-modal-body.vc-page-turn{ animation:vc-page-turn .38s cubic-bezier(.4,0,.2,1); }
+  @keyframes vc-page-turn{
+    0%{ transform:perspective(900px) rotateY(-14deg) scaleX(.94); opacity:.4; box-shadow:-14px 0 24px rgba(0,0,0,.12); }
+    100%{ transform:perspective(900px) rotateY(0deg) scaleX(1); opacity:1; box-shadow:none; }
+  }
+  @media(prefers-reduced-motion: reduce){
+    .vc-modal-body.vc-page-turn{ animation:none; }
+  }
   .vc-modal-header{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; line-height:1.3; text-shadow:0 1px 3px rgba(0,0,0,.2); }
   .vc-modal-loc{ font-size:10.5px; color:rgba(255,255,255,.85); margin-top:3px; }
   .vc-quickbar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-bottom:14px; margin-bottom:14px; border-bottom:1px dashed #E5E7EB; }
@@ -415,6 +430,19 @@
     border-radius:20px; cursor:pointer; font-family:'Kanit',sans-serif; font-weight:600; font-size:11px; color:#1E3A8A; flex-shrink:0;
   }
   .vc-contacted-chip input{ width:13px; height:13px; accent-color:#2563EB; cursor:pointer; }
+  .vc-priority-dots{ display:flex; align-items:center; gap:6px; padding:0 4px; }
+  .vc-priority-dot{
+    width:17px; height:17px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;
+    opacity:.35; transition:opacity .15s ease, transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  }
+  .vc-priority-dot:hover{ opacity:.7; transform:scale(1.12); }
+  .vc-priority-dot.vc-priority-green{ background:#22C55E; }
+  .vc-priority-dot.vc-priority-orange{ background:#F59E0B; }
+  .vc-priority-dot.vc-priority-red{ background:#EF4444; }
+  .vc-priority-dot.vc-priority-active{ opacity:1; transform:scale(1.2); border-color:rgba(0,0,0,.25); }
+  .vc-priority-dot.vc-priority-active.vc-priority-green{ box-shadow:0 0 0 3px rgba(34,197,94,.25); }
+  .vc-priority-dot.vc-priority-active.vc-priority-orange{ box-shadow:0 0 0 3px rgba(245,158,11,.25); }
+  .vc-priority-dot.vc-priority-active.vc-priority-red{ box-shadow:0 0 0 3px rgba(239,68,68,.25); }
   .vc-status-chip{ flex:1 1 120px; min-width:110px; }
   .vc-quick-input{ flex:1 1 110px; min-width:100px; }
   .vc-note-label{ font-size:11px; color:#8B93A1; font-family:'Kanit',sans-serif; font-weight:700; letter-spacing:.3px; margin-bottom:7px; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
@@ -434,11 +462,12 @@
   }
   .vc-modal-body .vc-note-main{
     width:100%; background:
-      repeating-linear-gradient(#FFFDF5 0px, #FFFDF5 31px, color-mix(in srgb, var(--vc-modal-color, var(--gold)) 14%, #EDE6D3) 32px),
-      linear-gradient(155deg, #FFFEF9, #FFFAEE);
-    background-attachment:local; border:2px solid color-mix(in srgb, var(--vc-modal-color, var(--gold)) 35%, #E5DFCB);
-    border-radius:12px; padding:16px 17px; color:#2B2A25; font-family:'Sarabun',sans-serif; font-size:14.5px;
-    min-height:220px; resize:both; max-width:100%; line-height:32px; box-shadow:inset 0 1px 3px rgba(0,0,0,.05), 0 3px 10px rgba(0,0,0,.04);
+      repeating-linear-gradient(#FFFEFB 0px, #FFFEFB 30px, rgba(120,150,200,.28) 30px, rgba(120,150,200,.28) 31px, #FFFEFB 31px),
+      linear-gradient(90deg, transparent 38px, rgba(220,90,90,.35) 38px, rgba(220,90,90,.35) 39px, transparent 39px),
+      linear-gradient(155deg, #FFFEF9, #FFFBF0);
+    background-attachment:local; border:2px solid color-mix(in srgb, var(--vc-modal-color, var(--gold)) 30%, #E5DFCB);
+    border-radius:10px; padding:16px 17px 16px 46px; color:#2B2A25; font-family:'Sarabun',sans-serif; font-size:14.5px;
+    min-height:220px; resize:both; max-width:100%; line-height:30px; box-shadow:inset 0 1px 3px rgba(0,0,0,.05), 0 3px 10px rgba(0,0,0,.04);
     transition:border-color .15s ease, box-shadow .15s ease;
   }
   .vc-modal-body .vc-note-main:focus{
@@ -2020,6 +2049,11 @@
               <input type="checkbox" id="vcModalContacted">
               <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></svg> เข้าพบแล้ว</span>
             </label>
+            <div class="vc-priority-dots" id="vcModalPriority" title="ระดับความน่าสนใจ">
+              <button type="button" class="vc-priority-dot vc-priority-green" data-priority="green" title="น่าสนใจมาก"></button>
+              <button type="button" class="vc-priority-dot vc-priority-orange" data-priority="orange" title="น่าสนใจปานกลาง"></button>
+              <button type="button" class="vc-priority-dot vc-priority-red" data-priority="red" title="น่าสนใจน้อย"></button>
+            </div>
             <select class="vc-status-select vc-status-chip" id="vcModalStatus"></select>
             <input type="text" class="vc-input vc-quick-input" id="vcModalContact" placeholder="ชื่อผู้ติดต่อ">
             <input type="text" class="vc-input vc-quick-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
@@ -3091,15 +3125,23 @@ function renderTargetsPage(){
   }
 
   // action items (Interesting + Follow-up) show directly as cards — no group tile to click through
-  const actionItems = buckets.interesting.concat(buckets.followup).sort((a,b)=> a.info.name.localeCompare(b.info.name,'th'));
+  const priorityOrder = {green:0, orange:1, red:2};
+  const actionItems = buckets.interesting.concat(buckets.followup).sort((a,b)=>{
+    const pa = priorityOrder[a.fb.priority] ?? 3;
+    const pb = priorityOrder[b.fb.priority] ?? 3;
+    if (pa !== pb) return pa - pb;
+    return a.info.name.localeCompare(b.info.name,'th');
+  });
   window.vcNavListTargetsAction = actionItems;
 
   const renderCompanyCard = (v)=>{
     const g = groups.find(x=>x.key===v.statusKey);
     const estateFull = v.info.estate ? fullNameOfEstate(v.info.estate) : '';
     const estateBadge = v.info.estate ? `<div class="vc-estate-badge" title="นิคม: ${estateFull}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M2 21V10l6 4v-4l6 4V7l6 4v10H2z"/><path d="M6 21v-4M12 21v-4M18 21v-4"/></svg>${v.info.estate}</div>` : '';
+    const priorityDotHtml = v.fb.priority ? `<span class="vc-card-priority-dot vc-priority-${v.fb.priority}" title="ระดับความน่าสนใจ"></span>` : '';
     return `
     <div class="visited-card" data-id="${v.id}" style="--vc-accent:${g.accent};">
+      ${priorityDotHtml}
       <div class="vc-summary">
         <svg class="vc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
         <div class="vc-name">${v.info.name}</div>
@@ -3199,6 +3241,7 @@ function renderTargetsPage(){
 // ---- shared white detail modal for visited-company cards ----
 function openVcModal(v){
   const overlay = document.getElementById('vcModalOverlay');
+  const isSwitching = overlay.classList.contains('open');
   const header = document.getElementById('vcModalHeader');
   const loc = document.getElementById('vcModalLoc');
   const contactedCb = document.getElementById('vcModalContacted');
@@ -3216,6 +3259,17 @@ function openVcModal(v){
   loc.textContent = `ตำบล${v.info.tambon} · อำเภอ${v.info.amphoe}`;
   const statusLabelMap = {customer:'Customer', new:'New Customer', interesting:'น่าสนใจ', followup:'รอติดตาม', notinteresting:'ไม่น่าสนใจ'};
   document.getElementById('vcModalHeroBadge').textContent = statusLabelMap[v.fb.status] || 'ยังไม่ระบุสถานะ';
+
+  const priorityWrap = document.getElementById('vcModalPriority');
+  const freshPriorityWrap = priorityWrap.cloneNode(true);
+  priorityWrap.replaceWith(freshPriorityWrap);
+  let currentPriority = v.fb.priority || null;
+  function paintPriorityDots(){
+    freshPriorityWrap.querySelectorAll('.vc-priority-dot').forEach(dot=>{
+      dot.classList.toggle('vc-priority-active', dot.dataset.priority === currentPriority);
+    });
+  }
+  paintPriorityDots();
 
   // prev/next navigation + thumbnail strip — only active when opened from a known list context
   const navList = window.vcNavList;
@@ -3264,11 +3318,20 @@ function openVcModal(v){
 
   async function persistVcModal(refreshUi){
     const fb = await loadFeedback(v.id);
-    const updated = {...fb, contacted: freshContacted.checked, contactPerson: freshContact.value.trim(), phone: freshPhone.value.trim(), note: freshNote.value, status: freshStatus.value};
+    const updated = {...fb, contacted: freshContacted.checked, contactPerson: freshContact.value.trim(), phone: freshPhone.value.trim(), note: freshNote.value, status: freshStatus.value, priority: currentPriority};
     await saveFeedback(v.id, updated);
     if (refreshUi) refreshFeedbackRowUI(v.id, updated);
     return updated;
   }
+
+  freshPriorityWrap.querySelectorAll('.vc-priority-dot').forEach(dot=>{
+    dot.addEventListener('click', ()=>{
+      currentPriority = (currentPriority === dot.dataset.priority) ? null : dot.dataset.priority;
+      v.fb.priority = currentPriority;
+      paintPriorityDots();
+      persistVcModal(true);
+    });
+  });
 
   freshContacted.addEventListener('change', async ()=>{
     await persistVcModal(true);
@@ -3297,24 +3360,33 @@ function openVcModal(v){
   overlay.style.display = '';
   const frameEl = overlay.querySelector('.vc-modal-frame');
   if (frameEl) frameEl.classList.remove('vc-expanded');
-  if (window.vcLastClickX != null){
-    // estimate the box's centered position to convert the click point into a transform-origin percentage
-    const estW = Math.min(620, window.innerWidth - 56);
-    const estH = Math.min(window.innerHeight - 56, 640);
-    const boxLeft = (window.innerWidth - estW) / 2;
-    const boxTop = (window.innerHeight - estH) / 2;
-    const originX = ((window.vcLastClickX - boxLeft) / estW) * 100;
-    const originY = ((window.vcLastClickY - boxTop) / estH) * 100;
-    box.style.setProperty('--vc-origin-x', Math.max(0, Math.min(100, originX)) + '%');
-    box.style.setProperty('--vc-origin-y', Math.max(0, Math.min(100, originY)) + '%');
+  if (isSwitching){
+    const bodyEl = document.querySelector('.vc-modal-body');
+    if (bodyEl){
+      bodyEl.classList.remove('vc-page-turn');
+      void bodyEl.offsetWidth;
+      bodyEl.classList.add('vc-page-turn');
+    }
   } else {
-    box.style.setProperty('--vc-origin-x', '50%');
-    box.style.setProperty('--vc-origin-y', '50%');
+    if (window.vcLastClickX != null){
+      // estimate the box's centered position to convert the click point into a transform-origin percentage
+      const estW = Math.min(620, window.innerWidth - 56);
+      const estH = Math.min(window.innerHeight - 56, 640);
+      const boxLeft = (window.innerWidth - estW) / 2;
+      const boxTop = (window.innerHeight - estH) / 2;
+      const originX = ((window.vcLastClickX - boxLeft) / estW) * 100;
+      const originY = ((window.vcLastClickY - boxTop) / estH) * 100;
+      box.style.setProperty('--vc-origin-x', Math.max(0, Math.min(100, originX)) + '%');
+      box.style.setProperty('--vc-origin-y', Math.max(0, Math.min(100, originY)) + '%');
+    } else {
+      box.style.setProperty('--vc-origin-x', '50%');
+      box.style.setProperty('--vc-origin-y', '50%');
+    }
+    // restart the CSS animation so it plays fresh with the new origin each time
+    box.style.animation = 'none';
+    void box.offsetWidth;
+    box.style.animation = '';
   }
-  // restart the CSS animation so it plays fresh with the new origin each time
-  box.style.animation = 'none';
-  void box.offsetWidth;
-  box.style.animation = '';
   overlay.classList.add('open');
 }
 window.openVcModal = openVcModal; // shared across script blocks
