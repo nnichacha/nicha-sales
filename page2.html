@@ -354,19 +354,27 @@
   /* ---- visited card detail modal: white, clean, rectangular ---- */
   .vc-modal-overlay{
     display:none; position:fixed; inset:0; background:rgba(11,18,32,0.72); z-index:200;
-    align-items:center; justify-content:center; padding:24px;
+    align-items:center; justify-content:center; padding:28px;
   }
   .vc-modal-overlay.open{ display:flex; }
+  .vc-modal-frame{ position:relative; width:100%; max-width:620px; }
+  .vc-modal-frame.vc-expanded{ max-width:920px; }
   .vc-modal-box{
-    background:#FFFFFF; border-radius:14px; width:100%; max-width:620px; position:relative;
-    box-shadow:0 24px 60px rgba(0,0,0,0.45); overflow:hidden;
-    max-height:calc(100vh - 48px); display:flex; flex-direction:column;
+    background:linear-gradient(175deg, #FFFDF7, #FCFAF2); border-radius:16px; width:100%; position:relative;
+    box-shadow:0 30px 70px rgba(0,0,0,0.5); overflow:hidden;
+    max-height:calc(100vh - 56px); display:flex; flex-direction:column;
+    animation:vc-modal-pop .28s cubic-bezier(.34,1.56,.64,1);
   }
-  .vc-modal-accent{ height:6px; background:var(--vc-modal-color, var(--gold)); flex-shrink:0; }
+  .vc-modal-frame.vc-expanded .vc-modal-box{ max-height:calc(100vh - 56px); }
+  @keyframes vc-modal-pop{
+    0%{ opacity:0; transform:scale(.92) translateY(10px); }
+    100%{ opacity:1; transform:scale(1) translateY(0); }
+  }
+  .vc-modal-accent{ height:6px; background:linear-gradient(90deg, var(--vc-modal-color, var(--gold)), color-mix(in srgb, var(--vc-modal-color, var(--gold)) 40%, #fff)); flex-shrink:0; }
   .vc-modal-hero{
-    position:relative; padding:15px 44px 13px; display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(135deg, var(--vc-modal-color, #C9A96E), color-mix(in srgb, var(--vc-modal-color, #C9A96E) 60%, #1a1a2e));
-    min-height:56px; flex-shrink:0;
+    position:relative; padding:20px 56px 16px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--vc-modal-color, #C9A96E), color-mix(in srgb, var(--vc-modal-color, #C9A96E) 55%, #12172a));
+    min-height:64px; flex-shrink:0;
   }
   .vc-hero-content{ text-align:center; max-width:100%; }
   .vc-hero-badge{ font-family:'Kanit',sans-serif; font-weight:700; font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.85); margin-bottom:3px; }
@@ -378,8 +386,8 @@
   .vc-nav-arrow:hover{ background:rgba(255,255,255,.38); }
   .vc-nav-arrow:disabled{ opacity:.25; cursor:default; pointer-events:none; }
   .vc-nav-arrow svg{ width:18px; height:18px; }
-  .vc-nav-prev{ left:12px; }
-  .vc-nav-next{ right:12px; }
+  .vc-nav-prev{ left:14px; }
+  .vc-nav-next{ right:14px; }
   .vc-strip{ display:flex; gap:6px; padding:10px 14px; overflow-x:auto; background:#F7F8FA; border-bottom:1px solid #EDEFF2; flex-shrink:0; }
   .vc-strip::-webkit-scrollbar{ height:4px; }
   .vc-strip-item{
@@ -389,11 +397,32 @@
   }
   .vc-strip-item:hover{ border-color:#C9C9C9; }
   .vc-strip-item.vc-strip-active{ background:var(--vc-modal-color, var(--gold)); border-color:var(--vc-modal-color, var(--gold)); color:#fff; }
-  .vc-modal-close{
-    position:absolute; top:12px; right:14px; background:#F1F3F6; border:none; width:28px; height:28px; border-radius:50%;
-    color:#4B5563; font-size:18px; line-height:1; cursor:pointer; z-index:2;
+  .vc-modal-close, .vc-modal-expand{
+    position:absolute; top:-14px; background:#fff; border:1px solid #E5E7EB; border-radius:50%;
+    color:#4B5563; cursor:pointer; z-index:5; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.22); animation:vc-btn-pop .32s cubic-bezier(.34,1.56,.64,1) backwards;
+    transition:transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease, background .15s ease;
   }
-  .vc-modal-close:hover{ background:#E5E7EB; color:#111827; }
+  .vc-modal-close:hover, .vc-modal-expand:hover{ transform:scale(1.12); background:#F9FAFB; box-shadow:0 8px 20px rgba(0,0,0,.28); }
+  .vc-modal-close:active, .vc-modal-expand:active{ transform:scale(.94); }
+  @keyframes vc-btn-pop{
+    0%{ opacity:0; transform:scale(.4); }
+    100%{ opacity:1; transform:scale(1); }
+  }
+  .vc-modal-close{
+    right:-14px; width:32px; height:32px; font-size:19px; line-height:1;
+    animation-delay:.08s;
+  }
+  .vc-modal-expand{
+    right:32px; width:32px; height:32px; padding:0;
+    animation-delay:.03s;
+  }
+  .vc-modal-expand svg{ width:16px; height:16px; }
+  @media(max-width:520px){
+    .vc-modal-close, .vc-modal-expand{ top:-12px; }
+    .vc-modal-close{ right:-8px; }
+    .vc-modal-expand{ right:26px; }
+  }
   .vc-modal-body{ padding:20px 22px 22px; overflow-y:auto; flex:1; min-height:0; }
   .vc-modal-header{ font-family:'Kanit',sans-serif; font-weight:700; font-size:14px; color:#fff; line-height:1.3; text-shadow:0 1px 3px rgba(0,0,0,.2); }
   .vc-modal-loc{ font-size:10.5px; color:rgba(255,255,255,.85); margin-top:3px; }
@@ -420,14 +449,17 @@
     box-shadow:0 0 0 3px color-mix(in srgb, var(--vc-modal-color, var(--gold)) 18%, transparent);
   }
   .vc-modal-body .vc-note-main{
-    width:100%; background:linear-gradient(155deg, #FAFCFF, #F3F6FB); border:2px solid color-mix(in srgb, var(--vc-modal-color, var(--gold)) 35%, #E5E7EB);
-    border-radius:12px; padding:16px 17px; color:#111827; font-family:'Sarabun',sans-serif; font-size:14.5px;
-    min-height:220px; resize:vertical; line-height:1.75; box-shadow:inset 0 1px 3px rgba(0,0,0,.04);
+    width:100%; background:
+      repeating-linear-gradient(#FFFDF5 0px, #FFFDF5 31px, color-mix(in srgb, var(--vc-modal-color, var(--gold)) 14%, #EDE6D3) 32px),
+      linear-gradient(155deg, #FFFEF9, #FFFAEE);
+    background-attachment:local; border:2px solid color-mix(in srgb, var(--vc-modal-color, var(--gold)) 35%, #E5DFCB);
+    border-radius:12px; padding:16px 17px; color:#2B2A25; font-family:'Sarabun',sans-serif; font-size:14.5px;
+    min-height:220px; resize:vertical; line-height:32px; box-shadow:inset 0 1px 3px rgba(0,0,0,.05), 0 3px 10px rgba(0,0,0,.04);
     transition:border-color .15s ease, box-shadow .15s ease;
   }
   .vc-modal-body .vc-note-main:focus{
     outline:none; border-color:var(--vc-modal-color, var(--gold));
-    box-shadow:0 0 0 4px color-mix(in srgb, var(--vc-modal-color, var(--gold)) 16%, transparent), inset 0 1px 3px rgba(0,0,0,.04);
+    box-shadow:0 0 0 4px color-mix(in srgb, var(--vc-modal-color, var(--gold)) 16%, transparent), inset 0 1px 3px rgba(0,0,0,.05);
   }
   .vc-modal-save{
     width:100%; margin-top:14px; background:var(--vc-modal-color, #38BDF8); color:#0B1220; border:none;
@@ -1312,7 +1344,7 @@
   .visited-filter-row{ gap:6px; }
   .visited-filter-btn, .visited-status-btn{ font-size:10px; padding:5px 11px; }
 
-  .vc-modal-box{ max-width:100%; margin:0 8px; }
+  .vc-modal-frame{ max-width:100%; margin:0 8px; }
   .vc-modal-body{ padding:22px 18px 20px; }
 
   .district-map-wrap{ padding:14px 14px 10px; margin-top:16px; }
@@ -1973,36 +2005,41 @@
   </div>
 
   <div class="vc-modal-overlay" id="vcModalOverlay">
-    <div class="vc-modal-box" id="vcModalBox">
+    <div class="vc-modal-frame">
+      <div class="vc-modal-box" id="vcModalBox">
+        <div class="vc-modal-hero" id="vcModalHero">
+          <button class="vc-nav-arrow vc-nav-prev" id="vcModalPrev" type="button" title="บริษัทก่อนหน้า">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="vc-hero-content">
+            <div class="vc-hero-badge" id="vcModalHeroBadge"></div>
+            <div class="vc-modal-header" id="vcModalHeader"></div>
+            <div class="vc-modal-loc" id="vcModalLoc"></div>
+          </div>
+          <button class="vc-nav-arrow vc-nav-next" id="vcModalNext" type="button" title="บริษัทถัดไป">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <div class="vc-strip" id="vcModalStrip"></div>
+        <div class="vc-modal-body">
+          <div class="vc-quickbar">
+            <label class="vc-contacted-chip">
+              <input type="checkbox" id="vcModalContacted">
+              <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></svg> เข้าพบแล้ว</span>
+            </label>
+            <select class="vc-status-select vc-status-chip" id="vcModalStatus"></select>
+            <input type="text" class="vc-input vc-quick-input" id="vcModalContact" placeholder="ชื่อผู้ติดต่อ">
+            <input type="text" class="vc-input vc-quick-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
+          </div>
+          <div class="vc-note-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>รายละเอียด / Feedback</div>
+          <textarea class="vc-note vc-note-main" id="vcModalNote" placeholder="บันทึกรายละเอียดการเข้าพบ เช่น ความสนใจของลูกค้า งานที่พูดคุย ขั้นตอนถัดไป..."></textarea>
+          <button class="vc-modal-save" id="vcModalSave" type="button">บันทึกการเปลี่ยนแปลง</button>
+        </div>
+      </div>
+      <button class="vc-modal-expand" id="vcModalExpand" type="button" title="ขยายกล่อง">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
       <button class="vc-modal-close" id="vcModalClose" type="button">&times;</button>
-      <div class="vc-modal-hero" id="vcModalHero">
-        <button class="vc-nav-arrow vc-nav-prev" id="vcModalPrev" type="button" title="บริษัทก่อนหน้า">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div class="vc-hero-content">
-          <div class="vc-hero-badge" id="vcModalHeroBadge"></div>
-          <div class="vc-modal-header" id="vcModalHeader"></div>
-          <div class="vc-modal-loc" id="vcModalLoc"></div>
-        </div>
-        <button class="vc-nav-arrow vc-nav-next" id="vcModalNext" type="button" title="บริษัทถัดไป">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
-      <div class="vc-strip" id="vcModalStrip"></div>
-      <div class="vc-modal-body">
-        <div class="vc-quickbar">
-          <label class="vc-contacted-chip">
-            <input type="checkbox" id="vcModalContacted">
-            <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></svg> เข้าพบแล้ว</span>
-          </label>
-          <select class="vc-status-select vc-status-chip" id="vcModalStatus"></select>
-          <input type="text" class="vc-input vc-quick-input" id="vcModalContact" placeholder="ชื่อผู้ติดต่อ">
-          <input type="text" class="vc-input vc-quick-input" id="vcModalPhone" placeholder="เบอร์ติดต่อ">
-        </div>
-        <div class="vc-note-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>รายละเอียด / Feedback</div>
-        <textarea class="vc-note vc-note-main" id="vcModalNote" placeholder="บันทึกรายละเอียดการเข้าพบ เช่น ความสนใจของลูกค้า งานที่พูดคุย ขั้นตอนถัดไป..."></textarea>
-        <button class="vc-modal-save" id="vcModalSave" type="button">บันทึกการเปลี่ยนแปลง</button>
-      </div>
     </div>
   </div>
   </div>
@@ -3249,6 +3286,8 @@ function closeVcModal(){
   if (!overlay) return;
   overlay.classList.remove('open');
   overlay.style.display = 'none';
+  const frame = overlay.querySelector('.vc-modal-frame');
+  if (frame) frame.classList.remove('vc-expanded');
 }
 
 
@@ -3996,10 +4035,19 @@ async function init(){
 
   const vcModalCloseBtn = document.getElementById('vcModalClose');
   const vcModalOverlayEl = document.getElementById('vcModalOverlay');
+  const vcModalExpandBtn = document.getElementById('vcModalExpand');
+  const vcModalFrameEl = document.querySelector('.vc-modal-frame');
   vcModalCloseBtn.addEventListener('click', function(e){
     e.preventDefault();
     closeVcModal();
   });
+  if (vcModalExpandBtn && vcModalFrameEl){
+    vcModalExpandBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      vcModalFrameEl.classList.toggle('vc-expanded');
+      vcModalExpandBtn.title = vcModalFrameEl.classList.contains('vc-expanded') ? 'ย่อกล่อง' : 'ขยายกล่อง';
+    });
+  }
   vcModalOverlayEl.addEventListener('click', function(e){
     if (e.target === vcModalOverlayEl) closeVcModal();
   });
