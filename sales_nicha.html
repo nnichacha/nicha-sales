@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet" />
 <title>Sales_Nicha — ระบบติดตามงานขาย EMT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <link rel="manifest" href="manifest.json" />
@@ -106,14 +106,14 @@
   .icon-btn:active { transform: scale(0.85); }
   .sidebar-btn:hover { transform: translateX(3px); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
   .sidebar-btn:active { transform: translateX(1px) scale(0.98); }
-  table tbody tr[onclick]:hover { box-shadow: inset 3px 0 0 #C9A227; }
+  table tbody tr[onclick]:hover { box-shadow: inset 3px 0 0 #5B9BD5; }
   table tbody tr[onclick]:active { filter: brightness(0.97); }
   .district-tab:hover, .dr-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
   /* chart shapes (bars, donut arcs) */
   .chart-clickable { transition: filter .15s ease, opacity .15s ease; }
   .chart-clickable:hover { filter: brightness(1.18) drop-shadow(0 0 7px rgba(255,255,255,0.65)); }
   .hazard-bar { height: 6px; border-radius: 3px;
-    background-image: repeating-linear-gradient(135deg, #C9A227 0, #C9A227 12px, #0B1F35 12px, #0B1F35 24px);
+    background-image: repeating-linear-gradient(135deg, #5B9BD5 0, #5B9BD5 12px, #0B1F35 12px, #0B1F35 24px);
     box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
   .dash-hero { position: relative; background: linear-gradient(155deg, #0B1F35 0%, #14304F 55%, #1B3A5C 100%);
     border-radius: 14px; padding: 26px 28px 22px; margin-bottom: 22px; overflow: hidden;
@@ -126,7 +126,7 @@
   .card { background: #fff; border-radius: 12px; border: 1px solid #DCE3EC; border-top: 3px solid #1B3A5C; padding: 18px; box-shadow: 0 2px 10px rgba(20,48,79,0.06); }
   /* ---- Daily Report dark gold sub-theme (matches original design) ---- */
   .dr-scope { --dr-ink:#0B1220; --dr-panel:#111827; --dr-panel2:#1F2937; --dr-panel3:#151E2E; --dr-line:#2A3441;
-    --dr-gold:#C9A227; --dr-gold-lt:#F5E6B8; --dr-gold-dim:rgba(201,162,39,0.15);
+    --dr-gold:#5B9BD5; --dr-gold-lt:#DCEBFA; --dr-gold-dim:rgba(91,155,213,0.15);
     --dr-text:#E5E7EB; --dr-muted:#94A3B8; --dr-green:#22C55E; --dr-red:#EF4444; }
   .dr-disp { font-family: Arial, "Segoe UI", "Noto Sans Thai", sans-serif; font-weight: 800; }
   .dr-hero { background: var(--dr-ink); border-radius: 14px; padding: 24px 26px 20px; margin-bottom: 18px; border-bottom: 2px solid var(--dr-gold); }
@@ -173,7 +173,7 @@
   .sidebar-btn { position: relative; width: 100%; display: flex; align-items: center; gap: 11px; background: transparent; border: none; color: #B7C4D6; padding: 10px 12px; border-radius: 8px; font-size: 13.5px; cursor: pointer; margin-bottom: 2px; text-align: left; }
   .sidebar-btn:hover { background: rgba(255,255,255,0.06); }
   .sidebar-btn.active { background: rgba(91,155,213,0.14); color: #fff; font-weight: 600; }
-  .sidebar-btn.active::before { content: ""; position: absolute; left: -16px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: #C9A227; }
+  .sidebar-btn.active::before { content: ""; position: absolute; left: -16px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: #5B9BD5; }
   /* ---- mobile / small screen support (phones incl. iPhone 17 Pro Max @440pt) ---- */
   #mobile-menu-btn {
     position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 12px; z-index: 520;
@@ -234,13 +234,178 @@
     }
     .mbn-btn{
       flex:1; background:none; border:none; color:var(--muted); display:flex; flex-direction:column; align-items:center;
-      gap:2px; font-size:9.5px; font-family:'Kanit',sans-serif; font-weight:600; padding:4px 2px; cursor:pointer; transition:color .15s ease;
+      gap:2px; font-size:9.5px; font-family:inherit; font-weight:600; padding:4px 2px; cursor:pointer; transition:color .15s ease;
     }
     .mbn-btn:active{ color:var(--gold); }
     .mbn-icon{ display:flex; align-items:center; justify-content:center; }
     .mbn-icon svg{ width:20px; height:20px; }
     body{ padding-bottom:64px; }
   }
+
+  /* =====================================================================
+     QUIET LUXURY (v6) — original navy · blue · sky · grey · white · black.
+     Flat solid surfaces, hairline borders, almost no shadow, no gold, no sheen.
+     ===================================================================== */
+  :root {
+    --ink:#0B1F35; --navy:#14304F; --navy-2:#1B3A5C; --blue:#2E5395; --sky:#5B9BD5;
+    --bg:#F0F3F8; --line:#E3E8F0; --line-2:#EEF1F6; --muted:#6B7A90;
+    --ui-font: "IBM Plex Sans Thai", "Noto Sans Thai", "Sarabun", -apple-system, "Segoe UI", Arial, sans-serif;
+    --head-font: "Prompt", "IBM Plex Sans Thai", "Noto Sans Thai", sans-serif;
+  }
+  html { -webkit-text-size-adjust: 100%; }
+  body { font-family: var(--ui-font); background: var(--bg); color: #16232F; -webkit-font-smoothing: antialiased; }
+  .disp { font-family: var(--head-font); font-weight: 600; letter-spacing: 0; }
+  h1.disp { font-weight: 600; letter-spacing: -0.01em; }
+  .mono { font-family: var(--ui-font); }
+  .num-td { font-variant-numeric: tabular-nums; }
+  .app-shell { background: var(--bg) !important; }
+  .blueprint-grid { background-image: none !important; }
+  #main-content { max-width: 1480px; }
+  .hazard-bar { display: none !important; }
+
+  /* ---- cards: white, hairline, barely-there shadow ---- */
+  .card { background: #fff; border: 1px solid var(--line); border-top: 1px solid var(--line) !important; border-radius: 16px; padding: 22px; box-shadow: 0 1px 2px rgba(11,31,53,.04); }
+  .ct-ico { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: #EAF0F8; flex-shrink: 0; }
+  .ct-ico svg { stroke: var(--blue) !important; }
+
+  /* ---- hero: solid navy, nothing else ---- */
+  .dash-hero { background: #0F2745; border: none; border-radius: 18px; padding: 28px 32px; box-shadow: none; overflow: hidden; position: relative; }
+  .dash-hero::before, .dash-hero::after { content: none !important; }
+  .hero-in { position: relative; z-index: 2; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .hero-eyebrow { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: #8FB4DC; font-weight: 600; margin-bottom: 8px; }
+  .hero-title { font-size: 28px; color: #fff; margin: 0; }
+  .hero-sub { color: #A3B6CC; font-size: 13.5px; margin-top: 6px; }
+  .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hero-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: 999px; background: rgba(255,255,255,.08); border: none; color: #DCE6F2; font-size: 12px; font-weight: 500; }
+  .hero-chip i { width: 7px; height: 7px; border-radius: 50%; background: #5BC0A0; }
+
+  /* ---- KPI: flat solid colour tiles ---- */
+  .kpi-card { position: relative; border-radius: 16px; padding: 18px 20px; min-height: 112px; color: #fff; background-image: none; border-top: none; overflow: hidden; gap: 12px; box-shadow: none; transition: transform .18s ease, filter .18s ease; justify-content: flex-start !important; }
+  .kpi-card::before, .kpi-card::after { content: none !important; }
+  .kpi-card .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .kpi-card .kpi-label { font-size: 12.5px; font-weight: 500; opacity: .85; }
+  .kpi-card .kpi-ico { width: 30px; height: 30px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,.14); flex-shrink: 0; }
+  .kpi-card .kpi-ico svg { stroke: #fff !important; }
+  .kpi-card .kpi-val { font-family: var(--head-font); font-size: clamp(21px, 1.9vw, 27px); line-height: 1.1; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .kpi-card .kpi-sub { font-size: 11.5px; opacity: .78; margin-top: 5px; }
+  .kpi-card[onclick]:hover { transform: translateY(-2px); filter: brightness(1.06); }
+  .kpi-card[onclick]:active { transform: none; }
+
+  /* ---- buttons / inputs ---- */
+  .btn-primary { border-radius: 10px; padding: 10px 18px; font-weight: 600; box-shadow: none; }
+  .btn-primary:hover, .btn-gold:hover, .dr-btn-gold:hover { filter: brightness(1.08); transform: none; box-shadow: none; }
+  .btn-secondary { border-radius: 10px; font-weight: 600; }
+  .btn-secondary:hover, .btn-ghost:hover { transform: none; box-shadow: none; border-color: var(--blue); background: #F4F7FC; }
+  .icon-btn:hover { background: #EDF2F9; box-shadow: none; }
+  .field-input, select.field-input { border: 1px solid #D5DDE8; border-radius: 10px; padding: 10px 13px; background: #fff; transition: border-color .15s, box-shadow .15s; }
+  .field-input:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(91,155,213,.18); }
+  .modal-panel { border-radius: 18px; box-shadow: 0 24px 60px rgba(6,16,28,.30); }
+  .toast { border-radius: 12px; border: none; box-shadow: none; }
+
+  /* ---- tables ---- */
+  .th-cell { background: #F4F6FA; color: var(--muted); font-size: 11px; letter-spacing: .03em; border-bottom: 1px solid var(--line); padding: 12px; }
+  .td-cell { border-bottom: 1px solid var(--line-2); padding: 12px; font-size: 13px; }
+  .row-hover:hover { background: #F4F7FC !important; }
+  table tbody tr[onclick]:hover { box-shadow: inset 3px 0 0 var(--sky); }
+
+  /* ---- sidebar: flat navy ---- */
+  #app-sidebar { background: #0B1F35 !important; border-right: none !important; padding: 24px 14px !important; }
+  #app-sidebar img { border-radius: 10px !important; }
+  .sidebar-btn { padding: 10px 13px; border-radius: 10px; font-weight: 500; transition: background .15s, color .15s; }
+  .sidebar-btn:hover { background: rgba(255,255,255,.06); color: #fff; transform: none; box-shadow: none; }
+  .sidebar-btn.active { background: rgba(91,155,213,.18); color: #fff; font-weight: 600; }
+  .sidebar-btn.active::before { left: -14px; top: 9px; bottom: 9px; width: 3px; border-radius: 3px; background: #5B9BD5; }
+
+  /* ---- feature cards (focus + quarterly): flat deep navy ---- */
+  .focus-card, .q3d-section { background: #0F2745 !important; border: none !important; border-radius: 18px; box-shadow: none; }
+  .q3d-grid { perspective: none; }
+  .q3d-card { border-radius: 16px; box-shadow: none; border: none; transition: transform .2s ease, opacity .2s; }
+  .q3d-card.active { transform: translateY(-3px) !important; box-shadow: 0 0 0 2px #8FB4DC; }
+  .q3d-grid.has-active .q3d-card:not(.active) { transform: none; opacity: .72; filter: none; }
+  .q3d-detail { border-radius: 14px; }
+
+  /* ---- Daily Report: dark navy, sky accent ---- */
+  .dr-hero { border-radius: 18px; border-bottom: none; }
+  .dr-panel, .dr-daycard { border-radius: 16px; }
+  .dr-eyebrow { font-family: var(--ui-font); }
+
+  #app-sidebar a[href="index.html"] { background: #1B3A5C !important; box-shadow: none !important; border: none !important; }
+  #app-sidebar a[href="index.html"] * { color: #fff !important; }
+  #app-sidebar a[href="index.html"] span[style*="background"] { background: rgba(255,255,255,.14) !important; }
+  #app-sidebar a[href="index.html"] svg { stroke: #fff !important; }
+  /* ---- phone ---- */
+  #mobile-menu-btn { border-radius: 12px !important; box-shadow: none !important; }
+  @media (max-width: 860px) {
+    .card { padding: 18px !important; border-radius: 14px; }
+    .kpi-card { min-height: 100px !important; border-radius: 14px; }
+    .kpi-card .kpi-val { font-size: 22px !important; }
+    .dash-hero { padding: 22px 20px !important; border-radius: 16px; }
+    .hero-title { font-size: 23px; }
+    .hero-chips { display: none; }
+  }
+  @media (max-width: 700px) {
+    .mobile-bottom-nav { background: rgba(11,31,53,.97) !important; border-top: none !important; box-shadow: none !important; }
+    .mbn-btn { font-family: var(--ui-font) !important; font-weight: 500 !important; }
+    #focus-chart-wrap > div { flex-wrap: wrap; justify-content: center; }
+    #focus-chart-wrap #focus-3d-container { margin: 0 auto; }
+    #focus-chart-wrap > div > div:last-child { flex: 1 1 100% !important; max-height: none !important; }
+  }
+  @media (max-width: 480px) {
+    .card .disp[style*="font-size:21px"] { font-size: 17px !important; }
+    .card { padding: 15px !important; }
+  }
+
+  /* =====================================================================
+     DEPTH LAYER (v7) — soft directional shadows (no glow), tactile press,
+     distinct contrasting tones. Donuts/pies keep the original vivid palette.
+     ===================================================================== */
+  :root {
+    --sh-card: 0 1px 1px rgba(11,31,53,.04), 0 3px 6px rgba(11,31,53,.05), 0 12px 28px rgba(11,31,53,.08);
+    --sh-card-hover: 0 2px 3px rgba(11,31,53,.06), 0 8px 16px rgba(11,31,53,.08), 0 20px 40px rgba(11,31,53,.12);
+    --sh-tile: 0 2px 3px rgba(11,31,53,.14), 0 10px 20px rgba(11,31,53,.18), inset 0 1px 0 rgba(255,255,255,.16), inset 0 -2px 0 rgba(0,0,0,.16);
+    --sh-tile-hover: 0 4px 6px rgba(11,31,53,.16), 0 16px 30px rgba(11,31,53,.24), inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 0 rgba(0,0,0,.18);
+    --sh-pressed: inset 0 3px 8px rgba(0,0,0,.30), inset 0 -1px 0 rgba(255,255,255,.08), 0 1px 1px rgba(11,31,53,.10);
+  }
+
+  /* frames: layered soft shadow */
+  .card { box-shadow: var(--sh-card); border-color: #DCE3EE; }
+  .dash-hero { box-shadow: 0 2px 4px rgba(11,31,53,.12), 0 16px 34px rgba(11,31,53,.22), inset 0 1px 0 rgba(255,255,255,.08); }
+  .focus-card, .q3d-section { box-shadow: 0 2px 4px rgba(11,31,53,.14), 0 18px 38px rgba(11,31,53,.24), inset 0 1px 0 rgba(255,255,255,.07) !important; }
+  .modal-panel { box-shadow: 0 4px 8px rgba(6,16,28,.12), 0 30px 70px rgba(6,16,28,.34); }
+  .dr-panel, .dr-daycard { box-shadow: 0 2px 6px rgba(0,0,0,.25), 0 12px 28px rgba(0,0,0,.25); }
+
+  /* KPI tiles: raised, distinct hues */
+  .kpi-card { box-shadow: var(--sh-tile); }
+  .kpi-card[onclick]:hover { transform: translateY(-3px); box-shadow: var(--sh-tile-hover); filter: none; }
+  .kpi-card[onclick]:active { transform: translateY(1px) scale(.985); box-shadow: var(--sh-pressed); transition-duration: .06s; }
+
+  /* buttons: raised edge, press-in */
+  .btn-primary { box-shadow: 0 1px 0 rgba(255,255,255,.18) inset, 0 3px 0 rgba(11,31,53,.28), 0 6px 12px rgba(11,31,53,.18); }
+  .btn-primary:hover, .btn-gold:hover, .dr-btn-gold:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 4px 0 rgba(11,31,53,.30), 0 10px 18px rgba(11,31,53,.22); }
+  .btn-primary:active, .btn-gold:active, .dr-btn-gold:active { transform: translateY(2px); filter: none; box-shadow: var(--sh-pressed); transition-duration: .05s; }
+  .btn-secondary { box-shadow: 0 1px 0 #fff inset, 0 2px 0 rgba(11,31,53,.10), 0 4px 8px rgba(11,31,53,.06); }
+  .btn-secondary:hover, .btn-ghost:hover { transform: translateY(-1px); box-shadow: 0 1px 0 #fff inset, 0 3px 0 rgba(11,31,53,.12), 0 8px 14px rgba(11,31,53,.10); }
+  .btn-secondary:active, .btn-ghost:active { transform: translateY(1px); box-shadow: inset 0 2px 5px rgba(11,31,53,.18); transition-duration: .05s; }
+  .icon-btn:active { box-shadow: inset 0 2px 5px rgba(11,31,53,.18); }
+  .field-input { box-shadow: inset 0 1px 2px rgba(11,31,53,.06); }
+  .field-input:focus { box-shadow: inset 0 1px 2px rgba(11,31,53,.06), 0 0 0 3px rgba(91,155,213,.20); }
+
+  /* sidebar + selected states feel pressed-in / embossed */
+  .sidebar-btn:active { transform: scale(.98); }
+  .sidebar-btn.active { box-shadow: inset 0 2px 6px rgba(0,0,0,.32), inset 0 -1px 0 rgba(255,255,255,.06); background: rgba(91,155,213,.20); }
+  #app-sidebar a[href="index.html"] { box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 3px 0 rgba(0,0,0,.30), 0 8px 16px rgba(0,0,0,.25) !important; }
+  #app-sidebar a[href="index.html"]:active { transform: translateY(2px); box-shadow: inset 0 3px 8px rgba(0,0,0,.35) !important; }
+  .status-chip { box-shadow: 0 1px 2px rgba(11,31,53,.10); }
+  .status-chip:active { box-shadow: inset 0 2px 4px rgba(11,31,53,.25); transform: translateY(1px); }
+  .district-tab:active, .dr-chip:active { box-shadow: inset 0 2px 5px rgba(0,0,0,.28); }
+
+  /* quarterly tiles: embossed, selected = raised higher */
+  .q3d-card { box-shadow: 0 2px 4px rgba(0,0,0,.22), 0 10px 22px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 0 rgba(0,0,0,.18); }
+  .q3d-card:active { box-shadow: var(--sh-pressed); }
+  .q3d-card.active { transform: translateY(-5px) !important; box-shadow: 0 6px 10px rgba(0,0,0,.28), 0 22px 40px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 2px #8FB4DC; }
+
+  /* table rows & dropdown cards: soft lift on hover */
+  table tbody tr[onclick]:active { background: #E9F0FA !important; }
 </style>
 </head>
 <body>
@@ -291,10 +456,10 @@ var COLORS = {
   ink: "#0B1F35", navy: "#14304F", navy2: "#1B3A5C", blue: "#2E5395", sky: "#5B9BD5",
   canvas: "#EEF2F7", card: "#FFFFFF", text: "#16232F", muted: "#6B7A90", line: "#DCE3EC",
   green: "#1F8A5F", greenBg: "#E5F3ED", red: "#C0392B", redBg: "#FBEAE8",
-  amber: "#C98A1F", amberBg: "#FBF1DF", gold: "#C9A227",
+  amber: "#C98A1F", amberBg: "#FBF1DF", gold: "#5B9BD5",
   teal: "#0E9AA8", violet: "#7C4FE0", emerald: "#1FAE63", coral: "#F0793C", rose: "#E0446B", vividRed: "#DC2626"
 };
-var PIE_COLORS = [COLORS.blue, COLORS.teal, COLORS.gold, COLORS.emerald, COLORS.coral, COLORS.violet, COLORS.rose, COLORS.sky];
+var PIE_COLORS = ["#2E5395", "#0E9AA8", "#C9A227", "#1FAE63", "#F0793C", "#7C4FE0", "#E0446B", "#5B9BD5"];
 /* Donut/pie charts reuse the site's own established palette for visual consistency (credible, modern — matches every other chart on the dashboard) */
 var DONUT_COLORS = PIE_COLORS;
 
@@ -543,7 +708,7 @@ function renderCommissionCanvas(rows, logoImg) {
   ctx.fillText("ใบสรุปรายการเพื่อเบิกค่าคอมมิชชั่นฝ่ายขาย", margin + 70, y + 42);
 
   y += 90;
-  ctx.strokeStyle = "#C9A227"; ctx.lineWidth = 2;
+  ctx.strokeStyle = "#5B9BD5"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(margin, y); ctx.lineTo(W - margin, y); ctx.stroke();
   y += 30;
 
@@ -1944,26 +2109,23 @@ function kpiCardHtml(label, value, sub, tone, iconName, onClickFn) {
     amber: "linear-gradient(150deg,#6E4E0B 0%,#A9760F 55%,#C98A1F 100%)",
     blue: "linear-gradient(150deg,#152E52 0%,#264A85 55%,#3563AC 100%)"
   }[tone || "navy"];
-  var clickAttr = onClickFn ? ' onclick="' + onClickFn + '" style="cursor:pointer"' : "";
-  return '<div class="kpi-card" style="background:' + bg + '"' + clickAttr + '>' +
-    '<span class="kpi-shine"></span>' +
-    '<span class="kpi-rivet" style="bottom:7px;left:7px"></span><span class="kpi-rivet" style="bottom:7px;right:7px"></span>' +
-    '<div style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between">' +
-    '<span style="font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.88;font-weight:700">' + esc(label) + '</span>' +
-    (iconName ? '<span style="opacity:.8">' + icon(iconName, 15) + '</span>' : '') + '</div>' +
-    '<div style="position:relative;z-index:2"><div class="disp" style="font-size:26px;line-height:1.1;text-shadow:0 2px 6px rgba(0,0,0,0.25)">' + esc(value) + '</div>' +
-    (sub ? '<div style="font-size:11px;opacity:.82;margin-top:3px">' + esc(sub) + '</div>' : '') + '</div></div>';
+  var clickAttr = onClickFn ? ' onclick="' + onClickFn + '" style="background:' + bg + ';cursor:pointer"' : ' style="background:' + bg + '"';
+  return '<div class="kpi-card"' + clickAttr + '>' +
+    '<div class="kpi-top"><span class="kpi-label">' + esc(label) + '</span>' +
+    (iconName ? '<span class="kpi-ico">' + icon(iconName, 15) + '</span>' : '') + '</div>' +
+    '<div><div class="disp kpi-val">' + esc(value) + '</div>' +
+    (sub ? '<div class="kpi-sub">' + esc(sub) + '</div>' : '') + '</div></div>';
 }
 function sectionHeaderHtml(eyebrow, title, sub) {
   return '<div style="margin-bottom:22px">' +
     (eyebrow ? '<div class="mono" style="font-size:11px;letter-spacing:1.5px;color:' + COLORS.sky + ';text-transform:uppercase;margin-bottom:4px;font-weight:600">' + esc(eyebrow) + '</div>' : '') +
-    '<h1 class="disp" style="font-size:24px;color:' + COLORS.ink + ';margin:0">' + esc(title) + '</h1>' +
+    '<h1 class="disp" style="font-size:26px;color:' + COLORS.ink + ';margin:0">' + esc(title) + '</h1>' +
     '<div class="hazard-bar" style="width:52px;margin-top:9px;opacity:0.9"></div>' +
     (sub ? '<div style="color:' + COLORS.muted + ';font-size:13px;margin-top:9px">' + sub + '</div>' : '') + '</div>';
 }
 function cardTitleHtml(iconName, text) {
-  return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:14px">' +
-    (iconName ? '<span style="color:' + COLORS.blue + '">' + icon(iconName, 15, COLORS.blue) + '</span>' : '') +
+  return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">' +
+    (iconName ? '<span class="ct-ico">' + icon(iconName, 15, COLORS.blue) + '</span>' : '') +
     '<span class="disp" style="font-size:14.5px;color:' + COLORS.ink + '">' + esc(text) + '</span></div>';
 }
 
@@ -2030,16 +2192,16 @@ function renderApp() {
     '<div class="app-shell" style="display:flex;min-height:100vh;background:' + COLORS.canvas + ';color:' + COLORS.text + '">' +
     '<button id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="เมนู" style="display:none">' + icon("list", 20, "#fff") + '</button>' +
     '<div id="mobile-menu-overlay" onclick="toggleMobileMenu(false)"></div>' +
-    '<aside id="app-sidebar" class="blueprint-grid" style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:2px solid rgba(201,162,39,0.35)">' +
+    '<aside id="app-sidebar" class="blueprint-grid" style="width:236px;flex-shrink:0;background:' + COLORS.ink + ';color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:2px solid rgba(91,155,213,0.35)">' +
     '<div style="display:flex;align-items:center;gap:10px;padding:0 4px 20px;border-bottom:1px solid rgba(255,255,255,0.1)">' +
     '<img src="' + LOGO_DATA_URI + '" alt="EMT Machinery Service" style="height:40px;width:auto;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.35)"/>' +
     '<div><div class="disp" style="font-size:14.5px;line-height:1.2">Sales_Nicha</div><div style="font-size:11px;color:#8FA3BD;margin-top:1px">Personal Tracker</div></div></div>' +
     (canEdit() ? '<button class="btn-primary" style="margin-top:18px;width:100%;justify-content:center" onclick="openNewProjectForm()">' + icon("plus", 16) + ' งานใหม่</button>' : '<div style="margin-top:18px;padding:9px 12px;background:rgba(255,255,255,0.06);border-radius:8px;font-size:11px;color:#B7C4D6;text-align:center">โหมดดูอย่างเดียว</div>') +
     '<nav style="margin-top:18px">' + navHtml + '</nav>' +
-    '<a href="index.html" style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;text-decoration:none;background:linear-gradient(135deg,#C9A227,#E8C55A);color:#1B1400;border-radius:10px;padding:12px 14px;box-shadow:0 6px 16px rgba(201,162,39,0.25)">' +
-    '<span style="display:flex;align-items:center;gap:9px"><span style="width:30px;height:30px;border-radius:8px;background:rgba(11,31,53,0.15);display:flex;align-items:center;justify-content:center">' + icon("clipboard", 15, "#1B1400") + '</span>' +
+    '<a href="index.html" style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;text-decoration:none;background:linear-gradient(135deg,#5B9BD5,#E8C55A);color:#06162E;border-radius:10px;padding:12px 14px;box-shadow:0 6px 16px rgba(91,155,213,0.25)">' +
+    '<span style="display:flex;align-items:center;gap:9px"><span style="width:30px;height:30px;border-radius:8px;background:rgba(11,31,53,0.15);display:flex;align-items:center;justify-content:center">' + icon("clipboard", 15, "#06162E") + '</span>' +
     '<span><div class="disp" style="font-size:12.5px;line-height:1.2">เมนูหลัก</div><div style="font-size:10px;opacity:0.75">กลับหน้าแรก</div></span></span>' +
-    icon("chevronRight", 16, "#1B1400") + '</a>' +
+    icon("chevronRight", 16, "#06162E") + '</a>' +
     '<div id="sidebar-footer" style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1)"></div>' +
     '</aside>' +
     '<main id="main-content" style="flex:1;padding:26px 34px 60px;min-width:0"></main>' +
@@ -2077,7 +2239,7 @@ function renderSidebarFooter() {
   } else if (STATE.firebaseStatus === "syncing") {
     fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8FA3BD;margin-top:4px">' + icon("loader", 12) + ' กำลังซิงก์ Firebase…</div>';
   } else if (STATE.firebaseStatus === "error") {
-    fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#E8B563;margin-top:4px">' + icon("cloud", 12) + ' Firebase ไม่สำเร็จ</div>';
+    fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#9CC3E8;margin-top:4px">' + icon("cloud", 12) + ' Firebase ไม่สำเร็จ</div>';
   } else {
     fbBlock = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#7FD6A6;margin-top:4px">' + icon("cloud", 12) + ' เชื่อม Firebase แล้ว</div>';
   }
@@ -2086,7 +2248,7 @@ function renderSidebarFooter() {
     lastSyncLine = '<div style="font-size:10px;color:#6E82A0;margin-top:3px">อัปเดตล่าสุด: ' + fmtDateTime(STATE.lastSyncedAt) + '</div>';
   }
   var installBtn = (typeof deferredInstallPrompt !== "undefined" && deferredInstallPrompt)
-    ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#1B1400;font-size:11.5px;font-weight:700;border-radius:6px;padding:8px 8px;background:' + COLORS.gold + '" onclick="installApp()">' + icon("download", 13) + ' ติดตั้งเป็นแอป</button>'
+    ? '<button class="icon-btn" style="margin-top:8px;width:100%;display:flex;align-items:center;gap:6px;border:none;color:#06162E;font-size:11.5px;font-weight:700;border-radius:6px;padding:8px 8px;background:' + COLORS.gold + '" onclick="installApp()">' + icon("download", 13) + ' ติดตั้งเป็นแอป</button>'
     : "";
   el.innerHTML = authBlock +
     installBtn +
@@ -2165,7 +2327,7 @@ function focusToggleBtn(value, current, label) {
   var active = value === current;
   var onclickFn = (value === "customer" || value === "month") ? "setFocusDimension" : "setFocusMetric";
   return '<button onclick="' + onclickFn + '(\'' + value + '\')" style="font-size:10.5px;font-weight:600;padding:5px 11px;border-radius:6px;border:1px solid ' +
-    (active ? "#C9A227" : "#2A3441") + ';background:' + (active ? "#C9A227" : "transparent") + ';color:' + (active ? "#1B1400" : "#94A3B8") + ';cursor:pointer">' + esc(label) + '</button>';
+    (active ? "#5B9BD5" : "#2A3441") + ';background:' + (active ? "#5B9BD5" : "transparent") + ';color:' + (active ? "#06162E" : "#94A3B8") + ';cursor:pointer">' + esc(label) + '</button>';
 }
 
 function buildFocusCardInner() {
@@ -2180,7 +2342,7 @@ function buildFocusCardInner() {
   var legend = data.map(function (x, i) {
     var pct = ((x.value || 0) / total * 100).toFixed(1);
     var popped = STATE.focusPopped === i;
-    return '<div onclick="toggleFocusSegment(' + i + ')" style="display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? "rgba(201,162,39,0.15)" : "transparent") + '">' +
+    return '<div onclick="toggleFocusSegment(' + i + ')" style="display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:6px;cursor:pointer;background:' + (popped ? "rgba(91,155,213,0.15)" : "transparent") + '">' +
       '<span style="width:9px;height:9px;border-radius:3px;background:' + colors[i] + ';flex-shrink:0"></span>' +
       '<span style="font-size:11px;color:' + (popped ? "#fff" : "#C9CFDA") + ';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(x.label) + '</span>' +
       '<span class="mono" style="font-size:9.5px;color:#6B7A90">' + x.count + ' งาน</span>' +
@@ -2199,8 +2361,8 @@ function refreshFocusChart() {
   var header = wrap.previousElementSibling;
   if (header) {
     var btns = header.querySelectorAll("button");
-    if (btns[0]) { var a = STATE.focusDimension === "customer"; btns[0].style.background = a ? "#C9A227" : "transparent"; btns[0].style.color = a ? "#1B1400" : "#94A3B8"; btns[0].style.borderColor = a ? "#C9A227" : "#2A3441"; }
-    if (btns[1]) { var b = STATE.focusDimension === "month"; btns[1].style.background = b ? "#C9A227" : "transparent"; btns[1].style.color = b ? "#1B1400" : "#94A3B8"; btns[1].style.borderColor = b ? "#C9A227" : "#2A3441"; }
+    if (btns[0]) { var a = STATE.focusDimension === "customer"; btns[0].style.background = a ? "#5B9BD5" : "transparent"; btns[0].style.color = a ? "#06162E" : "#94A3B8"; btns[0].style.borderColor = a ? "#5B9BD5" : "#2A3441"; }
+    if (btns[1]) { var b = STATE.focusDimension === "month"; btns[1].style.background = b ? "#5B9BD5" : "transparent"; btns[1].style.color = b ? "#06162E" : "#94A3B8"; btns[1].style.borderColor = b ? "#5B9BD5" : "#2A3441"; }
   }
 }
 
@@ -2650,7 +2812,7 @@ function buildQ3DCardInner() {
 }
 
 function buildQ3DSection() {
-  return '<div class="card" style="margin-top:16px;background:#0B1220;border-color:#1F2937;border-top-color:' + COLORS.gold + '">' +
+  return '<div class="card q3d-section" style="margin-top:16px">' +
     '<div style="display:flex;align-items:center;gap:7px;margin-bottom:16px">' + icon("trophy", 15, COLORS.gold) +
     '<span class="disp" style="font-size:14.5px;color:#fff">สรุปยอดขายรายไตรมาส (ปฏิทิน)</span>' +
     '<span style="font-size:10.5px;color:#7C8798;margin-left:4px">Q1=ม.ค.-มี.ค. · Q2=เม.ย.-มิ.ย. · Q3=ก.ค.-ก.ย. · Q4=ต.ค.-ธ.ค.</span></div>' +
@@ -2702,12 +2864,14 @@ function buildForecastCard(d) {
 }
 
 function renderDashboard(d) {
-  var heroHtml = '<div class="dash-hero">' +
-    '<div style="position:relative;z-index:2">' +
-    '<div class="mono" style="font-size:11px;letter-spacing:2px;color:' + COLORS.sky + ';text-transform:uppercase;margin-bottom:6px;font-weight:700">EMT · ภาพรวมทั้งหมด</div>' +
-    '<h1 class="disp" style="font-size:27px;color:#fff;margin:0;text-shadow:0 2px 8px rgba(0,0,0,0.3)">แดชบอร์ดยอดขาย</h1>' +
-    '<div style="color:#9FB2C9;font-size:13px;margin-top:6px">สรุปสถานะ Pipeline ทั้งหมดแบบเรียลไทม์</div>' +
-    '<div class="hazard-bar" style="width:96px;margin-top:14px"></div>' +
+  var todayTxt = "";
+  try { todayTxt = new Date().toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); } catch (e) {}
+  var heroHtml = '<div class="dash-hero"><div class="hero-in">' +
+    '<div><div class="hero-eyebrow">EMT · ภาพรวมทั้งหมด</div>' +
+    '<h1 class="disp hero-title">แดชบอร์ดยอดขาย</h1>' +
+    '<div class="hero-sub">สรุปสถานะ Pipeline ทั้งหมดแบบเรียลไทม์</div></div>' +
+    '<div class="hero-chips">' + (todayTxt ? '<span class="hero-chip">' + esc(todayTxt) + '</span>' : '') +
+    (STATE.firebaseUrl ? '<span class="hero-chip"><i></i>' + (STATE.firebaseStatus === "error" ? "ใช้ข้อมูลในเครื่อง" : "เชื่อมต่อสด") + '</span>' : '') + '</div>' +
     '</div></div>';
   var wonJobs = d.byStatus.filter(function (s) { return s.category === "Won"; }).reduce(function (a, s) { return a + s.count; }, 0);
   var lostJobs = d.byStatus.filter(function (s) { return s.category === "Lost"; }).reduce(function (a, s) { return a + s.count; }, 0);
@@ -2724,9 +2888,9 @@ function renderDashboard(d) {
 
   var row1 = '<div class="dash-row-2col" style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px">' +
     '<div class="card">' + cardTitleHtml("trending", "ยอดขาย Won รายเดือน (THB)") + svgLineChart(d.monthlyTrend, "month", "value", COLORS.blue, 230) + '</div>' +
-    '<div class="card" style="background:#0B1220;border-color:#1F2937;border-top-color:#C9A227">' +
+    '<div class="card focus-card">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
-    '<div style="display:flex;align-items:center;gap:7px">' + icon("trophy", 15, "#C9A227") +
+    '<div style="display:flex;align-items:center;gap:7px">' + icon("trophy", 15, "#5B9BD5") +
     '<span class="disp" style="font-size:14.5px;color:#fff">โฟกัสยอดขาย (Won)</span></div>' +
     '<div style="display:flex;gap:4px">' + focusToggleBtn("customer", STATE.focusDimension, "ลูกค้า") + focusToggleBtn("month", STATE.focusDimension, "เดือน") + '</div>' +
     '</div>' +
@@ -3110,6 +3274,121 @@ function renderTop10(d) {
 }
 
 /* ============================== COMMISSION VIEW ============================== */
+/* ============================== COMMISSION RULES EMT-SC-001 (ใช้ตั้งแต่ Q4 2026 · ไตรมาสก่อนหน้า Q4 ยังเป็นระบบเดิม = 100%) ============================== */
+var COMM_START_Q = "2026-Q4";
+var COMM_TARGET = 3000000;
+var COMM_TIERS = [[300000, 20], [600000, 30], [900000, 40], [1200000, 50], [1500000, 60], [1800000, 70], [2100000, 80], [2400000, 90], [2700000, 95], [3000000, 100]]; // [ยอดขายขั้นต่ำ, Commission %] เพดาน 100%
+var COMM_RATE_BY_TYPE = { "Sales": 3, "Company": 1, "Reactivated": 2 };
+var COMM_TYPE_BY_CUSTOMER = { "U-services": "Company", "SNU": "Reactivated", "Soage": "Company", "Soeji": "Company", "Quantum": "Sales", "Kokusa": "Sales", "Multiphase": "Sales" }; // ใช้เมื่องานยังไม่ได้ใส่ Type
+var COMM_SALE_DATE_OVERRIDE = { "J2141.R5": "2026-10-14" }; // วันที่ขาย (PO) จริง ถ้าต่างจากวันที่ส่งใบเสนอราคา — แก้/เพิ่มได้ตรงนี้
+var COMM_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+function commQuarterOf(s) { // รอบตัดยอด 26 – 25 : "2026-09-26" -> "2026-Q4"
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || "");
+  if (!m) return "";
+  var y = +m[1], mo = +m[2], dd = +m[3];
+  if (dd >= 26) { mo += 1; if (mo > 12) { mo = 1; y += 1; } }
+  return y + "-Q" + Math.ceil(mo / 3);
+}
+function commTierPct(sales) {
+  var pct = 0;
+  COMM_TIERS.forEach(function (t) { if (sales >= t[0]) pct = t[1]; });
+  return pct;
+}
+function commFmt2(n) { return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0); }
+
+function computeCommissionNew(d) {
+  var won = [];
+  d.withCat.forEach(function (p) {
+    var st = p.status || "";
+    var isDone = /^done\s*q\s*\d+$/i.test(st), isWin = /^win/i.test(st);
+    if (!isDone && !isWin) return;
+    var dt = COMM_SALE_DATE_OVERRIDE[p.note] || p.sendQu || "";
+    var sq = commQuarterOf(dt);
+    if (!sq) return;
+    var type = p.type || COMM_TYPE_BY_CUSTOMER[p.customer] || "";
+    var rate = COMM_RATE_BY_TYPE[type] || 0;
+    won.push({ p: p, sq: sq, date: dt, type: type, rate: rate, sale: p.sale || 0, full: (p.sale || 0) * rate / 100, status: st, invoiced: isDone });
+  });
+  var salesByQ = {};
+  won.forEach(function (r) { salesByQ[r.sq] = (salesByQ[r.sq] || 0) + r.sale; });
+  function pctFor(q) { return q < COMM_START_Q ? 100 : commTierPct(salesByQ[q] || 0); }
+  var qn = COMM_START_Q.slice(-1);
+  var doneName = "Done Q" + qn;
+  var rows = won.filter(function (r) { return r.status === doneName || !r.invoiced; });
+  rows.forEach(function (r) { r.pct = pctFor(r.sq); r.earned = r.full * r.pct / 100; r.carried = r.invoiced && r.sq !== COMM_START_Q; });
+  rows.sort(function (a, b) { return (b.invoiced - a.invoiced) || (a.date || "").localeCompare(b.date || ""); });
+  var q = COMM_START_Q, sales = salesByQ[q] || 0, pct = pctFor(q);
+  var full = won.filter(function (r) { return r.sq === q; }).reduce(function (s, r) { return s + r.full; }, 0);
+  var carried = rows.filter(function (r) { return r.invoiced && r.carried; }).reduce(function (s, r) { return s + r.earned; }, 0);
+  var current = rows.filter(function (r) { return r.invoiced && !r.carried; }).reduce(function (s, r) { return s + r.earned; }, 0);
+  var forward = rows.filter(function (r) { return !r.invoiced; }).reduce(function (s, r) { return s + r.earned; }, 0);
+  var nextTier = null;
+  COMM_TIERS.forEach(function (t) { if (!nextTier && t[0] > sales) nextTier = t; });
+  return { q: q, sales: sales, pct: pct, full: full, earned: full * pct / 100, carried: carried, current: current, claim: carried + current, forward: forward, rows: rows, nextTier: nextTier,
+    missingRate: rows.filter(function (r) { return !r.rate; }) };
+}
+
+function renderCommissionNew(d) {
+  var n = computeCommissionNew(d);
+  var qm = /^(\d{4})-Q(\d)$/.exec(n.q), y = +qm[1], qi = +qm[2];
+  var endM = qi * 3 - 1, startM = (qi - 1) * 3 - 1, startY = y;
+  if (startM < 0) { startM = 11; startY = y - 1; }
+  var payM = (endM + 1) % 12, payY = endM === 11 ? y + 1 : y;
+  var rangeTxt = "26 " + COMM_MONTHS[startM] + " " + startY + " – 25 " + COMM_MONTHS[endM] + " " + y;
+  var dueTxt = "ยื่นเบิก 25 " + COMM_MONTHS[endM] + " " + y + " · รับเงิน 25 " + COMM_MONTHS[payM] + " " + payY;
+  var ach = n.sales / COMM_TARGET * 100;
+  var tierHint = n.nextTier ? "อีก " + fmtTHB(n.nextTier[0] - n.sales) + " บาท ขึ้นเป็น " + n.nextTier[1] + "%" : "ถึงขั้นสูงสุดแล้ว";
+
+  var kpis = '<div class="dash-row-3col" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px">' +
+    kpiCardHtml("ยอดขาย " + n.q, fmtTHB(n.sales), ach.toFixed(1) + "% ของเป้า " + fmtTHB(COMM_TARGET), "navy", "trending") +
+    kpiCardHtml("Commission %", n.pct + "%", tierHint, "blue", "trophy") +
+    kpiCardHtml("ค่าคอมที่ได้รับ (Full × %)", commFmt2(n.earned), "Full Commission " + commFmt2(n.full), "green", "wallet") +
+    kpiCardHtml("เบิกได้รอบนี้", commFmt2(n.claim), "ยกมา " + commFmt2(n.carried) + " + ไตรมาสนี้ " + commFmt2(n.current), "amber", "check") +
+    '</div>';
+
+  var body = n.rows.map(function (r, i) {
+    var bg = i % 2 ? COLORS.canvas : "#fff";
+    var inv = r.invoiced
+      ? '<span style="color:' + COLORS.green + ';font-weight:600">' + esc(r.p.invoice || "Done") + '</span>' + (r.carried ? ' <span style="color:' + COLORS.muted + '">· ยกมาจาก ' + esc(r.sq) + '</span>' : "")
+      : '<span style="color:' + COLORS.amber + ';font-weight:600">รอเลข Invoice · ยกไป</span>';
+    var rateTxt = r.rate ? r.rate + "%" : '<span style="color:' + COLORS.red + ';font-weight:700">ไม่มี Type</span>';
+    return '<tr style="background:' + bg + '">' +
+      '<td class="td-cell mono" style="font-size:11.5px"><strong>' + esc(r.p.note || "-") + '</strong></td>' +
+      '<td class="td-cell"><strong style="font-size:12px">' + esc(r.p.customer) + '</strong></td>' +
+      '<td class="td-cell" style="font-size:12px;color:' + COLORS.muted + '">' + esc(r.type || "-") + '</td>' +
+      '<td class="td-cell num-td">' + rateTxt + '</td>' +
+      '<td class="td-cell num-td">' + fmtTHB(r.sale) + '</td>' +
+      '<td class="td-cell mono" style="font-size:11px;color:' + COLORS.muted + '">' + esc(r.date) + ' · ' + esc(r.sq) + '</td>' +
+      '<td class="td-cell" style="font-size:11.5px">' + inv + '</td>' +
+      '<td class="td-cell num-td">' + r.pct + '%</td>' +
+      '<td class="td-cell num-td" style="font-weight:700">' + commFmt2(r.earned) + '</td></tr>';
+  }).join("") || '<tr><td class="td-cell" colspan="9" style="text-align:center;padding:24px;color:' + COLORS.muted + '">ยังไม่มีงานในรอบนี้</td></tr>';
+
+  var table = '<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">' +
+    '<div style="padding:14px 16px 0" class="disp">รายการเบิก · งานที่มีเลข Invoice แล้วและงานที่ยกไป</div>' +
+    '<div style="max-height:420px;overflow:auto;margin-top:10px"><table><thead><tr>' +
+    '<th class="th-cell" style="position:sticky;top:0">Job</th><th class="th-cell" style="position:sticky;top:0">ลูกค้า</th><th class="th-cell" style="position:sticky;top:0">Type</th>' +
+    '<th class="th-cell" style="position:sticky;top:0;text-align:right">Rate</th><th class="th-cell" style="position:sticky;top:0;text-align:right">ยอดขาย</th>' +
+    '<th class="th-cell" style="position:sticky;top:0">วันที่ขาย · ไตรมาส</th><th class="th-cell" style="position:sticky;top:0">Invoice</th>' +
+    '<th class="th-cell" style="position:sticky;top:0;text-align:right">%</th><th class="th-cell" style="position:sticky;top:0;text-align:right">ค่าคอม (บาท)</th>' +
+    '</tr></thead><tbody>' + body + '</tbody></table></div>' +
+    '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 16px;border-top:1px solid ' + COLORS.line + ';font-size:12px">' +
+    '<span>เบิกได้รอบนี้ <strong class="mono">' + commFmt2(n.claim) + '</strong> บาท</span>' +
+    '<span>ยกไปรอบหน้า (รอเลข Invoice) <strong class="mono">' + commFmt2(n.forward) + '</strong> บาท</span></div></div>';
+
+  var warn = n.missingRate.length
+    ? '<div style="font-size:12px;color:' + COLORS.red + ';margin-bottom:8px">งานที่ยังไม่มี Type จึงคิด Rate 0: ' + n.missingRate.map(function (r) { return esc(r.p.note || r.p.customer); }).join(", ") + ' — ใส่ Type ที่หน้ารายการงาน</div>' : "";
+
+  return '<div class="card" style="margin-bottom:18px;border-top:3px solid ' + COLORS.blue + '">' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:4px">' +
+    '<span class="disp" style="font-size:15px">ค่าคอม ' + esc(n.q) + ' · เงื่อนไขใหม่ EMT-SC-001</span>' +
+    '<span style="font-size:12px;color:' + COLORS.muted + '">รอบ ' + rangeTxt + ' · ' + dueTxt + '</span></div>' +
+    '<div style="font-size:12px;color:' + COLORS.muted + ';margin-bottom:12px">% ตามขั้นบันไดของยอดขายทั้งไตรมาส (เพดาน 100%) · เบิกทั้งก้อนเมื่อ Job มีเลข Invoice ใบแรก · งานที่ขายไตรมาสก่อนแต่ออก Invoice ในรอบนี้ใช้ % ของไตรมาสที่ขาย · ไตรมาสก่อน Q4 2026 ยังเป็นระบบเดิม 100% ไม่เปลี่ยน</div>' +
+    kpis + warn + table +
+    '<div style="font-size:11px;color:' + COLORS.muted + '">วันที่ขายใช้ “วันที่ส่งใบเสนอราคา” แทนวันที่ PO (ยกเว้นที่กำหนดไว้ใน COMM_SALE_DATE_OVERRIDE) · Rate: Sales 3% / Company 1% / Reactivated 2%</div></div>';
+}
+
 function renderCommission(d) {
   var c = d.commission;
   if (!c.hasQuarters) {
@@ -3272,7 +3551,7 @@ function renderCommission(d) {
   return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
     sectionHeaderHtml("Commission", "งานที่จบและได้คอมมิชชั่นแล้ว", c.sub) +
     '<button class="btn-secondary" style="flex-shrink:0;display:flex;align-items:center;gap:6px" onclick="lockCommission()">' + icon("x", 14) + ' ล็อกหน้านี้</button>' +
-    '</div>' + quarterCards + summaryStrip + ctxBox + breakdownRow + custQTable + filterPanel + table;
+    '</div>' + quarterCards + summaryStrip + renderCommissionNew(d) + ctxBox + breakdownRow + custQTable + filterPanel + table;
 }
 
 /* ============================== DAILY REPORT VIEW ============================== */
@@ -3350,7 +3629,7 @@ function buildDailyRoadSvg(entries, distId) {
   svg += '<defs><path id="roadpath-' + distId + '" d="' + roadPath + '" /></defs>';
   svg += '<path d="' + roadPath + '" fill="none" stroke="#000" stroke-opacity="0.35" stroke-width="34" stroke-linecap="round"/>';
   svg += '<path d="' + roadPath + '" fill="none" stroke="#3B4453" stroke-width="28" stroke-linecap="round"/>';
-  svg += '<path d="' + roadPath + '" fill="none" stroke="#F5E6B8" stroke-width="2" stroke-linecap="round" stroke-dasharray="9 9" opacity="0.85"/>';
+  svg += '<path d="' + roadPath + '" fill="none" stroke="#DCEBFA" stroke-width="2" stroke-linecap="round" stroke-dasharray="9 9" opacity="0.85"/>';
 
   pts.forEach(function (p, i) {
     var x = p[0], y = p[1];
@@ -3359,9 +3638,9 @@ function buildDailyRoadSvg(entries, distId) {
     var pinH = 36;
     var pinTop = labelAbove ? y - pinH - 30 : y - pinH;
     svg += '<path d="M ' + x + ' ' + y + ' C ' + (x - 13) + ' ' + (y - 16) + ', ' + (x - 13) + ' ' + (pinTop + 5) + ', ' + x + ' ' + pinTop +
-      ' C ' + (x + 13) + ' ' + (pinTop + 5) + ', ' + (x + 13) + ' ' + (y - 16) + ', ' + x + ' ' + y + ' Z" fill="#C9A227" stroke="#0B1220" stroke-width="1.3"/>';
+      ' C ' + (x + 13) + ' ' + (pinTop + 5) + ', ' + (x + 13) + ' ' + (y - 16) + ', ' + x + ' ' + y + ' Z" fill="#5B9BD5" stroke="#0B1220" stroke-width="1.3"/>';
     svg += '<circle cx="' + x + '" cy="' + (pinTop + 12) + '" r="10" fill="#0B1220"/>';
-    svg += '<text class="dr-road-badge-text" x="' + x + '" y="' + (pinTop + 16) + '" text-anchor="middle" fill="#F5E6B8">' + (i + 1) + '</text>';
+    svg += '<text class="dr-road-badge-text" x="' + x + '" y="' + (pinTop + 16) + '" text-anchor="middle" fill="#DCEBFA">' + (i + 1) + '</text>';
     var labelY = labelAbove ? pinTop - 10 : pinTop + pinH + 22;
     var shortName = e.company.length > 16 ? e.company.slice(0, 15) + "…" : e.company;
     svg += '<text class="dr-road-pin-name" x="' + x + '" y="' + labelY + '" text-anchor="middle">' + esc(shortName) + '</text>';
@@ -3369,7 +3648,7 @@ function buildDailyRoadSvg(entries, distId) {
   });
 
   svg += '<g><g><animateMotion dur="' + (6 + n * 2) + 's" repeatCount="indefinite" rotate="auto"><mpath href="#roadpath-' + distId + '"/></animateMotion>' +
-    '<g transform="translate(-13,-8)"><rect x="0" y="4" width="26" height="9" rx="3" fill="#C9A227"/><rect x="5" y="0" width="14" height="7" rx="2.5" fill="#F5E6B8"/>' +
+    '<g transform="translate(-13,-8)"><rect x="0" y="4" width="26" height="9" rx="3" fill="#5B9BD5"/><rect x="5" y="0" width="14" height="7" rx="2.5" fill="#DCEBFA"/>' +
     '<circle cx="6" cy="14" r="3" fill="#0B1220"/><circle cx="20" cy="14" r="3" fill="#0B1220"/>' +
     '<circle cx="6" cy="14" r="1.2" fill="#5B6472"/><circle cx="20" cy="14" r="1.2" fill="#5B6472"/></g></g></g>';
   svg += "</svg>";
