@@ -3295,7 +3295,7 @@ var COMM_RATE_BY_TYPE = { "Sales": 3, "Company": 1, "Reactivated": 2 };
 function commOf(p) { return (p.sale || 0) * ((COMM_RATE_BY_TYPE[p.type] || 0) / 100); }
 function fmtBaht2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 var COMM_TYPE_BY_CUSTOMER = { "U-services": "Company", "SNU": "Reactivated", "Soage": "Company", "Soeji": "Company", "Quantum": "Sales", "Kokusa": "Sales", "Multiphase": "Sales" }; // ใช้เมื่องานยังไม่ได้ใส่ Type
-var COMM_SALE_DATE_OVERRIDE = { "J2141.R5": "2026-10-14" }; // วันที่ขาย (PO) จริง ถ้าต่างจากวันที่ส่งใบเสนอราคา — แก้/เพิ่มได้ตรงนี้
+var COMM_SALE_DATE_OVERRIDE = { "J2141.R5": "2026-10-14", "J2122": "2026-10-29" }; // วันที่ขาย (PO) จริง ถ้าต่างจากวันที่ส่งใบเสนอราคา — แก้/เพิ่มได้ตรงนี้
 var COMM_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
 function commQuarterOf(s) { // รอบตัดยอด 26 – 25 : "2026-09-26" -> "2026-Q4"
