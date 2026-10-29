@@ -260,7 +260,7 @@
   .num-td { font-variant-numeric: tabular-nums; }
   .app-shell { background: var(--bg) !important; }
   .blueprint-grid { background-image: none !important; }
-  #main-content { max-width: 1480px; }
+  #main-content { max-width: none; }
   .hazard-bar { display: none !important; }
 
   /* ---- cards: white, hairline, barely-there shadow ---- */
@@ -406,6 +406,19 @@
 
   /* table rows & dropdown cards: soft lift on hover */
   table tbody tr[onclick]:active { background: #E9F0FA !important; }
+
+  /* ---- desktop: collapsible sidebar ---- */
+  #sb-toggle { display: none; }
+  @media (min-width: 861px) {
+    #app-sidebar { transition: margin-left .28s ease, opacity .2s ease; }
+    body.sb-collapsed #app-sidebar { margin-left: -236px; opacity: 0; pointer-events: none; }
+    #sb-toggle { display: flex; position: fixed; top: 14px; left: 224px; z-index: 60; width: 30px; height: 30px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid rgba(255,255,255,.18); background: #14304F; color: #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(11,31,53,.25); transition: left .28s ease, transform .28s ease; padding: 0; }
+    #sb-toggle:hover { background: #1B3A5C; }
+    #sb-toggle svg { transition: transform .28s ease; }
+    body.sb-collapsed #sb-toggle { left: 12px; background: #0B1F35; }
+    body.sb-collapsed #sb-toggle svg { transform: rotate(180deg); }
+    body.sb-collapsed #main-content { padding-left: 56px !important; }
+  }
 </style>
 </head>
 <body>
@@ -4211,6 +4224,21 @@ function installApp() {
   deferredInstallPrompt.userChoice.then(function () { deferredInstallPrompt = null; renderSidebarFooter(); });
 }
 window.addEventListener("appinstalled", function () { deferredInstallPrompt = null; renderSidebarFooter(); });
+
+(function(){
+  try {
+    var b = document.createElement('button');
+    b.id = 'sb-toggle'; b.type = 'button'; b.setAttribute('aria-label', 'ซ่อน/แสดงเมนู'); b.title = 'ซ่อน/แสดงเมนู';
+    b.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+    b.onclick = function () {
+      var c = document.body.classList.toggle('sb-collapsed');
+      try { localStorage.setItem('sb-collapsed', c ? '1' : '0'); } catch (e) {}
+    };
+    document.body.appendChild(b);
+    var v = null; try { v = localStorage.getItem('sb-collapsed'); } catch (e) {}
+    if (v === '1') document.body.classList.add('sb-collapsed');
+  } catch (e) {}
+})();
 </script>
 </body>
 </html>
