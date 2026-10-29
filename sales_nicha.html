@@ -666,14 +666,14 @@ function csvEscape(v) {
 function exportCommissionCSV() {
   var rows = getCommissionSelectedRows();
   if (rows.length === 0) { showToast("ยังไม่ได้เลือกรายการ"); return; }
-  var header = ["ลูกค้า", "ไตรมาส", "ประเภทงาน", "Type", "รายละเอียดงาน", "เลขที่ใบเสนอราคา", "Invoice", "มูลค่า (บาท)"];
+  var header = ["ลูกค้า", "ไตรมาส", "ประเภทงาน", "Type", "รายละเอียดงาน", "เลขที่ใบเสนอราคา", "Invoice", "มูลค่า (บาท)", "ค่าคอม (บาท)"];
   var lines = [header.map(csvEscape).join(",")];
-  var total = 0;
+  var total = 0, totalC = 0;
   rows.forEach(function (p) {
-    total += p.sale || 0;
-    lines.push([p.customer, p.status, p.workType === "M" ? "Machine" : p.workType === "F" ? "Fabrication" : "-", p.type || "-", p.description, p.note || "-", p.invoice || "-", p.sale || 0].map(csvEscape).join(","));
+    total += p.sale || 0; totalC += commOf(p);
+    lines.push([p.customer, p.status, p.workType === "M" ? "Machine" : p.workType === "F" ? "Fabrication" : "-", p.type || "-", p.description, p.note || "-", p.invoice || "-", p.sale || 0, Math.round(commOf(p) * 100) / 100].map(csvEscape).join(","));
   });
-  lines.push(["", "", "", "", "", "", "รวมทั้งหมด", total].map(csvEscape).join(","));
+  lines.push(["", "", "", "", "", "", "รวมทั้งหมด", total, Math.round(totalC * 100) / 100].map(csvEscape).join(","));
   var csvContent = "\uFEFF" + lines.join("\r\n"); // BOM so Excel reads Thai text as UTF-8 correctly
   var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   var url = URL.createObjectURL(blob);
@@ -1377,7 +1377,7 @@ function computeDerived() {
   var closedGroups = quarterStatuses.map(function (cq) {
     var rows = withCat.filter(function (p) { return p.status === cq.name; });
     var paid = !!STATE.quarterPaid[cq.name];
-    return { name: cq.name, q: cq.q, jobs: rows.length, value: rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0), paid: paid };
+    return { name: cq.name, q: cq.q, jobs: rows.length, value: rows.reduce(function (s, p) { return s + (p.sale || 0); }, 0), comm: rows.reduce(function (s, p) { return s + commOf(p); }, 0), paid: paid };
   });
   var commissionRows = quarterStatuses.length
     ? withCat.filter(function (p) { return quarterStatuses.some(function (cq) { return cq.name === p.status; }); })
@@ -1395,8 +1395,8 @@ function computeDerived() {
   var cByTypeMap = {}, cByTypeOrder = [];
   commissionRows.forEach(function (p) {
     var k = p.type || "ไม่ระบุ";
-    if (!cByTypeMap[k]) { cByTypeMap[k] = { label: k, value: 0, count: 0 }; cByTypeOrder.push(k); }
-    cByTypeMap[k].value += p.sale || 0; cByTypeMap[k].count += 1;
+    if (!cByTypeMap[k]) { cByTypeMap[k] = { label: k, value: 0, count: 0, comm: 0 }; cByTypeOrder.push(k); }
+    cByTypeMap[k].value += p.sale || 0; cByTypeMap[k].count += 1; cByTypeMap[k].comm += commOf(p);
   });
   var cByType = cByTypeOrder.map(function (k) { return cByTypeMap[k]; }).sort(function (a, b) { return b.value - a.value; });
 
@@ -3292,6 +3292,8 @@ var COMM_START_Q = "2026-Q4";
 var COMM_TARGET = 3000000;
 var COMM_TIERS = [[300000, 20], [600000, 30], [900000, 40], [1200000, 50], [1500000, 60], [1800000, 70], [2100000, 80], [2400000, 90], [2700000, 95], [3000000, 100]]; // [ยอดขายขั้นต่ำ, Commission %] เพดาน 100%
 var COMM_RATE_BY_TYPE = { "Sales": 3, "Company": 1, "Reactivated": 2 };
+function commOf(p) { return (p.sale || 0) * ((COMM_RATE_BY_TYPE[p.type] || 0) / 100); }
+function fmtBaht2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 var COMM_TYPE_BY_CUSTOMER = { "U-services": "Company", "SNU": "Reactivated", "Soage": "Company", "Soeji": "Company", "Quantum": "Sales", "Kokusa": "Sales", "Multiphase": "Sales" }; // ใช้เมื่องานยังไม่ได้ใส่ Type
 var COMM_SALE_DATE_OVERRIDE = { "J2141.R5": "2026-10-14" }; // วันที่ขาย (PO) จริง ถ้าต่างจากวันที่ส่งใบเสนอราคา — แก้/เพิ่มได้ตรงนี้
 var COMM_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -3408,8 +3410,9 @@ function renderCommission(d) {
     return sectionHeaderHtml("Commission", "งานที่จบและได้คอมมิชชั่นแล้ว", c.sub) +
       '<div class="card"><div style="font-size:13px;color:' + COLORS.muted + '">ยังไม่พบสถานะรูปแบบ "Done Q1", "Done Q2" ฯลฯ ในระบบ — เพิ่มสถานะแบบนี้ได้จากเมนู <strong>“จัดการสถานะ”</strong> ในแถบด้านซ้าย แล้วหน้านี้จะตรวจจับไตรมาสให้อัตโนมัติ (สูงสุด 4 ไตรมาสต่อปี)</div></div>';
   }
-  var totalValue = c.closedGroups.reduce(function (s, g) { return s + g.value; }, 0);
-  var totalPaid = c.closedGroups.filter(function (g) { return g.paid; }).reduce(function (s, g) { return s + g.value; }, 0);
+  var totalValue = c.closedGroups.reduce(function (s, g) { return s + g.comm; }, 0);
+  var totalSaleAll = c.closedGroups.reduce(function (s, g) { return s + g.value; }, 0);
+  var totalPaid = c.closedGroups.filter(function (g) { return g.paid; }).reduce(function (s, g) { return s + g.comm; }, 0);
   var totalUnpaid = totalValue - totalPaid;
 
   var quarterCards = '<div style="display:grid;grid-template-columns:repeat(' + c.closedGroups.length + ',1fr);gap:14px;margin-bottom:16px">' +
@@ -3417,8 +3420,9 @@ function renderCommission(d) {
       var paidColor = g.paid ? COLORS.green : COLORS.amber;
       return '<div class="card" style="border-top-color:' + paidColor + '">' +
         '<div style="font-size:11px;color:' + COLORS.muted + ';text-transform:uppercase;letter-spacing:0.5px;font-weight:700">' + esc(g.name) + '</div>' +
-        '<div class="disp" style="font-size:21px;margin-top:5px;color:' + COLORS.ink + '">' + fmtTHB(g.value) + '</div>' +
-        '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:1px">' + g.jobs + ' งาน</div>' +
+        '<div style="font-size:10.5px;color:' + COLORS.muted + ';margin-top:5px">ค่าคอมมิชชั่น (Type × Rate)</div>' +
+        '<div class="disp" style="font-size:21px;margin-top:1px;color:' + COLORS.ink + '">' + fmtBaht2(g.comm) + '</div>' +
+        '<div style="font-size:11.5px;color:' + COLORS.muted + ';margin-top:1px">' + g.jobs + ' งาน · ยอดขาย ' + fmtTHB(g.value) + '</div>' +
         (canEdit()
           ? '<button onclick="toggleQuarterPaid(\'' + g.name + '\')" style="margin-top:10px;width:100%;padding:8px;border-radius:8px;border:none;font-weight:700;font-size:12px;cursor:pointer;background:' + paidColor + ';color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">' +
             icon(g.paid ? "check" : "alert", 13) + (g.paid ? "ชำระแล้ว" : "ยังไม่ชำระ") + '</button>'
@@ -3427,9 +3431,9 @@ function renderCommission(d) {
     }).join("") + '</div>';
 
   var summaryStrip = '<div class="dash-row-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">' +
-    kpiCardHtml("รวมทั้งหมด (4 ไตรมาส)", fmtTHB(totalValue), c.closedGroups.reduce(function (s, g) { return s + g.jobs; }, 0) + " งาน", "navy", "wallet") +
-    kpiCardHtml("ชำระแล้ว", fmtTHB(totalPaid), "", "green", "check") +
-    kpiCardHtml("ยังไม่ชำระ", fmtTHB(totalUnpaid), "", "amber", "alert") +
+    kpiCardHtml("ค่าคอมรวม (4 ไตรมาส)", fmtBaht2(totalValue), c.closedGroups.reduce(function (s, g) { return s + g.jobs; }, 0) + " งาน · ยอดขาย " + fmtTHB(totalSaleAll), "navy", "wallet") +
+    kpiCardHtml("ชำระแล้ว", fmtBaht2(totalPaid), "", "green", "check") +
+    kpiCardHtml("ยังไม่ชำระ", fmtBaht2(totalUnpaid), "", "amber", "alert") +
     '</div>';
 
   var ctxCols = Math.max(1, c.currentContext.length);
@@ -3467,12 +3471,12 @@ function renderCommission(d) {
   var typeCard = '<div class="card" style="margin-bottom:18px">' +
     '<div class="disp" style="font-size:13.5px;margin-bottom:12px">แยกตาม Type</div>' +
     c.byType.map(function (t, i) {
-      var pct = totalValue ? (t.value / totalValue * 100) : 0;
+      var pct = totalSaleAll ? (t.value / totalSaleAll * 100) : 0;
       var col = typeColors[i % typeColors.length];
       return '<div style="margin-bottom:10px">' +
         '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">' +
         '<span style="color:' + COLORS.ink + ';font-weight:600">' + esc(t.label) + '</span>' +
-        '<span class="mono" style="color:' + COLORS.ink + '">' + fmtTHB(t.value) + ' บาท · ' + t.count + ' งาน (' + pct.toFixed(1) + '%)</span></div>' +
+        '<span class="mono" style="color:' + COLORS.ink + '">ค่าคอม ' + fmtBaht2(t.comm) + ' · ยอดขาย ' + fmtTHB(t.value) + ' · ' + t.count + ' งาน (' + pct.toFixed(1) + '%)</span></div>' +
         '<div style="height:9px;background:' + COLORS.canvas + ';border-radius:99px;overflow:hidden">' +
         '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + col + ';border-radius:99px"></div></div></div>';
     }).join("") + '</div>';
@@ -3509,8 +3513,9 @@ function renderCommission(d) {
       '<td class="td-cell" style="max-width:260px"><div style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</div></td>' +
       '<td class="td-cell mono" style="font-size:11px;color:' + COLORS.muted + '">' + esc(p.note || "-") + '</td>' +
       '<td class="td-cell mono" style="font-size:11px;color:' + COLORS.muted + '">' + esc(p.invoice || "-") + '</td>' +
-      '<td class="td-cell num-td" style="font-weight:600">' + fmtTHB(p.sale) + '</td></tr>';
-  }).join("") || '<tr><td class="td-cell" colspan="9" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ยังไม่มีงานที่ปิดแล้ว</td></tr>';
+      '<td class="td-cell num-td" style="font-weight:600">' + fmtTHB(p.sale) + '</td>' +
+      '<td class="td-cell num-td" style="font-weight:700;color:' + COLORS.green + '">' + (COMM_RATE_BY_TYPE[p.type] ? fmtBaht2(commOf(p)) : '<span style="color:' + COLORS.muted + ';font-weight:400">-</span>') + '</td></tr>';
+  }).join("") || '<tr><td class="td-cell" colspan="10" style="text-align:center;padding:40px;color:' + COLORS.muted + '">ยังไม่มีงานที่ปิดแล้ว</td></tr>';
 
   // --- filter panel: multi-select Quarter / WorkType / Type, drives which rows are selected for export ---
   var qFilterChips = c.quarterStatuses.map(function (cq) {
@@ -3559,6 +3564,7 @@ function renderCommission(d) {
     '<th class="th-cell" style="position:sticky;top:0">รายละเอียดงาน</th>' +
     '<th class="th-cell" style="position:sticky;top:0">เลขที่ใบเสนอราคา</th>' +
     '<th class="th-cell" style="position:sticky;top:0">Invoice</th><th class="th-cell" style="position:sticky;top:0;text-align:right">Sale (THB)</th>' +
+    '<th class="th-cell" style="position:sticky;top:0;text-align:right">ค่าคอม (THB)</th>' +
     '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div></div>';
 
   return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
