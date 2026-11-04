@@ -2928,7 +2928,7 @@ function buildForecastCard(d) {
       '<td class="td-cell"><strong style="font-size:12.5px">' + esc(p.customer) + '</strong></td>' +
       '<td class="td-cell" style="max-width:320px"><div style="font-size:12px;color:' + COLORS.muted + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.description) + '</div></td>' +
       '<td class="td-cell">' + workTypeBadgeHtml(p.workType) + '</td>' +
-      '<td class="td-cell" style="font-size:11.5px;color:' + COLORS.muted + '">' + fmtDate(p.requestedDate) + '</td>' +
+      '<td class="td-cell" style="font-size:11.5px;color:' + COLORS.muted + '">' + fmtDate(p.sendQu) + '</td>' +
       '<td class="td-cell num-td" style="font-weight:700;color:' + COLORS.amber + '">' + fmtTHB(p.sale) + '</td>' +
       '<td class="td-cell" style="width:20px;color:' + COLORS.muted + '">' + icon("chevronRight", 14) + '</td>' +
       '</tr>';
@@ -2948,15 +2948,15 @@ function buildForecastCard(d) {
     '<th class="th-cell" style="position:sticky;top:0">Customer</th>' +
     '<th class="th-cell" style="position:sticky;top:0">Description</th>' +
     '<th class="th-cell" style="position:sticky;top:0">Work Type</th>' +
-    '<th class="th-cell" style="position:sticky;top:0">Requested</th>' +
+    '<th class="th-cell" style="position:sticky;top:0">Quotation Sent</th>' +
     '<th class="th-cell" style="position:sticky;top:0;text-align:right">Value (THB)</th>' +
     '<th class="th-cell" style="position:sticky;top:0"></th>' +
     '</tr></thead><tbody>' + itemsHtml + '</tbody></table></div></div>';
 }
 
 /* ============================== WIN — IN PROGRESS (Win แต่ยังไม่มีเลข Invoice) ============================== */
-var WIP_STATUSES = ["Waiting material", "In production", "Painting / surface", "QC / inspection", "Ready to deliver", "Delivered (awaiting invoice)"];
-var WIP_STATUS_COLORS = { "Waiting material": "#6B7A90", "In production": "#2E5395", "Painting / surface": "#7C4FE0", "QC / inspection": "#0E9AA8", "Ready to deliver": "#1F8A5F", "Delivered (awaiting invoice)": "#C98A1F" };
+var WIP_STATUSES = ["Planning", "Engineering", "Production", "QC", "Pending (outsource / customer)", "Delivery", "Completed (awaiting invoice)"];
+var WIP_STATUS_COLORS = { "Planning": "#6B7A90", "Engineering": "#7C4FE0", "Production": "#2E5395", "QC": "#0E9AA8", "Pending (outsource / customer)": "#C98A1F", "Delivery": "#1F8A5F", "Completed (awaiting invoice)": "#1F8A5F" };
 
 function computeWipRows(d) {
   return d.withCat.filter(function (p) { return p.status === "Win (On process)" && !(p.invoice || "").trim(); }).sort(function (a, b) {
@@ -3034,7 +3034,7 @@ function buildWipInner(d) {
   return '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">' +
     '<div style="display:flex;align-items:center;gap:7px">' + icon("wrench", 15, COLORS.green) +
     '<span class="disp" style="font-size:14.5px;color:' + COLORS.ink + '">Win — In Progress (Not Yet Invoiced)</span>' +
-    '<span style="font-size:10.5px;color:' + COLORS.muted + ';margin-left:4px">Won jobs currently in progress</span></div>' +
+    '<span style="font-size:10.5px;color:' + COLORS.muted + ';margin-left:4px">Status and due date follow EMT-BOX</span></div>' +
     '<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">' +
     chip("Overdue", overdue, COLORS.red) + chip("Due in 7 days", soon, COLORS.amber) + chip("No due date", noDate, COLORS.muted) +
     '<span style="font-size:12px;color:' + COLORS.muted + '">' + rows.length + ' jobs</span>' +
